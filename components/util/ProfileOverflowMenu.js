@@ -1,5 +1,5 @@
 import React, { useState } from "react";
-import { View, Text, TouchableOpacity, StyleSheet, Pressable } from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Linking } from "react-native";
 
@@ -15,9 +15,9 @@ const OverflowMenu = () => {
 
   return (
     <View style={styles.container}>
-      <Pressable onPress={toggleMenu}>
+      <TouchableOpacity onPress={toggleMenu}>
         <Ionicons name="ellipsis-vertical" size={24} color="white" />
-      </Pressable>
+      </TouchableOpacity>
       {visible && (
         <View style={styles.menuContainer}>
           <TouchableOpacity onPress={() => handleOptionPress("https://privacy.example.com")}>
