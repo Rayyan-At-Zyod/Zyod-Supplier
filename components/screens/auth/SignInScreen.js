@@ -6,12 +6,10 @@ import {
   TouchableOpacity,
   StyleSheet,
   ActivityIndicator,
-  Alert,
 } from "react-native";
 import { SafeAreaView } from "react-native";
 import { useAuth } from "../../context/AuthContext";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchWithToken } from "../../util/api";
+import LoadingModal from '../../util/LoadingModal';
 
 const SignInScreen = ({ navigation }) => {
   const { signIn } = useAuth();
@@ -121,6 +119,8 @@ const SignInScreen = ({ navigation }) => {
           )}
         </TouchableOpacity>
       </View>
+      
+      <LoadingModal visible={loading} />
     </SafeAreaView>
   );
 };

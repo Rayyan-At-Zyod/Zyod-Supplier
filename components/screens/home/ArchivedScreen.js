@@ -1,19 +1,25 @@
-import { View, Text, Image, StyleSheet, StatusBar } from 'react-native';
+import React from "react";
+import { View, Text, StyleSheet } from "react-native";
 
 function ArchivedScreen() {
   return (
-    <View style={styles.tabContent}>
-      <Text>Archived Screen</Text>
+    <View style={styles.container}>
+      <Text style={styles.text}>No archived materials</Text>
     </View>
   );
 }
 
-export default ArchivedScreen;
-
 const styles = StyleSheet.create({
-  tabContent: {
+  container: {
     flex: 1,
-    justifyContent: 'center',
-    alignItems: 'center',
+    justifyContent: "center",
+    alignItems: "center",
+    backgroundColor: "#f5f5f5",
+  },
+  text: {
+    fontSize: 16,
+    color: "#666",
   },
 });
+
+export default ArchivedScreen;
