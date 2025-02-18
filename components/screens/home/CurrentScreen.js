@@ -39,9 +39,7 @@ function CurrentScreen() {
             updateMaterial: (updatedMaterial) => {
               setRawMaterials((current) =>
                 current.map((mat) =>
-                  mat.RMVariationId === updatedMaterial.RMVariationId
-                    ? updatedMaterial
-                    : mat
+                  mat.greigeId === updatedMaterial.greigeId ? updatedMaterial : mat
                 )
               );
             },
@@ -51,30 +49,32 @@ function CurrentScreen() {
         <Ionicons name="pencil" size={18} color="black" />
       </TouchableOpacity>
 
-      {Array.isArray(item.RMImage) && item.RMImage.length > 0 && (
-        <Image source={{ uri: item.RMImage[0] }} style={styles.materialImage} />
+      {item.rmVariations?.[0]?.rmImage && (
+        <Image
+          source={{ uri: item.rmVariations[0].rmImage }}
+          style={styles.materialImage}
+        />
       )}
       <View style={styles.cardContent}>
-        <Text style={styles.materialName}>{item.BaseFabricName}</Text>
-        <Text style={styles.code}>Code: {item.RMVariationCode}</Text>
-        <Text style={styles.details}>
-          {[
-            item.PrintTypes,
-            item.RMSolidColours,
-            item.RMPrints,
-            item.RMEmbellishmentsDetails?.map((e) => e.name),
-          ]
-            .filter(Boolean)
-            .join(" • ")}
+        <Text style={styles.materialName}>
+          {item.rmVariations[0]?.rmCode || 'No Name'}
         </Text>
-        <Text style={styles.technical}>
-          GSM:{" "}
-          {item.TechnicalDetails?.find((t) => t.name === "GSM")?.value || "N/A"}
-        </Text>
-        <Text style={styles.quantity}>
-          Available: {item.availableQuantity} {item.unit}
-        </Text>
-        <Text style={styles.price}>₹{item.GeneralPrice}/unit</Text>
+        <Text style={styles.gsm}>GSM: {item.gsm || 'N/A'}</Text>
+        
+        <View style={styles.variationsContainer}>
+          <Text style={styles.variationsTitle}>Variations:</Text>
+          {item.rmVariations.map((variation, index) => (
+            <View key={variation.rmVariationId} style={styles.variationItem}>
+              <Text style={styles.variationText}>
+                Width: {variation.width}"{' '}
+                {variation.availableQuantity ? 
+                  `• Stock: ${variation.availableQuantity} ${variation.unitCode}` : 
+                  '• Out of Stock'}
+                {' '}• ₹{variation.generalPrice}/{variation.unitCode}
+              </Text>
+            </View>
+          ))}
+        </View>
       </View>
     </View>
   );
@@ -84,7 +84,7 @@ function CurrentScreen() {
       <FlatList
         data={rawMaterials}
         renderItem={renderItem}
-        keyExtractor={(item) => item.RMVariationId.toString()}
+        keyExtractor={(item) => item.greigeId.toString()}
         contentContainerStyle={styles.listContainer}
         refreshControl={
           <RefreshControl
@@ -156,31 +156,35 @@ const styles = StyleSheet.create({
   materialName: {
     fontSize: 18,
     fontWeight: "bold",
+    color: "#000",
+  },
+  gsm: {
+    fontSize: 14,
+    color: "#444",
+    marginTop: 4,
+  },
+  variationsContainer: {
+    marginTop: 8,
+  },
+  variationsTitle: {
+    fontSize: 14,
+    fontWeight: "600",
+    color: "#444",
     marginBottom: 4,
   },
-  code: {
-    fontSize: 14,
-    color: "#666",
+  variationItem: {
+    backgroundColor: "#f5f5f5",
+    padding: 8,
+    borderRadius: 6,
+    marginBottom: 4,
   },
-  details: {
-    fontSize: 14,
-    color: "#666",
-  },
-  technical: {
-    fontSize: 14,
-    color: "#666",
-  },
-  quantity: {
-    fontSize: 14,
-    color: "#666",
-  },
-  price: {
-    fontSize: 14,
+  variationText: {
+    fontSize: 13,
     color: "#666",
   },
   cardContent: {
     flex: 1,
-    padding: 8,
+    padding: 12,
   },
   addButton: {
     position: "absolute",

@@ -26,38 +26,39 @@ function HomeScreen() {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://dev-api.zyod.com/v1/rawMaterial/advanceSearchRMVariation",
+        // "https://dev-api.zyod.com/v1/rawMaterial/advanceSearchRMVariation",
+        "https://dev-api.zyod.com/v1/rawMaterial/groupedRmVariations?page=1&size=10",
         {
-          method: "POST",
+          method: "GET",
           headers: {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token.toString()}`,
           },
-          body: JSON.stringify({
-            BaseFabricId: [],
-            Composition: "",
-            PrintTypeId: [],
-            ageingItems: false,
-            availableItems: false,
-            direction: "DESC",
-            negativeStocks: false,
-            maximumPrice: null,
-            minimumPrice: null,
-            page: 1,
-            searchText: "",
-            size: 20,
-            sortColumn: "GSM",
-            supplier: [],
-            rmCreatedBySupplierIds: [],
-            rmVarTags: [],
-            valueAddition: [],
-            warehouse: [],
-            listAllRmCreatedByAnyone: false,
-            forSale: false,
-            ageingDays: "",
-            inventory: true,
-            isMarketPlace: false,
-          }),
+          // body: JSON.stringify({
+          //   BaseFabricId: [],
+          //   Composition: "",
+          //   PrintTypeId: [],
+          //   ageingItems: false,
+          //   availableItems: false,
+          //   direction: "DESC",
+          //   negativeStocks: false,
+          //   maximumPrice: null,
+          //   minimumPrice: null,
+          //   page: 1,
+          //   searchText: "",
+          //   size: 20,
+          //   sortColumn: "GSM",
+          //   supplier: [],
+          //   rmCreatedBySupplierIds: [],
+          //   rmVarTags: [],
+          //   valueAddition: [],
+          //   warehouse: [],
+          //   listAllRmCreatedByAnyone: false,
+          //   forSale: false,
+          //   ageingDays: "",
+          //   inventory: true,
+          //   isMarketPlace: false,
+          // }),
         }
       );
 
@@ -72,12 +73,12 @@ function HomeScreen() {
         throw new Error(data.message || "Raw material fetch failed");
       }
 
-      if (!data.data.result) {
-        throw new Error(data.message || "No array available.");
-      }
+      // if (!data.data.result) {
+      //   throw new Error(data.message || "No array available.");
+      // }
 
       console.log("=== Result array ===");
-      setRawMaterials(data.data.result);
+      setRawMaterials(data.data);
     } catch (err) {
       console.error("=== Raw Materials Fetch Error ===");
       console.error("Error type:", err.constructor.name);
@@ -112,10 +113,10 @@ function HomeScreen() {
             name="Current"
             options={{ title: "Current" }}
             component={CurrentScreen}
-            initialParams={{ 
-              rawMaterials, 
+            initialParams={{
+              rawMaterials,
               setRawMaterials,
-              loadRawMaterials
+              loadRawMaterials,
             }}
           />
           <TopTab.Screen name="Archived" component={ArchivedScreen} />

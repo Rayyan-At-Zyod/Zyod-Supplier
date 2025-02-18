@@ -3,15 +3,18 @@ import { NavigationContainer } from "@react-navigation/native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 import { AuthProvider, useAuth } from "./components/context/AuthContext";
 import SignInScreen from "./components/screens/auth/SignInScreen";
-import { ActivityIndicator, View } from "react-native";
+import { ActivityIndicator, View, TouchableOpacity } from "react-native";
 import TabNavigator from "./components/navigation/TabNavigator";
 import UpdateRMScreen from "./components/screens/raw-material/UpdateRM";
 import AddRMScreen from "./components/screens/raw-material/AddRM";
+import { Ionicons } from "@expo/vector-icons";
+import { useNavigation } from "@react-navigation/native";
 
 const Stack = createNativeStackNavigator();
 
 function NavigationContent() {
   const { token, loading } = useAuth();
+  const navigation = useNavigation();
 
   if (loading) {
     return (
@@ -22,7 +25,7 @@ function NavigationContent() {
   }
 
   return (
-    <Stack.Navigator>
+    <Stack.Navigator screenOptions={{ headerShown: false }}>
       {token ? (
         <>
           <Stack.Screen
@@ -34,12 +37,20 @@ function NavigationContent() {
             name="EditRawMaterial"
             component={UpdateRMScreen}
             options={{
-              headerShown: false,
+              headerShown: true,
               headerTitle: "Edit Material",
               headerTintColor: "black",
               headerStyle: {
                 backgroundColor: "white",
               },
+              headerLeft: () => (
+                <TouchableOpacity
+                  onPress={() => navigation.goBack()}
+                  style={{ marginLeft: 16 }}
+                >
+                  <Ionicons name="arrow-back" size={24} color="black" />
+                </TouchableOpacity>
+              ),
               presentation: "modal",
             }}
           />
@@ -47,12 +58,20 @@ function NavigationContent() {
             name="AddRawMaterial"
             component={AddRMScreen}
             options={{
-              headerShown: false,
+              headerShown: true,
               headerTitle: "Add Raw Material",
               headerTintColor: "black",
-              headerAStyle: {
+              headerStyle: {
                 backgroundColor: "white",
               },
+              headerLeft: () => (
+                <TouchableOpacity
+                  onPress={() => navigation.goBack()}
+                  style={{ marginLeft: 16 }}
+                >
+                  <Ionicons name="arrow-back" size={24} color="black" />
+                </TouchableOpacity>
+              ),
               presentation: "modal",
             }}
           />

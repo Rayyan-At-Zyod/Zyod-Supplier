@@ -558,6 +558,7 @@ const styles = StyleSheet.create({
     borderRadius: 8,
     padding: 12,
     marginBottom: 16,
+    paddingTop: 32,
     position: "relative",
   },
   removeIcon: {
