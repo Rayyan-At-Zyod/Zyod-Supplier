@@ -26,7 +26,6 @@ function HomeScreen() {
     setLoading(true);
     try {
       const response = await fetch(
-        // "https://dev-api.zyod.com/v1/rawMaterial/advanceSearchRMVariation",
         "https://dev-api.zyod.com/v1/rawMaterial/groupedRmVariations?page=1&size=10",
         {
           method: "GET",
@@ -34,31 +33,6 @@ function HomeScreen() {
             "Content-Type": "application/json",
             Authorization: `Bearer ${token.toString()}`,
           },
-          // body: JSON.stringify({
-          //   BaseFabricId: [],
-          //   Composition: "",
-          //   PrintTypeId: [],
-          //   ageingItems: false,
-          //   availableItems: false,
-          //   direction: "DESC",
-          //   negativeStocks: false,
-          //   maximumPrice: null,
-          //   minimumPrice: null,
-          //   page: 1,
-          //   searchText: "",
-          //   size: 20,
-          //   sortColumn: "GSM",
-          //   supplier: [],
-          //   rmCreatedBySupplierIds: [],
-          //   rmVarTags: [],
-          //   valueAddition: [],
-          //   warehouse: [],
-          //   listAllRmCreatedByAnyone: false,
-          //   forSale: false,
-          //   ageingDays: "",
-          //   inventory: true,
-          //   isMarketPlace: false,
-          // }),
         }
       );
 
@@ -72,10 +46,6 @@ function HomeScreen() {
         console.log("API request failed:", data);
         throw new Error(data.message || "Raw material fetch failed");
       }
-
-      // if (!data.data.result) {
-      //   throw new Error(data.message || "No array available.");
-      // }
 
       console.log("=== Result array ===");
       setRawMaterials(data.data);

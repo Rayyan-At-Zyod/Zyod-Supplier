@@ -57,7 +57,7 @@ function CurrentScreen() {
       )}
       <View style={styles.cardContent}>
         <Text style={styles.materialName}>
-          {item.rmVariations[0]?.rmCode || 'No Name'}
+          {item.rmVariations[0]?.name || 'No Name'}
         </Text>
         <Text style={styles.gsm}>GSM: {item.gsm || 'N/A'}</Text>
         

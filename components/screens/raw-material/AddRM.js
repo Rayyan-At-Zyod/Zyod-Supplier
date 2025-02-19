@@ -11,10 +11,13 @@ import {
   Image,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
+import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
-
-// Example auth hook usage
+import "react-native-get-random-values";
+import { v4 as uuidv4 } from "uuid";
+import * as FileSystem from 'expo-file-system';
+import LoadingModal from "../../util/LoadingModal";
 
 function AddRMScreen() {
   const route = useRoute();
@@ -46,6 +49,9 @@ function AddRMScreen() {
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageModalIndex, setImageModalIndex] = useState(null);
   // index to know which variant (or main image) we're editing
+
+  // Add this state near other state declarations
+  const [isLoading, setIsLoading] = useState(false);
 
   /**
    * Adds a new empty variant row.
@@ -108,32 +114,132 @@ function AddRMScreen() {
   };
 
   /**
+   * Upload images
+   */
+  const uploadImage = async (mode = "camera") => {
+    let result = {};
+    try {
+      if (mode === "gallery") {
+        await ImagePicker.requestMediaLibraryPermissionsAsync();
+        result = await ImagePicker.launchImageLibraryAsync({
+          mediaTypes: ImagePicker.MediaTypeOptions.Images,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 1,
+        });
+      } else {
+        await ImagePicker.requestCameraPermissionsAsync();
+        result = await ImagePicker.launchCameraAsync({
+          cameraType: ImagePicker.CameraType.front,
+          allowsEditing: true,
+          aspect: [1, 1],
+          quality: 1,
+        });
+      }
+      if (!result.canceled) {
+        console.log("image was:", result.assets[0].uri);
+        await saveImage(result.assets[0].uri);
+      }
+    } catch (err) {
+      alert("Error uploading image", err.message);
+      setShowImageModal(false);
+      setImageModalIndex(null);
+    }
+  };
+
+  // image upload helper function
+  const saveImage = async (image) => {
+    try {
+      if (imageModalIndex === null) {
+        // For main image
+        setMainImage(image);
+      } else {
+        // For variant images
+        handleVariantChange(imageModalIndex, "image", image);
+      }
+      setShowImageModal(false);
+      setImageModalIndex(null);
+    } catch (err) {
+      console.log("error was:", err);
+      throw Error(err);
+    }
+  };
+
+  /**
+   * Remove image
+   */
+  const removeImage = async () => {
+    try {
+      saveImage(null);
+      // alert("Image removed");
+      imageModalIndex === null
+        ? setMainImage(null)
+        : handleVariantChange(imageModalIndex, "image", null); // @FIXME: this is the code for remove image
+      showImageModal(false);
+    } catch (err) {
+      alert("Error while removing pic.", err);
+    }
+  };
+
+  // Add this helper function
+  const convertImageToBase64 = async (uri) => {
+    try {
+      if (!uri) return null;
+      const base64 = await FileSystem.readAsStringAsync(uri, {
+        encoding: FileSystem.EncodingType.Base64,
+      });
+      return `data:image/jpeg;base64,${base64}`;
+    } catch (error) {
+      console.error('Error converting image to base64:', error);
+      return null;
+    }
+  };
+
+  /**
    * Constructs the payload and calls the addSku API.
    */
   const handleSave = async () => {
     try {
-      // 1) Build the array of variants for RMsData
-      const RMsData = variants.map((v) => {
-        const printTypeCode = v.type === "Solids" ? "S" : "P";
-        const newCode = v.width ? `_${v.width}` : "";
+      // Show loading modal immediately when save is initiated
+      setIsLoading(true);
 
-        return {
+      const requestUUID = uuidv4();
+      const printTypeCode = type === "Solids" ? "S" : "P";
+      const newCode = width ? `_${width}` : "";
+
+      // Validate required fields
+      if (!name) {
+        throw new Error("Name is required");
+      }
+
+      // Convert main image to base64
+      const mainImageBase64 = await convertImageToBase64(mainImage);
+
+      // Create array starting with main item as first variant
+      const RMsData = [
+        // First variant contains the main item details
+        {
           RMCategoryId: 3,
           RMSubCategoryId: 15,
-          Name: v.name || "",
-          BaseFabricName: v.name || "",
-          Description: v.description || "",
+          GreigeTypeId: null,
+          Name: name,
+          Description: constructionOrPrint || "",
           RMCodeBuilder: {
             BaseFabricCode: "RMD",
             FabricTypeCode: "W",
             PrintTypeCode: printTypeCode,
           },
+          UnitOfMeasureId: 1,
+          WarpLeft: null,
+          WeftLeft: null,
+          WarpRight: null,
+          WeftRight: null,
           PrintTypeId: printTypeCode === "S" ? 2 : 3,
-          RMSolidColorText: v.type === "Solids" ? v.name || "" : "",
-          RMImage: [v.image || ""],
+          RMSolidColorText: type === "Solids" ? "S" : "P",
+          RMImage: mainImageBase64 ? [mainImageBase64] : [], // Convert main image
           RMVariationDetails: [
             {
-              GeneralPrice: v.price || 0,
+              GeneralPrice: Number(price),
               NewCode: newCode,
               RMVarAttributeValueId: 9,
             },
@@ -141,7 +247,7 @@ function AddRMScreen() {
           RMSupplierDetails: [
             {
               SupplierId: userData?.supplierId || 606,
-              Price: v.price || "0",
+              Price: price.toString(),
               Priority: "1",
               IsActive: true,
               NewCode: newCode,
@@ -151,56 +257,115 @@ function AddRMScreen() {
             {
               NewCode: newCode,
               Warehouse: 2,
-              CurrentStock: v.quantity || "0",
+              CurrentStock: quantity.toString(),
             },
           ],
-          UnitOfMeasureId: 1,
           RMTags: [],
-        };
-      });
+          RMSolidColourId: null,
+        },
+        // Then add all other variants
+        ...await Promise.all(variants.map(async (v, index) => {
+          if (!v.name) {
+            throw new Error(`Name is required for variant ${index + 1}`);
+          }
 
-      // 2) Build the top-level skuDetails
-      const printTypeCode = type === "Solids" ? "S" : "P";
-      const newCode = width ? `_${width}` : "";
+          const variantImageBase64 = await convertImageToBase64(v.image);
+          const variantPrintTypeCode = v.type === "Solids" ? "S" : "P";
+          const variantNewCode = v.width ? `_${v.width}` : "";
+
+          return {
+            RMCategoryId: 3,
+            RMSubCategoryId: 15,
+            GreigeTypeId: null,
+            Name: v.name,
+            Description: v.description || "",
+            image: null,
+            RMCodeBuilder: {
+              BaseFabricCode: "RMD",
+              FabricTypeCode: "W",
+              PrintTypeCode: variantPrintTypeCode,
+            },
+            UnitOfMeasureId: 1,
+            WarpLeft: null,
+            WeftLeft: null,
+            WarpRight: null,
+            WeftRight: null,
+            PrintTypeId: variantPrintTypeCode === "S" ? 2 : 3,
+            RMSolidColorText: v.type === "Solids" ? "S" : "P",
+            RMImage: variantImageBase64 ? [variantImageBase64] : [],
+            RMVariationDetails: [
+              {
+                GeneralPrice: Number(v.price),
+                NewCode: variantNewCode,
+                RMVarAttributeValueId: 9,
+              },
+            ],
+            RMSupplierDetails: [
+              {
+                SupplierId: userData?.supplierId || 606,
+                Price: v.price.toString(),
+                Priority: "1",
+                IsActive: true,
+                NewCode: variantNewCode,
+              },
+            ],
+            RMInventoryDetails: [
+              {
+                NewCode: variantNewCode,
+                Warehouse: 2,
+                CurrentStock: v.quantity.toString(),
+              },
+            ],
+            RMTags: [],
+            RMSolidColourId: null,
+          };
+        })),
+      ];
+
       const payload = {
         skuDetails: {
-          name: name || "",
-          description: constructionOrPrint || "",
-          image: mainImage || "",
+          appDbId: requestUUID,
+          name: name,
+          image: mainImageBase64 ? mainImageBase64 : "",
           categoryId: 15,
           rmCodeBuilder: {
             BaseFabricCode: "RMD",
             FabricTypeCode: "W",
             PrintTypeCode: printTypeCode,
           },
-          gsm: gsm || "0",
+          gsm: gsm.toString(),
           unitId: 1,
           baseFabricId: 288,
-          printTypeId: printTypeCode === "S" ? 2 : 3,
-          rmSolidColorText: type === "Solids" ? name : "",
-          width: width || "0",
-          multipleVariation: variants.length > 1,
+          printTypeId: type === "Solids" ? 2 : 3,
+          width: width.toString(),
+          multipleVariation: variants.length > 0,
           RMsData,
         },
         additionalInfo: {
-          costPrice: costPrice || "0",
-          availableStock: availableStock || "0",
+          costPrice: costPrice.toString(),
+          availableStock: availableStock.toString(),
           warehouseId: 2,
         },
         skuType: "Fabric",
       };
 
-      // 3) Make the API call with fetch instead of axios
-      const response = await fetch("https://dev-api.zyod.com/v1/sku/addSku", {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(payload),
-      });
+      // Log the payload before making the API call
+      console.log('Request Payload:', JSON.stringify(payload, null, 2));
+
+      const response = await fetch(
+        "https://dev-api.zyod.com/v1/sku/addSkuRmMarketPlace",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(payload),
+        }
+      );
 
       const data = await response.json();
+      console.log('API Response:', data); // Log the response too
 
       if (!response.ok) {
         throw new Error(data.message || "Failed to add raw material");
@@ -211,10 +376,13 @@ function AddRMScreen() {
       addMaterial(createdItem);
 
       // 5) Navigate back
+      setIsLoading(false);
       navigation.goBack();
     } catch (error) {
+      // Hide loading modal on error
+      setIsLoading(false);
       console.error("Add Raw Material Error:", error);
-      Alert.alert("Error", "Failed to add raw material. Please try again.");
+      Alert.alert("Error", error.message || "Failed to add raw material. Please try again.");
     }
   };
 
@@ -223,16 +391,18 @@ function AddRMScreen() {
       <ScrollView contentContainerStyle={styles.scrollContainer}>
         <Text style={styles.heading}>Create Raw Material</Text>
 
-        {/* Product Image */}
+        {/* Main Product Image */}
         <TouchableOpacity
           style={styles.imagePlaceholder}
           onPress={() => openImageModal(null)}
         >
-          <Text style={styles.imagePlaceholderText}>
-            {mainImage
-              ? "Change Main Product Image"
-              : "Click To Upload Product Image"}
-          </Text>
+          {mainImage ? (
+            <Image source={{ uri: mainImage }} style={styles.mainImage} />
+          ) : (
+            <Text style={styles.imagePlaceholderText}>
+              Click To Upload Product Image
+            </Text>
+          )}
         </TouchableOpacity>
 
         {/* Name */}
@@ -410,21 +580,22 @@ function AddRMScreen() {
               keyboardType="numeric"
             />
 
-            {/* "Click Picture" button */}
+            {/* Variant Image */}
             <TouchableOpacity
               style={styles.uploadButton}
               onPress={() => openImageModal(index)}
             >
-              <Text style={{ color: "#fff" }}>Click Picture*</Text>
+              <Text style={{ color: "#fff" }}>
+                {variant.image ? "Change Picture" : "Click Picture*"}
+              </Text>
             </TouchableOpacity>
 
-            {/* Show a small preview if there's an image */}
-            {variant.image ? (
+            {variant.image && (
               <Image
                 source={{ uri: variant.image }}
                 style={styles.variantImage}
               />
-            ) : null}
+            )}
           </View>
         ))}
 
@@ -458,27 +629,35 @@ function AddRMScreen() {
             <TouchableOpacity
               style={styles.modalOption}
               onPress={() => {
-                // Example: you would integrate your camera or gallery here
-                handleImageSelected("https://placekitten.com/200/300");
+                uploadImage();
               }}
             >
-              <Text style={styles.modalOptionText}>
-                Use a placeholder image
-              </Text>
+              <Text style={styles.modalOptionText}>Upload from Camera</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
               style={styles.modalOption}
               onPress={() => {
-                // Another example pick
-                handleImageSelected("https://placekitten.com/300/400");
+                uploadImage("gallery");
               }}
             >
-              <Text style={styles.modalOptionText}>Another placeholder</Text>
+              <Text style={styles.modalOptionText}>Upload from Gallery</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              style={styles.modalOption}
+              onPress={() => {
+                removeImage();
+              }}
+            >
+              <Text style={styles.modalOptionText}>Remove image</Text>
             </TouchableOpacity>
           </View>
         </View>
       </Modal>
+
+      {/* Add LoadingModal at the bottom of the View */}
+      <LoadingModal visible={isLoading} />
     </View>
   );
 }
@@ -503,12 +682,13 @@ const styles = StyleSheet.create({
     textAlign: "center",
   },
   imagePlaceholder: {
-    height: 60,
+    height: 200,
     backgroundColor: "#FFFACD",
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
-    marginBottom: 8,
+    marginBottom: 16,
+    overflow: "hidden",
   },
   imagePlaceholderText: {
     color: "#555",
@@ -574,11 +754,11 @@ const styles = StyleSheet.create({
     marginBottom: 16,
   },
   variantImage: {
-    width: 100,
-    height: 100,
+    width: "100%",
+    height: 150,
     resizeMode: "cover",
     borderRadius: 8,
-    marginTop: -8,
+    marginTop: 8,
     marginBottom: 8,
   },
   addVariantButton: {
@@ -631,5 +811,11 @@ const styles = StyleSheet.create({
   modalOptionText: {
     fontSize: 16,
     color: "#007BFF",
+  },
+  mainImage: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
+    borderRadius: 8,
   },
 });
