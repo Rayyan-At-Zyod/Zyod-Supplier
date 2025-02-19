@@ -26,7 +26,7 @@ function HomeScreen() {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://dev-api.zyod.com/v1/rawMaterial/groupedRmVariations?page=1&size=10",
+        "https://dev-api.zyod.com/v1/rawMaterial/groupedRmVariations?page=1&size=50",
         {
           method: "GET",
           headers: {
@@ -40,14 +40,16 @@ function HomeScreen() {
       console.log("Response OK", response.ok);
 
       const data = await response.json();
-      console.log("Response data:", JSON.stringify(data, null, 2));
+      console.log(
+        JSON.stringify(data, null, 2),
+        "\n=== Result array above ==="
+      );
 
       if (!response.ok || !data.success) {
         console.log("API request failed:", data);
         throw new Error(data.message || "Raw material fetch failed");
       }
 
-      console.log("=== Result array ===");
       setRawMaterials(data.data);
     } catch (err) {
       console.error("=== Raw Materials Fetch Error ===");

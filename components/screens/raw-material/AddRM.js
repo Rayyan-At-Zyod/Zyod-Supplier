@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TextInput,
   TouchableOpacity,
@@ -16,8 +15,12 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../context/AuthContext";
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
-import * as FileSystem from 'expo-file-system';
 import LoadingModal from "../../util/LoadingModal";
+import { addRawMaterial } from "../../../services/api/addRawMaterial";
+import { createRMsData } from "../../../services/helpers/createRmsDataForRMAdd";
+import { rmStyles } from "../../styles/AddRM.styles";
+import { convertImageToBase64 } from "../../../services/helpers/imageUtils/imageConverter";
+import { createPayload } from "../../../services/helpers/createPayloadForRMAdd";
 
 function AddRMScreen() {
   const route = useRoute();
@@ -99,21 +102,6 @@ function AddRMScreen() {
   };
 
   /**
-   * Example function to handle an image pick result.
-   * You'd integrate a real image picker or camera here.
-   */
-  const handleImageSelected = (pickedUri) => {
-    setShowImageModal(false);
-    if (imageModalIndex === null) {
-      // Setting main image
-      setMainImage(pickedUri);
-    } else {
-      // Setting a variant image
-      handleVariantChange(imageModalIndex, "image", pickedUri);
-    }
-  };
-
-  /**
    * Upload images
    */
   const uploadImage = async (mode = "camera") => {
@@ -160,7 +148,7 @@ function AddRMScreen() {
       setShowImageModal(false);
       setImageModalIndex(null);
     } catch (err) {
-      console.log("error was:", err);
+      console.log("image save error was", err);
       throw Error(err);
     }
   };
@@ -181,225 +169,82 @@ function AddRMScreen() {
     }
   };
 
-  // Add this helper function
-  const convertImageToBase64 = async (uri) => {
-    try {
-      if (!uri) return null;
-      const base64 = await FileSystem.readAsStringAsync(uri, {
-        encoding: FileSystem.EncodingType.Base64,
-      });
-      return `data:image/jpeg;base64,${base64}`;
-    } catch (error) {
-      console.error('Error converting image to base64:', error);
-      return null;
-    }
-  };
-
   /**
    * Constructs the payload and calls the addSku API.
    */
   const handleSave = async () => {
     try {
-      // Show loading modal immediately when save is initiated
       setIsLoading(true);
-
-      const requestUUID = uuidv4();
-      const printTypeCode = type === "Solids" ? "S" : "P";
-      const newCode = width ? `_${width}` : "";
-
-      // Validate required fields
       if (!name) {
         throw new Error("Name is required");
       }
 
-      // Convert main image to base64
+      // 1) Convert main image to base64
       const mainImageBase64 = await convertImageToBase64(mainImage);
 
-      // Create array starting with main item as first variant
-      const RMsData = [
-        // First variant contains the main item details
-        {
-          RMCategoryId: 3,
-          RMSubCategoryId: 15,
-          GreigeTypeId: null,
-          Name: name,
-          Description: constructionOrPrint || "",
-          RMCodeBuilder: {
-            BaseFabricCode: "RMD",
-            FabricTypeCode: "W",
-            PrintTypeCode: printTypeCode,
-          },
-          UnitOfMeasureId: 1,
-          WarpLeft: null,
-          WeftLeft: null,
-          WarpRight: null,
-          WeftRight: null,
-          PrintTypeId: printTypeCode === "S" ? 2 : 3,
-          RMSolidColorText: type === "Solids" ? "S" : "P",
-          RMImage: mainImageBase64 ? [mainImageBase64] : [], // Convert main image
-          RMVariationDetails: [
-            {
-              GeneralPrice: Number(price),
-              NewCode: newCode,
-              RMVarAttributeValueId: 9,
-            },
-          ],
-          RMSupplierDetails: [
-            {
-              SupplierId: userData?.supplierId || 606,
-              Price: price.toString(),
-              Priority: "1",
-              IsActive: true,
-              NewCode: newCode,
-            },
-          ],
-          RMInventoryDetails: [
-            {
-              NewCode: newCode,
-              Warehouse: 2,
-              CurrentStock: quantity.toString(),
-            },
-          ],
-          RMTags: [],
-          RMSolidColourId: null,
-        },
-        // Then add all other variants
-        ...await Promise.all(variants.map(async (v, index) => {
-          if (!v.name) {
-            throw new Error(`Name is required for variant ${index + 1}`);
-          }
+      // 2) Create RMsData array
+      const RMsData = await createRMsData({
+        name,
+        constructionOrPrint,
+        type,
+        price,
+        width,
+        quantity,
+        mainImage,
+        variants,
+        userData,
+      });
 
-          const variantImageBase64 = await convertImageToBase64(v.image);
-          const variantPrintTypeCode = v.type === "Solids" ? "S" : "P";
-          const variantNewCode = v.width ? `_${v.width}` : "";
+      // 3) Create the payload using the helper function
+      const payload = createPayload({
+        name,
+        constructionOrPrint,
+        type,
+        price,
+        width,
+        quantity,
+        mainImage: mainImageBase64,
+        gsm,
+        costPrice,
+        availableStock,
+        variants,
+        RMsData,
+      });
 
-          return {
-            RMCategoryId: 3,
-            RMSubCategoryId: 15,
-            GreigeTypeId: null,
-            Name: v.name,
-            Description: v.description || "",
-            image: null,
-            RMCodeBuilder: {
-              BaseFabricCode: "RMD",
-              FabricTypeCode: "W",
-              PrintTypeCode: variantPrintTypeCode,
-            },
-            UnitOfMeasureId: 1,
-            WarpLeft: null,
-            WeftLeft: null,
-            WarpRight: null,
-            WeftRight: null,
-            PrintTypeId: variantPrintTypeCode === "S" ? 2 : 3,
-            RMSolidColorText: v.type === "Solids" ? "S" : "P",
-            RMImage: variantImageBase64 ? [variantImageBase64] : [],
-            RMVariationDetails: [
-              {
-                GeneralPrice: Number(v.price),
-                NewCode: variantNewCode,
-                RMVarAttributeValueId: 9,
-              },
-            ],
-            RMSupplierDetails: [
-              {
-                SupplierId: userData?.supplierId || 606,
-                Price: v.price.toString(),
-                Priority: "1",
-                IsActive: true,
-                NewCode: variantNewCode,
-              },
-            ],
-            RMInventoryDetails: [
-              {
-                NewCode: variantNewCode,
-                Warehouse: 2,
-                CurrentStock: v.quantity.toString(),
-              },
-            ],
-            RMTags: [],
-            RMSolidColourId: null,
-          };
-        })),
-      ];
-
-      const payload = {
-        skuDetails: {
-          appDbId: requestUUID,
-          name: name,
-          image: mainImageBase64 ? mainImageBase64 : "",
-          categoryId: 15,
-          rmCodeBuilder: {
-            BaseFabricCode: "RMD",
-            FabricTypeCode: "W",
-            PrintTypeCode: printTypeCode,
-          },
-          gsm: gsm.toString(),
-          unitId: 1,
-          baseFabricId: 288,
-          printTypeId: type === "Solids" ? 2 : 3,
-          width: width.toString(),
-          multipleVariation: variants.length > 0,
-          RMsData,
-        },
-        additionalInfo: {
-          costPrice: costPrice.toString(),
-          availableStock: availableStock.toString(),
-          warehouseId: 2,
-        },
-        skuType: "Fabric",
-      };
-
-      // Log the payload before making the API call
-      console.log('Request Payload:', JSON.stringify(payload, null, 2));
-
-      const response = await fetch(
-        "https://dev-api.zyod.com/v1/sku/addSkuRmMarketPlace",
-        {
-          method: "POST",
-          headers: {
-            Authorization: `Bearer ${token}`,
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(payload),
-        }
-      );
-
-      const data = await response.json();
-      console.log('API Response:', data); // Log the response too
-
-      if (!response.ok) {
-        throw new Error(data.message || "Failed to add raw material");
-      }
-
-      // 4) On success, call addMaterial with something relevant from the response
+      // 4) Make the API call
+      const data = await addRawMaterial(payload, token);
+      
+      // 5) On success, call addMaterial with something relevant from the response
       const createdItem = data?.data || {};
-      addMaterial(createdItem);
+      console.log("API Response:", data);
+      addMaterial(createdItem); // @FIXME:
 
-      // 5) Navigate back
       setIsLoading(false);
       navigation.goBack();
     } catch (error) {
-      // Hide loading modal on error
       setIsLoading(false);
       console.error("Add Raw Material Error:", error);
-      Alert.alert("Error", error.message || "Failed to add raw material. Please try again.");
+      Alert.alert(
+        "Error",
+        error.message || "Failed to add raw material. Please try again."
+      );
     }
   };
 
   return (
-    <View style={styles.container}>
-      <ScrollView contentContainerStyle={styles.scrollContainer}>
-        <Text style={styles.heading}>Create Raw Material</Text>
+    <View style={rmStyles.container}>
+      <ScrollView contentContainerStyle={rmStyles.scrollContainer}>
+        <Text style={rmStyles.heading}>Create Raw Material</Text>
 
         {/* Main Product Image */}
         <TouchableOpacity
-          style={styles.imagePlaceholder}
+          style={rmStyles.imagePlaceholder}
           onPress={() => openImageModal(null)}
         >
           {mainImage ? (
-            <Image source={{ uri: mainImage }} style={styles.mainImage} />
+            <Image source={{ uri: mainImage }} style={rmStyles.mainImage} />
           ) : (
-            <Text style={styles.imagePlaceholderText}>
+            <Text style={rmStyles.imagePlaceholderText}>
               Click To Upload Product Image
             </Text>
           )}
@@ -407,26 +252,26 @@ function AddRMScreen() {
 
         {/* Name */}
         <TextInput
-          style={styles.input}
+          style={rmStyles.input}
           placeholder="Name"
           value={name}
           onChangeText={setName}
         />
 
         {/* GSM & Width */}
-        <View style={styles.row}>
-          <View style={styles.rowItem}>
+        <View style={rmStyles.row}>
+          <View style={rmStyles.rowItem}>
             <TextInput
-              style={styles.input}
+              style={rmStyles.input}
               placeholder="GSM"
               value={gsm}
               onChangeText={setGSM}
               keyboardType="numeric"
             />
           </View>
-          <View style={styles.rowItem}>
+          <View style={rmStyles.rowItem}>
             <TextInput
-              style={styles.input}
+              style={rmStyles.input}
               placeholder="Width"
               value={width}
               onChangeText={setWidth}
@@ -436,19 +281,19 @@ function AddRMScreen() {
         </View>
 
         {/* Price & Quantity (Top-Level) */}
-        <View style={styles.row}>
-          <View style={styles.rowItem}>
+        <View style={rmStyles.row}>
+          <View style={rmStyles.rowItem}>
             <TextInput
-              style={styles.input}
+              style={rmStyles.input}
               placeholder="Price (Rs.)"
               value={price}
               onChangeText={setPrice}
               keyboardType="numeric"
             />
           </View>
-          <View style={styles.rowItem}>
+          <View style={rmStyles.rowItem}>
             <TextInput
-              style={styles.input}
+              style={rmStyles.input}
               placeholder="Quantity"
               value={quantity}
               onChangeText={setQuantity}
@@ -458,10 +303,10 @@ function AddRMScreen() {
         </View>
 
         {/* Select Type Dropdown (Solids / Prints) */}
-        <View style={styles.dropdown}>
-          <Text style={styles.dropdownLabel}>Select Type: </Text>
+        <View style={rmStyles.dropdown}>
+          <Text style={rmStyles.dropdownLabel}>Select Type: </Text>
           <TouchableOpacity
-            style={styles.dropdownButton}
+            style={rmStyles.dropdownButton}
             onPress={() => setType(type === "Solids" ? "Prints" : "Solids")}
           >
             <Text>{type}</Text>
@@ -471,27 +316,27 @@ function AddRMScreen() {
 
         {/* Construction / Print / Count */}
         <TextInput
-          style={styles.input}
+          style={rmStyles.input}
           placeholder="Count / Construction / Print"
           value={constructionOrPrint}
           onChangeText={setConstructionOrPrint}
         />
 
         {/* Additional Info (Optional) */}
-        <Text style={styles.subHeading}>Additional Info</Text>
-        <View style={styles.row}>
-          <View style={styles.rowItem}>
+        <Text style={rmStyles.subHeading}>Additional Info</Text>
+        <View style={rmStyles.row}>
+          <View style={rmStyles.rowItem}>
             <TextInput
-              style={styles.input}
+              style={rmStyles.input}
               placeholder="Cost Price"
               value={costPrice}
               onChangeText={setCostPrice}
               keyboardType="numeric"
             />
           </View>
-          <View style={styles.rowItem}>
+          <View style={rmStyles.rowItem}>
             <TextInput
-              style={styles.input}
+              style={rmStyles.input}
               placeholder="Available Stock"
               value={availableStock}
               onChangeText={setAvailableStock}
@@ -501,25 +346,25 @@ function AddRMScreen() {
         </View>
 
         {/* Variants Section */}
-        <Text style={styles.subHeading}>Add Variants</Text>
+        <Text style={rmStyles.subHeading}>Add Variants</Text>
         {variants.map((variant, index) => (
-          <View key={index} style={styles.variantContainer}>
+          <View key={index} style={rmStyles.variantContainer}>
             <TouchableOpacity
-              style={styles.removeIcon}
+              style={rmStyles.removeIcon}
               onPress={() => handleRemoveVariant(index)}
             >
               <Ionicons name="close-circle" size={24} color="red" />
             </TouchableOpacity>
 
             <TextInput
-              style={styles.input}
+              style={rmStyles.input}
               placeholder="Name"
               value={variant.name}
               onChangeText={(text) => handleVariantChange(index, "name", text)}
             />
 
             <TextInput
-              style={styles.input}
+              style={rmStyles.input}
               placeholder="Description"
               value={variant.description}
               onChangeText={(text) =>
@@ -528,10 +373,10 @@ function AddRMScreen() {
             />
 
             {/* Type Toggle */}
-            <View style={styles.dropdown}>
-              <Text style={styles.dropdownLabel}>Select Type: </Text>
+            <View style={rmStyles.dropdown}>
+              <Text style={rmStyles.dropdownLabel}>Select Type: </Text>
               <TouchableOpacity
-                style={styles.dropdownButton}
+                style={rmStyles.dropdownButton}
                 onPress={() =>
                   handleVariantChange(
                     index,
@@ -546,10 +391,10 @@ function AddRMScreen() {
             </View>
 
             {/* Price & Quantity */}
-            <View style={styles.row}>
-              <View style={styles.rowItem}>
+            <View style={rmStyles.row}>
+              <View style={rmStyles.rowItem}>
                 <TextInput
-                  style={styles.input}
+                  style={rmStyles.input}
                   placeholder="Price"
                   value={variant.price}
                   onChangeText={(text) =>
@@ -558,9 +403,9 @@ function AddRMScreen() {
                   keyboardType="numeric"
                 />
               </View>
-              <View style={styles.rowItem}>
+              <View style={rmStyles.rowItem}>
                 <TextInput
-                  style={styles.input}
+                  style={rmStyles.input}
                   placeholder="Quantity"
                   value={variant.quantity}
                   onChangeText={(text) =>
@@ -573,7 +418,7 @@ function AddRMScreen() {
 
             {/* Width -> used for NewCode */}
             <TextInput
-              style={styles.input}
+              style={rmStyles.input}
               placeholder="Width"
               value={variant.width}
               onChangeText={(text) => handleVariantChange(index, "width", text)}
@@ -582,7 +427,7 @@ function AddRMScreen() {
 
             {/* Variant Image */}
             <TouchableOpacity
-              style={styles.uploadButton}
+              style={rmStyles.uploadButton}
               onPress={() => openImageModal(index)}
             >
               <Text style={{ color: "#fff" }}>
@@ -593,21 +438,21 @@ function AddRMScreen() {
             {variant.image && (
               <Image
                 source={{ uri: variant.image }}
-                style={styles.variantImage}
+                style={rmStyles.variantImage}
               />
             )}
           </View>
         ))}
 
         <TouchableOpacity
-          style={styles.addVariantButton}
+          style={rmStyles.addVariantButton}
           onPress={handleAddVariant}
         >
-          <Text style={styles.addVariantText}>+ Add Variant</Text>
+          <Text style={rmStyles.addVariantText}>+ Add Variant</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save Raw Material</Text>
+        <TouchableOpacity style={rmStyles.saveButton} onPress={handleSave}>
+          <Text style={rmStyles.saveButtonText}>Save Raw Material</Text>
         </TouchableOpacity>
       </ScrollView>
 
@@ -618,39 +463,39 @@ function AddRMScreen() {
         animationType="slide"
         onRequestClose={() => setShowImageModal(false)}
       >
-        <View style={styles.modalOverlay}>
+        <View style={rmStyles.modalOverlay}>
           <TouchableOpacity
-            style={styles.modalBackground}
+            style={rmStyles.modalBackground}
             onPress={() => setShowImageModal(false)}
           />
-          <View style={styles.modalContainer}>
-            <Text style={styles.modalTitle}>Select an image</Text>
+          <View style={rmStyles.modalContainer}>
+            <Text style={rmStyles.modalTitle}>Select an image</Text>
 
             <TouchableOpacity
-              style={styles.modalOption}
+              style={rmStyles.modalOption}
               onPress={() => {
                 uploadImage();
               }}
             >
-              <Text style={styles.modalOptionText}>Upload from Camera</Text>
+              <Text style={rmStyles.modalOptionText}>Upload from Camera</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.modalOption}
+              style={rmStyles.modalOption}
               onPress={() => {
                 uploadImage("gallery");
               }}
             >
-              <Text style={styles.modalOptionText}>Upload from Gallery</Text>
+              <Text style={rmStyles.modalOptionText}>Upload from Gallery</Text>
             </TouchableOpacity>
 
             <TouchableOpacity
-              style={styles.modalOption}
+              style={rmStyles.modalOption}
               onPress={() => {
                 removeImage();
               }}
             >
-              <Text style={styles.modalOptionText}>Remove image</Text>
+              <Text style={rmStyles.modalOptionText}>Remove image</Text>
             </TouchableOpacity>
           </View>
         </View>
@@ -664,158 +509,3 @@ function AddRMScreen() {
 
 export default AddRMScreen;
 
-/**
- * Styles
- */
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#fff",
-  },
-  scrollContainer: {
-    padding: 16,
-  },
-  heading: {
-    fontSize: 20,
-    fontWeight: "bold",
-    marginBottom: 16,
-    textAlign: "center",
-  },
-  imagePlaceholder: {
-    height: 200,
-    backgroundColor: "#FFFACD",
-    borderRadius: 8,
-    justifyContent: "center",
-    alignItems: "center",
-    marginBottom: 16,
-    overflow: "hidden",
-  },
-  imagePlaceholderText: {
-    color: "#555",
-  },
-  input: {
-    backgroundColor: "#fff",
-    borderWidth: 1,
-    borderColor: "#ddd",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-  },
-  row: {
-    flexDirection: "row",
-    justifyContent: "space-between",
-    marginBottom: 16,
-  },
-  rowItem: {
-    flex: 1,
-    marginRight: 8,
-  },
-  dropdown: {
-    flexDirection: "row",
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  dropdownLabel: {
-    marginRight: 8,
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  dropdownButton: {
-    flexDirection: "row",
-    alignItems: "center",
-    backgroundColor: "#eee",
-    paddingHorizontal: 12,
-    paddingVertical: 8,
-    borderRadius: 8,
-  },
-  subHeading: {
-    fontSize: 16,
-    fontWeight: "600",
-    marginVertical: 8,
-  },
-  variantContainer: {
-    backgroundColor: "#f9f9f9",
-    borderRadius: 8,
-    padding: 12,
-    marginBottom: 16,
-    paddingTop: 32,
-    position: "relative",
-  },
-  removeIcon: {
-    position: "absolute",
-    top: 4,
-    right: 4,
-  },
-  uploadButton: {
-    backgroundColor: "#333",
-    borderRadius: 8,
-    padding: 12,
-    alignItems: "center",
-    marginBottom: 16,
-  },
-  variantImage: {
-    width: "100%",
-    height: 150,
-    resizeMode: "cover",
-    borderRadius: 8,
-    marginTop: 8,
-    marginBottom: 8,
-  },
-  addVariantButton: {
-    backgroundColor: "#efefef",
-    padding: 12,
-    borderRadius: 8,
-    alignItems: "center",
-    marginBottom: 24,
-  },
-  addVariantText: {
-    fontSize: 16,
-    fontWeight: "500",
-  },
-  saveButton: {
-    backgroundColor: "black",
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 8,
-    marginBottom: 24,
-  },
-  saveButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-  // Modal styles
-  modalOverlay: {
-    flex: 1,
-    backgroundColor: "rgba(0,0,0,0.4)",
-    justifyContent: "flex-end",
-  },
-  modalBackground: {
-    flex: 1,
-  },
-  modalContainer: {
-    backgroundColor: "#fff",
-    padding: 16,
-    borderTopLeftRadius: 12,
-    borderTopRightRadius: 12,
-  },
-  modalTitle: {
-    fontSize: 18,
-    fontWeight: "600",
-    marginBottom: 16,
-  },
-  modalOption: {
-    paddingVertical: 12,
-  },
-  modalOptionText: {
-    fontSize: 16,
-    color: "#007BFF",
-  },
-  mainImage: {
-    width: "100%",
-    height: 200,
-    resizeMode: "cover",
-    borderRadius: 8,
-  },
-});
