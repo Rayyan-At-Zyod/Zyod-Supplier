@@ -17,11 +17,11 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../context/AuthContext";
 import LoadingModal from "../../../util/LoadingModal";
 import { rmStyles } from "../../../styles/AddRM.styles";
+import MainImageSection from "../../../util/MainImageSection";
 import { useImagePicker } from "../../../../hooks/useImagePicker";
 import { addRawMaterial } from "../../../../services/api/addRawMaterial.service";
 import { createRMsData } from "../../../../services/helpers/functions/createRmsDataForRMAdd";
 import { createPayload } from "../../../../services/helpers/functions/createPayloadForRMAdd";
-import MainImageSection from "../../../util/MainImageSection";
 import { convertImageToBase64 } from "../../../../services/helpers/utilities/imageBase64Converter";
 
 function AddRMScreen() {
@@ -148,7 +148,7 @@ function AddRMScreen() {
       imageModalIndex === null
         ? setMainImage(null)
         : handleVariantChange(imageModalIndex, "image", null); // @FIXME: this is the code for remove image
-      showImageModal(false);
+      setShowImageModal(false);
     } catch (err) {
       alert("Error while removing pic.", err);
     }
@@ -199,10 +199,36 @@ function AddRMScreen() {
       // 4) Make the API call
       const data = await addRawMaterial(payload, token);
 
-      // 5) On success, call addMaterial with something relevant from the response
-      const createdItem = data?.data || {};
+      // Add debug logs
       console.log("API Response:", data);
-      addMaterial(createdItem); // @FIXME:
+
+      // const createdItem = data?.data || {};
+      // console.log("API Response:", data);
+      // addMaterial(createdItem); // @FIXME:
+
+      // 5) Create a temporary item that matches CurrentScreen's expected structure
+      const temporaryItem = {
+        greigeId: data?.data?.greigeId || Date.now(),
+        gsm: gsm,
+        rmVariations: [
+          {
+            rmVariationId: Date.now(),
+            name: name,
+            width: width,
+            availableQuantity: quantity,
+            unitCode: "mtr",
+            generalPrice: price,
+            rmImage: mainImage
+          }
+        ]
+      };
+
+      // Add debug logs
+      console.log("Temporary item being added:", temporaryItem);
+      console.log("addMaterial function exists:", !!addMaterial);
+
+      // Add the temporary item to the list
+      addMaterial(temporaryItem);
 
       setIsLoading(false);
       navigation.goBack();

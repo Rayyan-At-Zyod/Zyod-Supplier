@@ -6,7 +6,7 @@ import ProfileScreen from '../screens/profile';
 
 const Tab = createBottomTabNavigator();
 
-const TabNavigator = () => {
+const HomeNavigator = () => {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
@@ -32,4 +32,4 @@ const TabNavigator = () => {
   );
 };
 
-export default TabNavigator; 
+export default HomeNavigator; 

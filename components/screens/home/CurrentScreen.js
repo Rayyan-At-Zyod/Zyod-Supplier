@@ -97,12 +97,23 @@ function CurrentScreen() {
         }
       />
 
+      {/*
+ {"greigeId": 1739966729503, "gsm": "5", "rmVariations": [{"availableQuantity": "9", "generalPrice": "4", "name": "Xmhx", 
+ "rmImage": "file:///data/user/0/host.exp.exponent/cache/ExperienceData/%2540anonymous%252Fapp-77385c15-19c2-4557-8597-da0609083580/ImagePicker/c285243b-1522-4e2c-a306-2bf9450d7071.jpeg",
+ "rmVariationId": 1739966729503, "unitCode": "mtr", "width": "3"}]} 
+       */}
+
       <TouchableOpacity
         style={styles.addButton}
         onPress={() =>
           navigation.navigate("AddRawMaterial", {
             addMaterial: (newMaterial) => {
-              setRawMaterials((current) => [...current, newMaterial]);
+              console.log("Adding new material to state:", newMaterial);
+              setRawMaterials((current) => {
+                const newState = [...current, newMaterial];
+                console.log("New state after update:", newState);
+                return newState;
+              });
             },
           })
         }
