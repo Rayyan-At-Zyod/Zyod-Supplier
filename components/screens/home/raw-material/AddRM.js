@@ -1,3 +1,4 @@
+// external library
 import React, { useState } from "react";
 import {
   View,
@@ -10,17 +11,18 @@ import {
   Image,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import * as ImagePicker from "expo-image-picker";
 import { Ionicons } from "@expo/vector-icons";
-import { useAuth } from "../../context/AuthContext";
-import "react-native-get-random-values";
-import { v4 as uuidv4 } from "uuid";
-import LoadingModal from "../../util/LoadingModal";
-import { addRawMaterial } from "../../../services/api/addRawMaterial";
-import { createRMsData } from "../../../services/helpers/createRmsDataForRMAdd";
-import { rmStyles } from "../../styles/AddRM.styles";
-import { convertImageToBase64 } from "../../../services/helpers/imageUtils/imageConverter";
-import { createPayload } from "../../../services/helpers/createPayloadForRMAdd";
+
+// internal imports
+import { useAuth } from "../../../context/AuthContext";
+import LoadingModal from "../../../util/LoadingModal";
+import { rmStyles } from "../../../styles/AddRM.styles";
+import { useImagePicker } from "../../../../hooks/useImagePicker";
+import { addRawMaterial } from "../../../../services/api/addRawMaterial.service";
+import { createRMsData } from "../../../../services/helpers/functions/createRmsDataForRMAdd";
+import { createPayload } from "../../../../services/helpers/functions/createPayloadForRMAdd";
+import MainImageSection from "../../../util/MainImageSection";
+import { convertImageToBase64 } from "../../../../services/helpers/utilities/imageBase64Converter";
 
 function AddRMScreen() {
   const route = useRoute();
@@ -105,31 +107,16 @@ function AddRMScreen() {
    * Upload images
    */
   const uploadImage = async (mode = "camera") => {
-    let result = {};
     try {
-      if (mode === "gallery") {
-        await ImagePicker.requestMediaLibraryPermissionsAsync();
-        result = await ImagePicker.launchImageLibraryAsync({
-          mediaTypes: ImagePicker.MediaTypeOptions.Images,
-          allowsEditing: true,
-          aspect: [1, 1],
-          quality: 1,
-        });
-      } else {
-        await ImagePicker.requestCameraPermissionsAsync();
-        result = await ImagePicker.launchCameraAsync({
-          cameraType: ImagePicker.CameraType.front,
-          allowsEditing: true,
-          aspect: [1, 1],
-          quality: 1,
-        });
-      }
-      if (!result.canceled) {
-        console.log("image was:", result.assets[0].uri);
-        await saveImage(result.assets[0].uri);
+      const { uri, error } = await useImagePicker({ mode });
+      if (error) {
+        throw new Error(error);
+      } else if (uri) {
+        await saveImage(uri);
       }
     } catch (err) {
-      alert("Error uploading image", err.message);
+      alert("Error uploading image: " + err.message);
+    } finally {
       setShowImageModal(false);
       setImageModalIndex(null);
     }
@@ -145,8 +132,6 @@ function AddRMScreen() {
         // For variant images
         handleVariantChange(imageModalIndex, "image", image);
       }
-      setShowImageModal(false);
-      setImageModalIndex(null);
     } catch (err) {
       console.log("image save error was", err);
       throw Error(err);
@@ -213,7 +198,7 @@ function AddRMScreen() {
 
       // 4) Make the API call
       const data = await addRawMaterial(payload, token);
-      
+
       // 5) On success, call addMaterial with something relevant from the response
       const createdItem = data?.data || {};
       console.log("API Response:", data);
@@ -456,50 +441,14 @@ function AddRMScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      {/* Modal for picking images - placeholder logic */}
-      <Modal
-        transparent={true}
-        visible={showImageModal}
-        animationType="slide"
-        onRequestClose={() => setShowImageModal(false)}
-      >
-        <View style={rmStyles.modalOverlay}>
-          <TouchableOpacity
-            style={rmStyles.modalBackground}
-            onPress={() => setShowImageModal(false)}
-          />
-          <View style={rmStyles.modalContainer}>
-            <Text style={rmStyles.modalTitle}>Select an image</Text>
-
-            <TouchableOpacity
-              style={rmStyles.modalOption}
-              onPress={() => {
-                uploadImage();
-              }}
-            >
-              <Text style={rmStyles.modalOptionText}>Upload from Camera</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={rmStyles.modalOption}
-              onPress={() => {
-                uploadImage("gallery");
-              }}
-            >
-              <Text style={rmStyles.modalOptionText}>Upload from Gallery</Text>
-            </TouchableOpacity>
-
-            <TouchableOpacity
-              style={rmStyles.modalOption}
-              onPress={() => {
-                removeImage();
-              }}
-            >
-              <Text style={rmStyles.modalOptionText}>Remove image</Text>
-            </TouchableOpacity>
-          </View>
-        </View>
-      </Modal>
+      <MainImageSection
+          mainImage={mainImage}
+          showImageModal={showImageModal}
+          setShowImageModal={setShowImageModal}
+          uploadImage={uploadImage}
+          removeImage={removeImage}
+          openImageModal={openImageModal}
+        />
 
       {/* Add LoadingModal at the bottom of the View */}
       <LoadingModal visible={isLoading} />
@@ -508,4 +457,3 @@ function AddRMScreen() {
 }
 
 export default AddRMScreen;
-

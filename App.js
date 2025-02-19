@@ -5,10 +5,10 @@ import { AuthProvider, useAuth } from "./components/context/AuthContext";
 import SignInScreen from "./components/screens/auth/SignInScreen";
 import { ActivityIndicator, View, TouchableOpacity } from "react-native";
 import TabNavigator from "./components/navigation/TabNavigator";
-import UpdateRMScreen from "./components/screens/raw-material/UpdateRM";
-import AddRMScreen from "./components/screens/raw-material/AddRM";
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
+import UpdateRMScreen from "./components/screens/home/raw-material/UpdateRM";
+import AddRMScreen from "./components/screens/home/raw-material/AddRM";
 
 const Stack = createNativeStackNavigator();
 

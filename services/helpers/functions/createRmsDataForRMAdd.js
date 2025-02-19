@@ -1,4 +1,4 @@
-import { convertImageToBase64 } from './imageUtils/imageConverter';
+import { convertImageToBase64 } from '../utilities/imageBase64Converter';
 
 export const createRMsData = async ({
   name,
