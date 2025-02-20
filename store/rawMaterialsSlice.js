@@ -4,8 +4,12 @@ const rawMaterialsSlice = createSlice({
   name: 'rawMaterials',
   initialState: {
     items: [],
+    loading: false
   },
   reducers: {
+    setLoading: (state, action) => {
+      state.loading = action.payload;
+    },
     addMaterial: (state, action) => {
       state.items.push(action.payload);
     },
@@ -15,5 +19,5 @@ const rawMaterialsSlice = createSlice({
   }
 });
 
-export const { addMaterial, setMaterials } = rawMaterialsSlice.actions;
+export const { addMaterial, setMaterials, setLoading } = rawMaterialsSlice.actions;
 export default rawMaterialsSlice.reducer; 

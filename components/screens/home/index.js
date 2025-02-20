@@ -14,91 +14,37 @@ const TopTab = createMaterialTopTabNavigator();
 
 function HomeScreen() {
   const { token, userData } = useAuth();
-  const [rawMaterials, setRawMaterials] = useState([]);
-  const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  // Memoize the setRawMaterials function
-  const handleUpdateRawMaterials = useCallback((newMaterial) => {
-    setRawMaterials(prevMaterials => [...prevMaterials, newMaterial]);
-  }, []);
-
-  const loadRawMaterials = useCallback(async () => {
-    console.log("=== Raw materials load attempt. ===");
-    setLoading(true);
-    try {
-      const response = await fetch(
-        "https://dev-api.zyod.com/v1/rawMaterial/groupedRmVariations?page=1&size=10",
-        {
-          method: "GET",
-          headers: {
-            "Content-Type": "application/json",
-            Authorization: `Bearer ${token.toString()}`,
-          },
-        }
-      );
-
-      console.log("Response status", response.status);
-      console.log("Response OK", response.ok);
-
-      const data = await response.json();
-      console.log(
-        JSON.stringify(data, null, 2),
-        "\n=== Result array above ==="
-      );
-
-      if (!response.ok || !data.success) {
-        console.log("API request failed:", data);
-        throw new Error(data.message || "Raw material fetch failed");
-      }
-
-      setRawMaterials(data.data);
-    } catch (err) {
-      console.error("=== Raw Materials Fetch Error ===");
-      console.error("Error type:", err.constructor.name);
-      console.error("Error message:", err.message);
-      console.error("Error stack:", err.stack);
-      setError(err.message || "An error occurred during sign in");
-    } finally {
-      console.log("Raw materials load attempt complete.");
-      setLoading(false);
-    }
-  }, [token]);
-
   if (loading) return <LoadingModal />;
-  else
-    return (
-      <View style={styles.container}>
-        {/* Header with Image */}
-        <View style={styles.header}>
-          <Image source={ZYOD} style={styles.headerImage} />
-        </View>
 
-        {/* Nested Top Tab Navigator */}
-        <TopTab.Navigator
-          initialRouteName="Current"
-          screenOptions={{
-            tabBarActiveTintColor: "black",
-            tabBarInactiveTintColor: "gray",
-            tabBarIndicatorStyle: { backgroundColor: "black" },
-          }}
-        >
-          <TopTab.Screen
-            name="Current"
-            options={{ title: "Current" }}
-            component={CurrentTab}
-            initialParams={{
-              rawMaterials,
-              setRawMaterials: handleUpdateRawMaterials,
-              loadRawMaterials,
-            }}
-          />
-          <TopTab.Screen name="Archived" component={ArchivedTab} />
-        </TopTab.Navigator>
-
-        <ExpoStatusBar style="auto" />
+  return (
+    <View style={styles.container}>
+      {/* Header with Image */}
+      <View style={styles.header}>
+        <Image source={ZYOD} style={styles.headerImage} />
       </View>
-    );
+
+      {/* Nested Top Tab Navigator */}
+      <TopTab.Navigator
+        initialRouteName="Current"
+        screenOptions={{
+          tabBarActiveTintColor: "black",
+          tabBarInactiveTintColor: "gray",
+          tabBarIndicatorStyle: { backgroundColor: "black" },
+        }}
+      >
+        <TopTab.Screen
+          name="Current"
+          options={{ title: "Current" }}
+          component={CurrentTab}
+        />
+        <TopTab.Screen name="Archived" component={ArchivedTab} />
+      </TopTab.Navigator>
+
+      <ExpoStatusBar style="auto" />
+    </View>
+  );
 }
 
 const styles = StyleSheet.create({

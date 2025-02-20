@@ -13,16 +13,18 @@ import { useNavigation } from "@react-navigation/native";
 
 // internal imports
 import { fetchRawMaterials } from "../../../services/api/fetchRawMaterial.service";
-import { setMaterials } from "../../../store/rawMaterialsSlice";
+import { setMaterials, setLoading } from "../../../store/rawMaterialsSlice";
 import { useAuth } from "../../context/AuthContext";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
 import { currentTabStyles } from "../../styles/CurrentTab.styles";
+import LoadingModal from "../../util/LoadingModal";
 
 function CurrentTab() {
   const { token } = useAuth();
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const rawMaterials = useSelector((state) => state.rawMaterials.items);
+  const isLoading = useSelector((state) => state.rawMaterials.loading);
   const [refreshing, setRefreshing] = useState(false);
 
   // states for image display
@@ -31,10 +33,13 @@ function CurrentTab() {
 
   const loadRawMaterials = async () => {
     try {
+      dispatch(setLoading(true));
       const data = await fetchRawMaterials(token);
       dispatch(setMaterials(data.data));
     } catch (error) {
       console.error("Refresh error:", error);
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
@@ -138,6 +143,7 @@ function CurrentTab() {
 
   return (
     <View style={currentTabStyles.container}>
+      {isLoading && <LoadingModal />}
       <FlatList
         data={rawMaterials}
         renderItem={renderItem}
