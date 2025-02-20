@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Text, StyleSheet } from "react-native";
 
-function ArchivedScreen() {
+function ArchivedTab() {
   return (
     <View style={styles.container}>
       <Text style={styles.text}>No archived materials</Text>
@@ -22,4 +22,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ArchivedScreen;
+export default ArchivedTab;

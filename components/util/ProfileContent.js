@@ -2,7 +2,7 @@ import React from 'react';
 import { View, Text, StyleSheet } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
 
-const ProfileField = ({ icon, label, value }) => (
+const ProfileContent = ({ icon, label, value }) => (
   <View style={styles.fieldContainer}>
     <Text style={styles.fieldLabel}>{label}</Text>
     <View style={styles.field}>
@@ -36,4 +36,4 @@ const styles = StyleSheet.create({
   },
 });
 
-export default ProfileField; 
+export default ProfileContent; 

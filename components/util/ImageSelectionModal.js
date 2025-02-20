@@ -3,7 +3,7 @@ import { View, Image, TouchableOpacity, Text, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { rmStyles } from "../styles/AddRM.styles";
 
-function MainImageSection({
+function ImageSelectionModal({
   mainImage,
   showImageModal,
   setShowImageModal,
@@ -55,4 +55,4 @@ function MainImageSection({
   );
 }
 
-export default MainImageSection;
+export default ImageSelectionModal;

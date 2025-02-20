@@ -43,10 +43,44 @@ export const rmStyles = StyleSheet.create({
     flex: 1,
     marginRight: 8,
   },
-  dropdown: {
+  typeContainer: {
     flexDirection: "row",
     alignItems: "center",
     marginBottom: 16,
+    gap: 12,
+  },
+  label: {
+    fontSize: 16,
+    fontWeight: "500",
+  },
+  radioContainer: {
+    flexDirection: "row",
+    alignItems: "center",
+    flex: 1,
+  },
+  radioButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    marginRight: 16,
+  },
+  outerCircle: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    borderWidth: 2,
+    borderColor: "black",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  innerCircle: {
+    width: 12,
+    height: 12,
+    borderRadius: 6,
+    backgroundColor: "black",
+  },
+  radioText: {
+    marginLeft: 8,
+    fontSize: 16,
   },
   dropdownLabel: {
     marginRight: 8,

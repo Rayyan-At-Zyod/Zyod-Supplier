@@ -12,7 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { Linking } from "react-native";
 import { useAuth } from "../../context/AuthContext";
-import ProfileField from "../../util/ProfileField";
+import ProfileContent from "../../util/ProfileContent";
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -52,29 +52,29 @@ const ProfileScreen = () => {
           </View>
 
           <View style={styles.profileContainer}>
-            <ProfileField
+            <ProfileContent
               icon="person"
               label="Full Name"
               value={`${userData?.user_FirstName || ""} ${
                 userData?.user_LastName || ""
               }`}
             />
-            <ProfileField
+            <ProfileContent
               icon="call"
               label="Mobile Number"
               value={userData?.user_PhoneNumber}
             />
-            <ProfileField
+            <ProfileContent
               icon="mail"
               label="Email ID"
               value={userData?.user_email}
             />
-            <ProfileField
+            <ProfileContent
               icon="card"
               label="PAN Card"
               value={userData?.pan_card}
             />
-            <ProfileField
+            <ProfileContent
               icon="briefcase"
               label="GST Number"
               value={userData.gst_number}

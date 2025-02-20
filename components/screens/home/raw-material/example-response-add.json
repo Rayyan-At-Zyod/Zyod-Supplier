@@ -1,0 +1,40 @@
+{
+  "greigeId": 17964,
+  "rmVariations": [
+    {
+      "name": "Oyeyks",
+      "rmId": 17965,
+      "rmCode": "WRMDS056",
+      "newCode": "WRMDS056_8",
+      "rmImage": "https://assets.zyod.com/cdn-cgi/imagedelivery/Rz4WhkFQk9C3zZCls6gfAA/1739970784791_3070_Oyeyks_RM_0.jpg/swatch",
+      "unitCode": "M",
+      "description": "Xhldlh",
+      "generalPrice": 8,
+      "rmCategoryId": 3,
+      "rmVariationId": 13109,
+      "rmSubCategoryId": 15,
+      "unitOfMeasureId": 1,
+      "rmSolidColorText": "S",
+      "availableQuantity": null,
+      "width": 8
+    },
+    {
+      "name": "Ljd",
+      "rmId": 17966,
+      "rmCode": "WRMDS057",
+      "newCode": "WRMDS057_5",
+      "rmImage": "https://assets.zyod.com/cdn-cgi/imagedelivery/Rz4WhkFQk9C3zZCls6gfAA/1739970788150_7253_Ljd_RM_0.jpg/swatch",
+      "unitCode": "M",
+      "description": "Lhh",
+      "generalPrice": 8,
+      "rmCategoryId": 3,
+      "rmVariationId": 13110,
+      "rmSubCategoryId": 15,
+      "unitOfMeasureId": 1,
+      "rmSolidColorText": "S",
+      "availableQuantity": null,
+      "width": 5
+    }
+  ],
+  "gsm": "5"
+}

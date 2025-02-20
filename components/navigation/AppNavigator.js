@@ -8,7 +8,7 @@ import { useAuth } from '../context/AuthContext';
 import UpdateRMScreen from '../screens/home/raw-material/UpdateRM';
 import AddRMScreen from '../screens/home/raw-material/AddRM';
 import SignInScreen from '../screens/auth/SignInScreen';
-import HomeNavigator from './HomeNavigator';
+import HomeNavigatorScreen from './HomeNavigator';
 
 const Stack = createNativeStackNavigator();
 
@@ -30,7 +30,7 @@ const AppNavigator = () => {
           <>
             <Stack.Screen
               name="MainApp"
-              component={HomeNavigator}
+              component={HomeNavigatorScreen}
               options={{ headerShown: false }}
             />
             <Stack.Screen

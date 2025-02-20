@@ -2,8 +2,8 @@ import React, { useEffect, useState } from "react";
 import { View, Text, Image, StyleSheet, StatusBar } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 
-import ArchivedScreen from "./ArchivedScreen";
-import CurrentScreen from "./CurrentScreen";
+import ArchivedTab from "./ArchivedTab";
+import CurrentTab from "./CurrentTab";
 import ZYOD from "../../../assets/ZYOD.jpg";
 import { useAuth } from "../../context/AuthContext";
 import LoadingModal from "../../util/LoadingModal";
@@ -26,7 +26,7 @@ function HomeScreen() {
     setLoading(true);
     try {
       const response = await fetch(
-        "https://dev-api.zyod.com/v1/rawMaterial/groupedRmVariations?page=1&size=50",
+        "https://dev-api.zyod.com/v1/rawMaterial/groupedRmVariations?page=1&size=10",
         {
           method: "GET",
           headers: {
@@ -84,14 +84,14 @@ function HomeScreen() {
           <TopTab.Screen
             name="Current"
             options={{ title: "Current" }}
-            component={CurrentScreen}
+            component={CurrentTab}
             initialParams={{
               rawMaterials,
               setRawMaterials,
               loadRawMaterials,
             }}
           />
-          <TopTab.Screen name="Archived" component={ArchivedScreen} />
+          <TopTab.Screen name="Archived" component={ArchivedTab} />
         </TopTab.Navigator>
 
         <StatusBar style="auto" />

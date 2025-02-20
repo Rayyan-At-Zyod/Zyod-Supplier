@@ -7,7 +7,6 @@ import {
   TextInput,
   TouchableOpacity,
   Alert,
-  Modal,
   Image,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
@@ -17,7 +16,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useAuth } from "../../../context/AuthContext";
 import LoadingModal from "../../../util/LoadingModal";
 import { rmStyles } from "../../../styles/AddRM.styles";
-import MainImageSection from "../../../util/MainImageSection";
+import ImageSelectionModal from "../../../util/ImageSelectionModal";
 import { useImagePicker } from "../../../../hooks/useImagePicker";
 import { addRawMaterial } from "../../../../services/api/addRawMaterial.service";
 import { createRMsData } from "../../../../services/helpers/functions/createRmsDataForRMAdd";
@@ -218,9 +217,9 @@ function AddRMScreen() {
             availableQuantity: quantity,
             unitCode: "mtr",
             generalPrice: price,
-            rmImage: mainImage
-          }
-        ]
+            rmImage: mainImage,
+          },
+        ],
       };
 
       // Add debug logs
@@ -314,15 +313,22 @@ function AddRMScreen() {
         </View>
 
         {/* Select Type Dropdown (Solids / Prints) */}
-        <View style={rmStyles.dropdown}>
-          <Text style={rmStyles.dropdownLabel}>Select Type: </Text>
-          <TouchableOpacity
-            style={rmStyles.dropdownButton}
-            onPress={() => setType(type === "Solids" ? "Prints" : "Solids")}
-          >
-            <Text>{type}</Text>
-            <Ionicons name="chevron-down" size={16} color="black" />
-          </TouchableOpacity>
+        <View style={rmStyles.typeContainer}>
+          <Text style={rmStyles.label}>Select Type:</Text>
+          <View style={rmStyles.radioContainer}>
+            {["Solids", "Prints"].map((option) => (
+              <TouchableOpacity
+                key={option}
+                style={rmStyles.radioButton}
+                onPress={() => setType(option)}
+              >
+                <View style={rmStyles.outerCircle}>
+                  {type === option && <View style={rmStyles.innerCircle} />}
+                </View>
+                <Text style={rmStyles.radioText}>{option}</Text>
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
 
         {/* Construction / Print / Count */}
@@ -383,22 +389,25 @@ function AddRMScreen() {
               }
             />
 
-            {/* Type Toggle */}
-            <View style={rmStyles.dropdown}>
-              <Text style={rmStyles.dropdownLabel}>Select Type: </Text>
-              <TouchableOpacity
-                style={rmStyles.dropdownButton}
-                onPress={() =>
-                  handleVariantChange(
-                    index,
-                    "type",
-                    variant.type === "Solids" ? "Prints" : "Solids"
-                  )
-                }
-              >
-                <Text>{variant.type}</Text>
-                <Ionicons name="chevron-down" size={16} color="black" />
-              </TouchableOpacity>
+            {/* Select Type Toggle for Variants */}
+            <View style={rmStyles.typeContainer}>
+              <Text style={rmStyles.label}>Select Type:</Text>
+              <View style={rmStyles.radioContainer}>
+                {["Solids", "Prints"].map((option) => (
+                  <TouchableOpacity
+                    key={option}
+                    style={rmStyles.radioButton}
+                    onPress={() => handleVariantChange(index, "type", option)}
+                  >
+                    <View style={rmStyles.outerCircle}>
+                      {variant.type === option && (
+                        <View style={rmStyles.innerCircle} />
+                      )}
+                    </View>
+                    <Text style={rmStyles.radioText}>{option}</Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
 
             {/* Price & Quantity */}
@@ -467,14 +476,14 @@ function AddRMScreen() {
         </TouchableOpacity>
       </ScrollView>
 
-      <MainImageSection
-          mainImage={mainImage}
-          showImageModal={showImageModal}
-          setShowImageModal={setShowImageModal}
-          uploadImage={uploadImage}
-          removeImage={removeImage}
-          openImageModal={openImageModal}
-        />
+      <ImageSelectionModal
+        mainImage={mainImage}
+        showImageModal={showImageModal}
+        setShowImageModal={setShowImageModal}
+        uploadImage={uploadImage}
+        removeImage={removeImage}
+        openImageModal={openImageModal}
+      />
 
       {/* Add LoadingModal at the bottom of the View */}
       <LoadingModal visible={isLoading} />
