@@ -87,7 +87,7 @@ export const createRMsData = async ({
           WarpRight: null,
           WeftRight: null,
           PrintTypeId: variantPrintTypeCode === "S" ? 2 : 3,
-          RMSolidColorText: v.type === "Solids" ? "S" : "P",
+          RMSolidColorText: v.type === "Solids" ? "S" : "", //@FIXME: later
           RMImage: variantImageBase64 ? [variantImageBase64] : [],
           RMVariationDetails: [
             {

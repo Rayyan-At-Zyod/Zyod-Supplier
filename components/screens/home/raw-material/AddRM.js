@@ -11,6 +11,8 @@ import {
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
+import { useDispatch } from 'react-redux';
+import { addMaterial } from "../../../../store/rawMaterialsSlice";
 
 // internal imports
 import { useAuth } from "../../../context/AuthContext";
@@ -24,10 +26,8 @@ import { createPayload } from "../../../../services/helpers/functions/createPayl
 import { convertImageToBase64 } from "../../../../services/helpers/utilities/imageBase64Converter";
 
 function AddRMScreen() {
-  const route = useRoute();
   const navigation = useNavigation();
-  // The callback for updating local state in CurrentScreen
-  const { addMaterial } = route.params;
+  const dispatch = useDispatch();
 
   // Pull token (and possibly userData) from your auth context
   const { token, userData } = useAuth();
@@ -132,7 +132,7 @@ function AddRMScreen() {
         handleVariantChange(imageModalIndex, "image", image);
       }
     } catch (err) {
-      console.log("image save error was", err);
+      console.error("Image save error:", err);
       throw Error(err);
     }
   };
@@ -146,7 +146,7 @@ function AddRMScreen() {
       // alert("Image removed");
       imageModalIndex === null
         ? setMainImage(null)
-        : handleVariantChange(imageModalIndex, "image", null); // @FIXME: this is the code for remove image
+        : handleVariantChange(imageModalIndex, "image", null); 
       setShowImageModal(false);
     } catch (err) {
       alert("Error while removing pic.", err);
@@ -198,14 +198,6 @@ function AddRMScreen() {
       // 4) Make the API call
       const data = await addRawMaterial(payload, token);
 
-      // Add debug logs
-      console.log("API Response:", data);
-
-      // const createdItem = data?.data || {};
-      // console.log("API Response:", data);
-      // addMaterial(createdItem); // @FIXME:
-
-      // 5) Create a temporary item that matches CurrentScreen's expected structure
       const temporaryItem = {
         greigeId: data?.data?.greigeId || Date.now(),
         gsm: gsm,
@@ -222,22 +214,13 @@ function AddRMScreen() {
         ],
       };
 
-      // Add debug logs
-      console.log("Temporary item being added:", temporaryItem);
-      console.log("addMaterial function exists:", !!addMaterial);
-
-      // Add the temporary item to the list
-      addMaterial(temporaryItem);
-
+      dispatch(addMaterial(temporaryItem));
       setIsLoading(false);
       navigation.goBack();
+
     } catch (error) {
       setIsLoading(false);
-      console.error("Add Raw Material Error:", error);
-      Alert.alert(
-        "Error",
-        error.message || "Failed to add raw material. Please try again."
-      );
+      Alert.alert("Error", error.message);
     }
   };
 

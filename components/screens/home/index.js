@@ -1,6 +1,7 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useCallback } from "react";
 import { View, Text, Image, StyleSheet, StatusBar } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
+import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 
 import ArchivedTab from "./ArchivedTab";
 import CurrentTab from "./CurrentTab";
@@ -17,11 +18,12 @@ function HomeScreen() {
   const [error, setError] = useState(false);
   const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    loadRawMaterials();
+  // Memoize the setRawMaterials function
+  const handleUpdateRawMaterials = useCallback((newMaterial) => {
+    setRawMaterials(prevMaterials => [...prevMaterials, newMaterial]);
   }, []);
 
-  const loadRawMaterials = async () => {
+  const loadRawMaterials = useCallback(async () => {
     console.log("=== Raw materials load attempt. ===");
     setLoading(true);
     try {
@@ -61,7 +63,7 @@ function HomeScreen() {
       console.log("Raw materials load attempt complete.");
       setLoading(false);
     }
-  };
+  }, [token]);
 
   if (loading) return <LoadingModal />;
   else
@@ -87,14 +89,14 @@ function HomeScreen() {
             component={CurrentTab}
             initialParams={{
               rawMaterials,
-              setRawMaterials,
+              setRawMaterials: handleUpdateRawMaterials,
               loadRawMaterials,
             }}
           />
           <TopTab.Screen name="Archived" component={ArchivedTab} />
         </TopTab.Navigator>
 
-        <StatusBar style="auto" />
+        <ExpoStatusBar style="auto" />
       </View>
     );
 }

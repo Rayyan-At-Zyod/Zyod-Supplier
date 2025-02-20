@@ -31,20 +31,20 @@ const ProfileScreen = () => {
   };
 
   return (
-    <SafeAreaView style={{ flex: 1, backgroundColor: "black" }}>
+    <SafeAreaView style={styles.safeArea}>
       <TouchableWithoutFeedback onPress={() => setMenuVisible(false)}>
         <View style={styles.container}>
           {/* Header */}
           <View style={styles.header}>
             <TouchableOpacity
-              style={styles.headerLeft}
+              style={styles.headerButton}
               onPress={() => navigation.navigate("Home")}
             >
               <Ionicons name="arrow-back" size={24} color="white" />
             </TouchableOpacity>
             <Text style={styles.headerTitle}>My Profile</Text>
             <TouchableOpacity
-              style={styles.headerRight}
+              style={styles.headerButton}
               onPress={() => setMenuVisible(!menuVisible)}
             >
               <Ionicons name="ellipsis-vertical" size={24} color="white" />
@@ -109,6 +109,11 @@ const ProfileScreen = () => {
 };
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: "black",
+    paddingTop: Platform.OS === 'android' ? 17 : 0,
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",
@@ -119,16 +124,19 @@ const styles = StyleSheet.create({
     flexDirection: "row",
     alignItems: "center",
     justifyContent: "space-between",
-    paddingHorizontal: 20,
+    paddingHorizontal: 16,
   },
-  headerLeft: {},
+  headerButton: {
+    padding: 8,
+    zIndex: 1,
+  },
   headerTitle: {
     color: "white",
     fontSize: 18,
     textAlign: "center",
     flex: 1,
+    marginHorizontal: 16,
   },
-  headerRight: {},
   menu: {
     position: "absolute",
     top: Platform.OS === "ios" ? 56 : 50,

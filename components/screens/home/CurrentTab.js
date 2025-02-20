@@ -1,5 +1,4 @@
-import React, { useState } from "react";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useSelector, useDispatch } from "react-redux";
 import {
   View,
   Text,
@@ -9,34 +8,50 @@ import {
   RefreshControl,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { currentTabStyles } from "../../styles/CurrentTab.styles";
+import React, { useEffect, useState } from "react";
+import { useNavigation } from "@react-navigation/native";
+
+// internal imports
+import { fetchRawMaterials } from "../../../services/api/fetchRawMaterial.service";
+import { setMaterials } from "../../../store/rawMaterialsSlice";
+import { useAuth } from "../../context/AuthContext";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
+import { currentTabStyles } from "../../styles/CurrentTab.styles";
 
 function CurrentTab() {
-  const route = useRoute();
+  const { token } = useAuth();
   const navigation = useNavigation();
-  const { rawMaterials, setRawMaterials, loadRawMaterials } = route.params;
+  const dispatch = useDispatch();
+  const rawMaterials = useSelector((state) => state.rawMaterials.items);
   const [refreshing, setRefreshing] = useState(false);
 
   // states for image display
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
-  const onRefresh = async () => {
-    setRefreshing(true);
+  const loadRawMaterials = async () => {
     try {
-      await loadRawMaterials();
+      const data = await fetchRawMaterials(token);
+      dispatch(setMaterials(data.data));
     } catch (error) {
       console.error("Refresh error:", error);
-    } finally {
-      setRefreshing(false);
     }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadRawMaterials();
+    setRefreshing(false);
   };
 
   const handleImagePress = (imageUrl) => {
     setSelectedImage(imageUrl);
     setIsImageModalVisible(true);
   };
+
+  useEffect(() => {
+    loadRawMaterials();
+  }, []);
 
   const renderItem = ({ item }) => (
     <View style={currentTabStyles.card}>
@@ -50,7 +65,7 @@ function CurrentTab() {
               const newMaterials = rawMaterials.map((m) =>
                 m.greigeId === updatedMaterial.greigeId ? updatedMaterial : m
               );
-              setRawMaterials(newMaterials);
+              dispatch(setMaterials(newMaterials));
             },
           })
         }
@@ -133,27 +148,15 @@ function CurrentTab() {
             refreshing={refreshing}
             onRefresh={onRefresh}
             tintColor="black"
-            colors={["black"]} // Android
-            progressBackgroundColor="white" // Android
+            colors={["black"]}
+            progressBackgroundColor="white"
           />
         }
       />
 
       <TouchableOpacity
         style={currentTabStyles.addButton}
-        onPress={() =>
-          navigation.navigate("AddRawMaterial", {
-            addMaterial: (newMaterial) => {
-              console.log("Adding new material to state:", newMaterial);
-              const newState = [...rawMaterials, newMaterial];
-              setRawMaterials(newState);
-              // setRawMaterials((current) => {
-              //   console.log("New state after update:", newState);
-              //   return newState;
-              // });
-            },
-          })
-        }
+        onPress={() => navigation.navigate("AddRawMaterial")}
       >
         <Ionicons name="add-circle" size={50} color="black" />
       </TouchableOpacity>
