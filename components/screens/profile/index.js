@@ -13,6 +13,7 @@ import { useNavigation } from "@react-navigation/native";
 import { Linking } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import ProfileContent from "../../util/ProfileContent";
+import { API_ENDPOINTS } from "../../../services/api/endpoints";
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -22,7 +23,7 @@ const ProfileScreen = () => {
   const handleMenuPress = async (url) => {
     setMenuVisible(false);
 
-    if (url === "https://logout.example.com") {
+    if (url === API_ENDPOINTS.LOGOUT) {
       await signOut();
       return;
     }
@@ -85,14 +86,14 @@ const ProfileScreen = () => {
             <View style={styles.menu}>
               <TouchableOpacity
                 onPress={() =>
-                  handleMenuPress("https://www.zyod.com/privacy-policy")
+                  handleMenuPress(API_ENDPOINTS.ZYOD_PRIVACY_POLICY)
                 }
               >
                 <Text style={styles.menuItem}>Privacy Policy</Text>
               </TouchableOpacity>
               <TouchableOpacity
                 onPress={() =>
-                  handleMenuPress("https://www.zyod.com/terms-and-conditions")
+                  handleMenuPress(API_ENDPOINTS.ZYOD_TERMS_CONDITIONS)
                 }
               >
                 <Text style={styles.menuItem}>Terms & Conditions</Text>
@@ -112,7 +113,7 @@ const styles = StyleSheet.create({
   safeArea: {
     flex: 1,
     backgroundColor: "black",
-    paddingTop: Platform.OS === 'android' ? 17 : 0,
+    paddingTop: Platform.OS === "android" ? 17 : 0,
   },
   container: {
     flex: 1,

@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { Linking } from "react-native";
+import { API_ENDPOINTS } from "../../services/api/endpoints";
 
 const OverflowMenu = () => {
   const [visible, setVisible] = useState(false);
@@ -20,16 +21,24 @@ const OverflowMenu = () => {
       </TouchableOpacity>
       {visible && (
         <View style={styles.menuContainer}>
-          <TouchableOpacity onPress={() => handleOptionPress("https://privacy.example.com")}>
+          <TouchableOpacity
+            onPress={() => handleOptionPress(API_ENDPOINTS.PRIVACY_POLICY)}
+          >
             <Text style={styles.menuItem}>Privacy Policy</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleOptionPress("https://terms.example.com")}>
+          <TouchableOpacity
+            onPress={() => handleOptionPress(API_ENDPOINTS.TERMS_CONDITIONS)}
+          >
             <Text style={styles.menuItem}>Terms & Conditions</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleOptionPress("https://logout.example.com")}>
+          <TouchableOpacity
+            onPress={() => handleOptionPress(API_ENDPOINTS.LOGOUT)}
+          >
             <Text style={styles.menuItem}>Logout</Text>
           </TouchableOpacity>
-          <TouchableOpacity onPress={() => handleOptionPress("https://delete-account.example.com")}>
+          <TouchableOpacity
+            onPress={() => handleOptionPress(API_ENDPOINTS.DELETE_ACCOUNT)}
+          >
             <Text style={styles.menuItem}>Delete My Account</Text>
           </TouchableOpacity>
         </View>

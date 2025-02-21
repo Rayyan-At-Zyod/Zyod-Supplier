@@ -14,6 +14,7 @@ import {
 import { SafeAreaView } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import LoadingModal from "../../util/LoadingModal";
+import { API_ENDPOINTS } from "../../../services/api/endpoints";
 
 const SignInScreen = ({ navigation }) => {
   const { signIn } = useAuth();
@@ -39,7 +40,7 @@ const SignInScreen = ({ navigation }) => {
 
     try {
       console.log("Making API request to /users/login");
-      const response = await fetch("https://dev-api.zyod.com/v1/users/login", {
+      const response = await fetch(API_ENDPOINTS.USER_LOGIN, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
