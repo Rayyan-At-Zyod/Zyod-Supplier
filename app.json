@@ -16,16 +16,25 @@
       "supportsTablet": true,
       "bundleIdentifier": "com.zyod.supplierapp",
       "buildNumber": "1.0.0",
-      "requireFullScreen": true
+      "requireFullScreen": true,
+      "infoPlist": {
+        "ITSAppUsesNonExemptEncryption": false
+      }
     },
     "android": {
       "adaptiveIcon": {
         "foregroundImage": "./assets/adaptive-icon.png",
         "backgroundColor": "#ffffff"
-      }
+      },
+      "package": "com.zyod.supplierapp"
     },
     "web": {
       "favicon": "./assets/favicon.png"
+    },
+    "extra": {
+      "eas": {
+        "projectId": "bccf2b3c-8604-4eff-8272-8b77f2d3bf4f"
+      }
     }
   }
 }

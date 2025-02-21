@@ -6,16 +6,11 @@ import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 import ArchivedTab from "./ArchivedTab";
 import CurrentTab from "./CurrentTab";
 import ZYOD from "../../../assets/ZYOD.jpg";
-import { useAuth } from "../../context/AuthContext";
-import LoadingModal from "../../util/LoadingModal";
 
 // Create Top Tab Navigator
 const TopTab = createMaterialTopTabNavigator();
 
 function HomeScreen() {
-  // const [loading, setLoading] = useState(false);
-
-  // if (loading) return <LoadingModal />;
 
   return (
     <SafeAreaView style={styles.container}>
