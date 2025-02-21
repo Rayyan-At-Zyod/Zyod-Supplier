@@ -70,7 +70,7 @@ function CurrentTab() {
   // }, [rawMaterials]);
 
   const renderItem = ({ item }) => {
-    console.log(">>", item);
+    // console.log(">>", item);
     return (
       <View style={currentTabStyles.card}>
         {/* Edit button */}
@@ -176,21 +176,21 @@ function CurrentTab() {
 
   return (
     <View style={currentTabStyles.container}>
-      <TouchableOpacity
+      {/* <TouchableOpacity
         onPress={() => {
           console.log("Added.");
           dispatch(addMaterial(newItem));
         }}
       >
         <Text>Add</Text>
-      </TouchableOpacity>
+      </TouchableOpacity> */}
       {isLoading && <LoadingModal />}
       {/* <FlatList
-  data={rawMaterials}
-  renderItem={renderItem}
-  keyExtractor={(item) => item.greigeId.toString()}
-  extraData={rawMaterials.length} // Forces re-render when item count changes
-/> */}
+        data={rawMaterials}
+        renderItem={renderItem}
+        keyExtractor={(item) => item.greigeId.toString()}
+        extraData={rawMaterials.length} // Forces re-render when item count changes
+      /> */}
       <FlatList
         data={rawMaterials}
         renderItem={renderItem}
