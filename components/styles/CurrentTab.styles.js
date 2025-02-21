@@ -78,15 +78,21 @@ export const currentTabStyles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
     padding: 12,
     borderRadius: 8,
-    width: Platform.OS === 'android' ? 171 : 175, // Approximately 2 items per row with gap
+    width: Platform.OS === 'ios' ? 175 : 171,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
-    shadowColor: "#000",
-    shadowOffset: { width: 0, height: 1 },
-    shadowOpacity: 0.1,
-    shadowRadius: 2,
-    elevation: 1,
+    ...Platform.select({
+      ios: {
+        shadowColor: '#000',
+        shadowOffset: { width: 0, height: 1 },
+        shadowOpacity: 0.2,
+        shadowRadius: 2,
+      },
+      android: {
+        elevation: 2,
+      },
+    }),
   },
   variationImage: {
     width: 60,

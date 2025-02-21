@@ -1,5 +1,5 @@
 import React from 'react';
-import { Modal, View, Image, TouchableOpacity, StyleSheet, Dimensions } from 'react-native';
+import { Modal, View, Image, TouchableOpacity, StyleSheet, Dimensions, Platform } from 'react-native';
 import { Ionicons } from "@expo/vector-icons";
 
 const ImageDisplayModal = ({ visible, imageUrl, onClose }) => {
@@ -26,6 +26,8 @@ const ImageDisplayModal = ({ visible, imageUrl, onClose }) => {
             source={{ uri: imageUrl }}
             style={styles.image}
             resizeMode="contain"
+            // defaultSource={Platform.OS === 'ios' ? require('path/to/placeholder.png') : null}
+            defaultSource={Platform.OS === 'ios' ? null : null}
           />
         </View>
       </TouchableOpacity>

@@ -13,7 +13,10 @@
       "backgroundColor": "#ffffff"
     },
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.zyod.supplierapp",
+      "buildNumber": "1.0.0",
+      "requireFullScreen": true
     },
     "android": {
       "adaptiveIcon": {

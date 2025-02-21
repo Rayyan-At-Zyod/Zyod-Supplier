@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, Text, Image, StyleSheet, StatusBar } from "react-native";
+import { View, Text, Image, StyleSheet, StatusBar, SafeAreaView, Platform } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 
@@ -19,7 +19,7 @@ function HomeScreen() {
   if (loading) return <LoadingModal />;
 
   return (
-    <View style={styles.container}>
+    <SafeAreaView style={styles.container}>
       {/* Header with Image */}
       <View style={styles.header}>
         <Image source={ZYOD} style={styles.headerImage} />
@@ -43,7 +43,7 @@ function HomeScreen() {
       </TopTab.Navigator>
 
       <ExpoStatusBar style="auto" />
-    </View>
+    </SafeAreaView>
   );
 }
 
