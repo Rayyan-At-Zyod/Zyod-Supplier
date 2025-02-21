@@ -1,8 +1,8 @@
-import React, { useState } from "react";
+// external library
+import React from "react";
 import {
   View,
   Text,
-  StyleSheet,
   ScrollView,
   TextInput,
   TouchableOpacity,
@@ -10,96 +10,110 @@ import {
   Image,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
+import { Ionicons } from "@expo/vector-icons";
+import { useDispatch } from 'react-redux';
+import { addMaterial } from "../../../../store/rawMaterialsSlice";
+
+// internal imports
+import { useAuth } from "../../../context/AuthContext";
+import LoadingModal from "../../../util/LoadingModal";
+import { rmStyles } from "../../../styles/updateRM.styles";
+import ImageSelectionModal from "../../../util/ImageSelectionModal";
+import { useImagePicker } from "../../../../hooks/useImagePicker";
+import { addRawMaterial } from "../../../../services/api/addRawMaterial.service";
+import { createRMsData } from "../../../../services/helpers/functions/createRmsDataForRMAdd";
+import { createPayload } from "../../../../services/helpers/functions/createPayloadForRMAdd";
+import { convertImageToBase64 } from "../../../../services/helpers/utilities/imageBase64Converter";
 
 function UpdateRMScreen() {
   const route = useRoute();
-  const navigation = useNavigation();
-  const { material, updateMaterial } = route.params;
-  const [formData, setFormData] = useState(material);
-
-  const handleSave = async () => {
-    try {
-      // API call to update material will go here
-      await updateMaterial(formData);
-      navigation.goBack();
-    } catch (error) {
-      Alert.alert("Error", "Failed to update material");
-    }
-  };
+  const { material } = route.params; // Get the material data from navigation params
 
   return (
-    <ScrollView style={styles.container}>
-      <View style={styles.form}>
-        <Text style={styles.label}>Edit Material: {material.BaseFabricName}</Text>
-        {material.RMImage && material.RMImage.length > 0 && (
-          <Image style={styles.image} source={{ uri: material.RMImage[0] }} />
-        )}
-        <TextInput
-          style={styles.input}
-          value={formData.BaseFabricName}
-          onChangeText={(text) =>
-            setFormData((prev) => ({ ...prev, BaseFabricName: text }))
-          }
-        />
+    <View style={rmStyles.container}>
+      <ScrollView contentContainerStyle={rmStyles.scrollContainer}>
+        <Text style={rmStyles.heading}>Raw Material Details</Text>
 
-        <Text style={styles.label}>Code</Text>
-        <TextInput
-          style={styles.input}
-          value={formData.RMVariationCode}
-          editable={false} // Code shouldn't be editable
-        />
+        {/* Main Product Image */}
+        <View style={rmStyles.imagePlaceholder}>
+          {material.rmVariations[0]?.rmImage ? (
+            <Image
+              source={{ uri: material.rmVariations[0].rmImage }}
+              style={rmStyles.mainImage}
+            />
+          ) : (
+            <Text style={rmStyles.imagePlaceholderText}>
+              No Image Available
+            </Text>
+          )}
+        </View>
 
-        {/* Add more fields as needed */}
+        {/* Name */}
+        <Text style={rmStyles.label}>Name:</Text>
+        <Text style={rmStyles.input}>{material.rmVariations[0]?.name || "No Name"}</Text>
 
-        <TouchableOpacity style={styles.saveButton} onPress={handleSave}>
-          <Text style={styles.saveButtonText}>Save Changes</Text>
-        </TouchableOpacity>
-      </View>
-    </ScrollView>
+        {/* GSM & Width */}
+        <View style={rmStyles.row}>
+          <View style={rmStyles.rowItem}>
+            <Text style={rmStyles.label}>GSM:</Text>
+            <Text style={rmStyles.input}>{material.gsm || "N/A"}</Text>
+          </View>
+          <View style={rmStyles.rowItem}>
+            <Text style={rmStyles.label}>Width:</Text>
+            <Text style={rmStyles.input}>{material.rmVariations[0]?.width || "N/A"}</Text>
+          </View>
+        </View>
+
+        {/* Price & Quantity */}
+        <View style={rmStyles.row}>
+          <View style={rmStyles.rowItem}>
+            <Text style={rmStyles.label}>Price (Rs.):</Text>
+            <Text style={rmStyles.input}>{material.rmVariations[0]?.generalPrice || "N/A"}</Text>
+          </View>
+          <View style={rmStyles.rowItem}>
+            <Text style={rmStyles.label}>Quantity:</Text>
+            <Text style={rmStyles.input}>{material.rmVariations[0]?.availableQuantity || "N/A"}</Text>
+          </View>
+        </View>
+
+        {/* Type */}
+        <Text style={rmStyles.label}>Type:</Text>
+        <Text style={rmStyles.input}>{material.rmVariations[0]?.type || "N/A"}</Text>
+
+        {/* Description */}
+        <Text style={rmStyles.label}>Description:</Text>
+        <Text style={rmStyles.input}>{material.rmVariations[0]?.description || "N/A"}</Text>
+
+        {/* Variants Section */}
+        <Text style={rmStyles.subHeading}>Variants</Text>
+        {material.rmVariations.map((variation, index) => (
+          <View key={index} style={rmStyles.variantContainer}>
+            <Text style={rmStyles.label}>Variant Name:</Text>
+            <Text style={rmStyles.input}>{variation.name || "N/A"}</Text>
+
+            <Text style={rmStyles.label}>Variant Description:</Text>
+            <Text style={rmStyles.input}>{variation.description || "N/A"}</Text>
+
+            <Text style={rmStyles.label}>Variant Width:</Text>
+            <Text style={rmStyles.input}>{variation.width || "N/A"}</Text>
+
+            <Text style={rmStyles.label}>Variant Price:</Text>
+            <Text style={rmStyles.input}>{variation.generalPrice || "N/A"}</Text>
+
+            <Text style={rmStyles.label}>Variant Quantity:</Text>
+            <Text style={rmStyles.input}>{variation.availableQuantity || "N/A"}</Text>
+
+            {variation.rmImage && (
+              <Image
+                source={{ uri: variation.rmImage }}
+                style={rmStyles.variantImage}
+              />
+            )}
+          </View>
+        ))}
+      </ScrollView>
+    </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: "#f5f5f5",
-  },
-  image: {
-    width: "100%",
-    height: 200,
-    resizeMode: "cover",
-    marginBottom: 16,
-    borderRadius: 8,
-  },
-  form: {
-    padding: 16,
-  },
-  label: {
-    fontSize: 16,
-    fontWeight: "500",
-    marginBottom: 8,
-    color: "#333",
-  },
-  input: {
-    backgroundColor: "white",
-    padding: 12,
-    borderRadius: 8,
-    marginBottom: 16,
-    borderWidth: 1,
-    borderColor: "#ddd",
-  },
-  saveButton: {
-    backgroundColor: "black",
-    padding: 16,
-    borderRadius: 8,
-    alignItems: "center",
-    marginTop: 16,
-  },
-  saveButtonText: {
-    color: "white",
-    fontSize: 16,
-    fontWeight: "600",
-  },
-});
 
 export default UpdateRMScreen;

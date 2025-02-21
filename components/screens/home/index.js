@@ -13,10 +13,9 @@ import LoadingModal from "../../util/LoadingModal";
 const TopTab = createMaterialTopTabNavigator();
 
 function HomeScreen() {
-  const { token, userData } = useAuth();
-  const [loading, setLoading] = useState(false);
+  // const [loading, setLoading] = useState(false);
 
-  if (loading) return <LoadingModal />;
+  // if (loading) return <LoadingModal />;
 
   return (
     <SafeAreaView style={styles.container}>
