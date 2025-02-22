@@ -8,10 +8,12 @@ import {
   TouchableOpacity,
   Alert,
   Image,
+  KeyboardAvoidingView,
+  Platform,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
-import { useDispatch } from 'react-redux';
+import { useDispatch } from "react-redux";
 import { addMaterial } from "../../../../store/rawMaterialsSlice";
 
 // internal imports
@@ -54,7 +56,7 @@ function AddRMScreen() {
   const [imageModalIndex, setImageModalIndex] = useState(null);
   // index to know which variant (or main image) we're editing
 
-  // Add this state near other state declarations
+  // Loading state
   const [isLoading, setIsLoading] = useState(false);
 
   /**
@@ -95,7 +97,6 @@ function AddRMScreen() {
 
   /**
    * Handle the "Click Picture" or "Add Image" action.
-   * Here we just show a modal, but you'll integrate your actual image picker/camera logic.
    */
   const openImageModal = (variantIndex = null) => {
     setImageModalIndex(variantIndex);
@@ -114,7 +115,7 @@ function AddRMScreen() {
         await saveImage(uri);
       }
     } catch (err) {
-      alert("Error uploading image: " + err.message);
+      Alert.alert("Error uploading image", err.message);
     } finally {
       setShowImageModal(false);
       setImageModalIndex(null);
@@ -143,13 +144,12 @@ function AddRMScreen() {
   const removeImage = async () => {
     try {
       saveImage(null);
-      // alert("Image removed");
       imageModalIndex === null
         ? setMainImage(null)
-        : handleVariantChange(imageModalIndex, "image", null); 
+        : handleVariantChange(imageModalIndex, "image", null);
       setShowImageModal(false);
     } catch (err) {
-      alert("Error while removing pic.", err);
+      Alert.alert("Error while removing pic.", err.message);
     }
   };
 
@@ -217,7 +217,6 @@ function AddRMScreen() {
       dispatch(addMaterial(temporaryItem));
       setIsLoading(false);
       navigation.goBack();
-
     } catch (error) {
       setIsLoading(false);
       Alert.alert("Error", error.message);
@@ -225,7 +224,11 @@ function AddRMScreen() {
   };
 
   return (
-    <View style={rmStyles.container}>
+    <KeyboardAvoidingView
+      style={rmStyles.container}
+      behavior={Platform.OS === "ios" ? "padding" : "height"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+    >
       <ScrollView contentContainerStyle={rmStyles.scrollContainer}>
         <Text style={rmStyles.heading}>Create Raw Material</Text>
 
@@ -419,7 +422,7 @@ function AddRMScreen() {
               </View>
             </View>
 
-            {/* Width -> used for NewCode */}
+            {/* Width */}
             <TextInput
               style={rmStyles.input}
               placeholder="Width"
@@ -468,9 +471,8 @@ function AddRMScreen() {
         openImageModal={openImageModal}
       />
 
-      {/* Add LoadingModal at the bottom of the View */}
       <LoadingModal visible={isLoading} />
-    </View>
+    </KeyboardAvoidingView>
   );
 }
 

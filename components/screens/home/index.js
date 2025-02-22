@@ -1,5 +1,13 @@
 import React, { useEffect, useState, useCallback } from "react";
-import { View, Text, Image, StyleSheet, StatusBar, SafeAreaView, Platform } from "react-native";
+import {
+  View,
+  Text,
+  Image,
+  StyleSheet,
+  StatusBar,
+  SafeAreaView,
+  Platform,
+} from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 
@@ -11,7 +19,6 @@ import ZYOD from "../../../assets/ZYOD.jpg";
 const TopTab = createMaterialTopTabNavigator();
 
 function HomeScreen() {
-
   return (
     <SafeAreaView style={styles.container}>
       {/* Header with Image */}
@@ -20,21 +27,23 @@ function HomeScreen() {
       </View>
 
       {/* Nested Top Tab Navigator */}
-      <TopTab.Navigator
-        initialRouteName="Current"
-        screenOptions={{
-          tabBarActiveTintColor: "black",
-          tabBarInactiveTintColor: "gray",
-          tabBarIndicatorStyle: { backgroundColor: "black" },
-        }}
-      >
-        <TopTab.Screen
-          name="Current"
-          options={{ title: "Current" }}
-          component={CurrentTab}
-        />
-        <TopTab.Screen name="Archived" component={ArchivedTab} />
-      </TopTab.Navigator>
+      <View style={{ flex: 1 }}>
+        <TopTab.Navigator
+          initialRouteName="Current"
+          screenOptions={{
+            tabBarActiveTintColor: "black",
+            tabBarInactiveTintColor: "gray",
+            tabBarIndicatorStyle: { backgroundColor: "black" },
+          }}
+        >
+          <TopTab.Screen
+            name="Current"
+            options={{ title: "Current" }}
+            component={CurrentTab}
+          />
+          <TopTab.Screen name="Archived" component={ArchivedTab} />
+        </TopTab.Navigator>
+      </View>
 
       <ExpoStatusBar style="auto" />
     </SafeAreaView>
