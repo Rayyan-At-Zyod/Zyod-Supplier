@@ -39,10 +39,10 @@ function CurrentTab() {
     dispatch(setLoading(true));
     try {
       const data = await fetchRawMaterials(token);
-      console.log("✅ Fetched raw materials:", data.length);
+      // console.log("✅ Fetched raw materials:", data.length);
       dispatch(setMaterials(data.data));
     } catch (error) {
-      console.error("❌ Error fetching materials:", error);
+      // console.error("❌ Error fetching materials:", error);
     } finally {
       dispatch(setLoading(false));
     }
@@ -65,12 +65,7 @@ function CurrentTab() {
     loadRawMaterials();
   }, []);
 
-  // useEffect(() => {
-  //   console.log("📌 rawMaterials updated:", rawMaterials);
-  // }, [rawMaterials]);
-
   const renderItem = ({ item }) => {
-    // console.log(">>", item);
     return (
       <View style={currentTabStyles.card}>
         {/* Edit button */}
@@ -135,9 +130,9 @@ function CurrentTab() {
                 />
               </TouchableOpacity>
               <Text style={currentTabStyles.variationText}>
-                Width: {variation.width}"{"\n"}
+                Width: {variation.width} m{"\n"}
                 {variation.availableQuantity
-                  ? `${variation.availableQuantity} ${variation.unitCode}`
+                  ? `Stock: ${variation.availableQuantity} ${variation.unitCode.toLowerCase()}`
                   : "Out of Stock"}
                 {"\n"}
                 Price: ₹{variation.generalPrice}/{variation.unitCode}
@@ -149,54 +144,15 @@ function CurrentTab() {
     );
   };
 
-  const newItem = {
-    greigeId: 1800,
-    gsm: "88",
-    rmVariations: [
-      {
-        availableQuantity: null,
-        description: null,
-        generalPrice: 5,
-        name: "0ufuf",
-        newCode: "WRMDS074_83",
-        rmCategoryId: 3,
-        rmCode: "WRMDS074",
-        rmId: 18010,
-        rmImage:
-          "https://assets.zyod.com/cdn-cgi/imagedelivery/Rz4WhkFQk9C3zZCls6gfAA/1740050216344_4470_0ufuf_main.jpg/swatch",
-        rmSolidColorText: null,
-        rmSubCategoryId: 15,
-        rmVariationId: 13135,
-        unitCode: "M",
-        unitOfMeasureId: 1,
-        width: 83,
-      },
-    ],
-  };
-
   return (
     <View style={currentTabStyles.container}>
-      {/* <TouchableOpacity
-        onPress={() => {
-          console.log("Added.");
-          dispatch(addMaterial(newItem));
-        }}
-      >
-        <Text>Add</Text>
-      </TouchableOpacity> */}
       {isLoading && <LoadingModal />}
-      {/* <FlatList
-        data={rawMaterials}
-        renderItem={renderItem}
-        keyExtractor={(item) => item.greigeId.toString()}
-        extraData={rawMaterials.length} // Forces re-render when item count changes
-      /> */}
       <FlatList
         data={rawMaterials}
         renderItem={renderItem}
         keyExtractor={(item) => item.greigeId.toString()}
         contentContainerStyle={currentTabStyles.listContainer}
-        // extraData={rawMaterials.length}
+        extraData={rawMaterials.length}
         refreshControl={
           <RefreshControl
             refreshing={refreshing}

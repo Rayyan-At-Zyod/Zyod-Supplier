@@ -78,7 +78,7 @@ export const currentTabStyles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
     padding: 12,
     borderRadius: 8,
-    width: Platform.OS === 'ios' ? 175 : 171,
+    width: Platform.OS === 'ios' ? '48%' : 171,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,

@@ -46,7 +46,7 @@ export const createPayload = ({
     skuType: "Fabric",
   };
 
-  console.log(">> Payload", JSON.stringify(payload, null, 2));
+  // console.log(">> Payload", JSON.stringify(payload, null, 2));
 
   return payload;
 };

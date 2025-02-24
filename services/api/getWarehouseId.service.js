@@ -3,7 +3,7 @@ import { API_ENDPOINTS } from "./endpoints";
 export const fetchPrimaryWarehouseIdOfThisUser = async (token, supplierId) => {
   // user.user_SupplierId
   try {
-    console.log("\nSupplier ID", supplierId);
+    // console.log("\nSupplier ID", supplierId);
     const response = await fetch(
       API_ENDPOINTS.ZYOD_USER_WAREHOUSE_ID_API + supplierId,
       {
@@ -14,7 +14,7 @@ export const fetchPrimaryWarehouseIdOfThisUser = async (token, supplierId) => {
         },
       }
     );
-    console.log("Got response from fetchPrimaryWarehouseIdOfThisUser.");
+    // console.log("Got response from fetchPrimaryWarehouseIdOfThisUser.");
 
     const data = await response.json();
     if (!response.ok) {
