@@ -3,16 +3,12 @@ import { v4 as uuidv4 } from "uuid";
 
 export const createPayload = ({
   name,
-  constructionOrPrint,
   type,
-  price,
   width,
-  quantity,
   mainImage,
   gsm,
   costPrice,
   availableStock,
-  variants = [],
   RMsData,
 }) => {
   // Generate UUID for the request
@@ -45,8 +41,6 @@ export const createPayload = ({
     },
     skuType: "Fabric",
   };
-
-  // console.log(">> Payload", JSON.stringify(payload, null, 2));
 
   return payload;
 };
