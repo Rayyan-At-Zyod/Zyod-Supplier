@@ -189,109 +189,19 @@ function AddRMScreen() {
       // 1) Convert main image to base64
       const mainImageBase64 = await convertImageToBase64(mainImage);
 
-      // 2) Create RMsData array
-      const RMsData = [
-        // First variant contains the main item details
-        {
-          RMCategoryId: 3,
-          RMSubCategoryId: 15,
-          GreigeTypeId: null,
-          Name: name,
-          Description: constructionOrPrint || "",
-          UnitOfMeasureId: 1,
-          WarpLeft: null,
-          WeftLeft: null,
-          WarpRight: null,
-          WeftRight: null,
-          PrintTypeId: printTypeCode === "S" ? 2 : 3,
-          RMSolidColorText: type === "Solids" ? "S" : "P",
-          RMSolidColourId: null,
-          RMTags: [],
-          RMCodeBuilder: {
-            BaseFabricCode: "RMD",
-            FabricTypeCode: "W",
-            PrintTypeCode: printTypeCode,
-          },
-          RMImage: mainImageBase64 ? [mainImageBase64] : [],
-          RMInventoryDetails: [
-            {
-              NewCode: newCode,
-              Warehouse: warehouseId,
-              CurrentStock: quantity.toString(),
-            },
-          ],
-          RMSupplierDetails: [
-            {
-              SupplierId: userData?.user_SupplierId,
-              Price: price.toString(),
-              Priority: "1",
-              IsActive: true,
-              NewCode: newCode,
-            },
-          ],
-          RMVariationDetails: [
-            {
-              GeneralPrice: Number(price),
-              NewCode: newCode,
-              RMVarAttributeValueId: 9,
-            },
-          ],
-        },
-        // Then process all variants
-        ...(await Promise.all(
-          variants.map(async (v) => {
-            const variantImageBase64 = await convertImageToBase64(v.image);
-            const variantPrintTypeCode = v.type === "Solids" ? "S" : "P";
-            const variantNewCode = v.width ? `_${v.width}` : "";
-
-            return {
-              RMCategoryId: 3,
-              RMSubCategoryId: 15,
-              GreigeTypeId: null,
-              Name: v.name,
-              Description: v.description || "",
-              RMCodeBuilder: {
-                BaseFabricCode: "RMD",
-                FabricTypeCode: "W",
-                PrintTypeCode: variantPrintTypeCode,
-              },
-              UnitOfMeasureId: 1,
-              WarpLeft: null,
-              WeftLeft: null,
-              WarpRight: null,
-              WeftRight: null,
-              PrintTypeId: variantPrintTypeCode === "S" ? 2 : 3,
-              RMSolidColorText: v.type === "Solids" ? "S" : "", //@FIXME: later
-              RMImage: variantImageBase64 ? [variantImageBase64] : [],
-              RMVariationDetails: [
-                {
-                  GeneralPrice: Number(v.price),
-                  NewCode: variantNewCode,
-                  RMVarAttributeValueId: 9,
-                },
-              ],
-              RMSupplierDetails: [
-                {
-                  SupplierId: userData?.user_SupplierId,
-                  Price: v.price.toString(),
-                  Priority: "1",
-                  IsActive: true,
-                  NewCode: variantNewCode,
-                },
-              ],
-              RMInventoryDetails: [
-                {
-                  NewCode: variantNewCode,
-                  Warehouse: warehouseId,
-                  CurrentStock: v.quantity.toString(),
-                },
-              ],
-              RMTags: [],
-              RMSolidColourId: null,
-            };
-          })
-        )),
-      ];
+      // 2) Create RMsData array using the imported function
+      const RMsData = await createRMsData({
+        name,
+        constructionOrPrint,
+        type,
+        price,
+        width,
+        quantity,
+        mainImage,
+        variants,
+        userData,
+        warehouseId, // Use the warehouseId from context
+      });
 
       // 3) Create the payload using the helper function
       const payload = createPayload({
@@ -311,7 +221,6 @@ function AddRMScreen() {
 
       // 4) Make the API call
       const data = await addRawMaterial(payload, token);
-
 
       const temporaryItem = {
         greigeId: data?.data?.greigeId || Date.now(),
