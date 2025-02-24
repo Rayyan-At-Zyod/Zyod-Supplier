@@ -1,4 +1,4 @@
-import { convertImageToBase64 } from '../utilities/imageBase64Converter';
+import { convertImageToBase64 } from "../utilities/imageBase64Converter";
 
 export const createRMsData = async ({
   name,
@@ -10,6 +10,7 @@ export const createRMsData = async ({
   mainImage,
   variants = [],
   userData,
+  warehouseId,
 }) => {
   try {
     const mainImageBase64 = await convertImageToBase64(mainImage);
@@ -25,11 +26,6 @@ export const createRMsData = async ({
         GreigeTypeId: null,
         Name: name,
         Description: constructionOrPrint || "",
-        RMCodeBuilder: {
-          BaseFabricCode: "RMD",
-          FabricTypeCode: "W",
-          PrintTypeCode: printTypeCode,
-        },
         UnitOfMeasureId: 1,
         WarpLeft: null,
         WeftLeft: null,
@@ -37,7 +33,30 @@ export const createRMsData = async ({
         WeftRight: null,
         PrintTypeId: printTypeCode === "S" ? 2 : 3,
         RMSolidColorText: type === "Solids" ? "S" : "P",
+        RMSolidColourId: null,
+        RMTags: [],
+        RMCodeBuilder: {
+          BaseFabricCode: "RMD",
+          FabricTypeCode: "W",
+          PrintTypeCode: printTypeCode,
+        },
         RMImage: mainImageBase64 ? [mainImageBase64] : [],
+        RMInventoryDetails: [
+          {
+            NewCode: newCode,
+            Warehouse: warehouseId,
+            CurrentStock: quantity.toString(),
+          },
+        ],
+        RMSupplierDetails: [
+          {
+            SupplierId: userData?.user_SupplierId,
+            Price: price.toString(),
+            Priority: "1",
+            IsActive: true,
+            NewCode: newCode,
+          },
+        ],
         RMVariationDetails: [
           {
             GeneralPrice: Number(price),
@@ -45,82 +64,66 @@ export const createRMsData = async ({
             RMVarAttributeValueId: 9,
           },
         ],
-        RMSupplierDetails: [
-          {
-            SupplierId: userData?.supplierId || 606,
-            Price: price.toString(),
-            Priority: "1",
-            IsActive: true,
-            NewCode: newCode,
-          },
-        ],
-        RMInventoryDetails: [
-          {
-            NewCode: newCode,
-            Warehouse: 2,
-            CurrentStock: quantity.toString(),
-          },
-        ],
-        RMTags: [],
-        RMSolidColourId: null,
       },
       // Then process all variants
-      ...await Promise.all(variants.map(async (v) => {
-        const variantImageBase64 = await convertImageToBase64(v.image);
-        const variantPrintTypeCode = v.type === "Solids" ? "S" : "P";
-        const variantNewCode = v.width ? `_${v.width}` : "";
+      ...(await Promise.all(
+        variants.map(async (v) => {
+          const variantImageBase64 = await convertImageToBase64(v.image);
+          const variantPrintTypeCode = v.type === "Solids" ? "S" : "P";
+          const variantNewCode = v.width ? `_${v.width}` : "";
 
-        return {
-          RMCategoryId: 3,
-          RMSubCategoryId: 15,
-          GreigeTypeId: null,
-          Name: v.name,
-          Description: v.description || "",
-          RMCodeBuilder: {
-            BaseFabricCode: "RMD",
-            FabricTypeCode: "W",
-            PrintTypeCode: variantPrintTypeCode,
-          },
-          UnitOfMeasureId: 1,
-          WarpLeft: null,
-          WeftLeft: null,
-          WarpRight: null,
-          WeftRight: null,
-          PrintTypeId: variantPrintTypeCode === "S" ? 2 : 3,
-          RMSolidColorText: v.type === "Solids" ? "S" : "", //@FIXME: later
-          RMImage: variantImageBase64 ? [variantImageBase64] : [],
-          RMVariationDetails: [
-            {
-              GeneralPrice: Number(v.price),
-              NewCode: variantNewCode,
-              RMVarAttributeValueId: 9,
+          return {
+            RMCategoryId: 3,
+            RMSubCategoryId: 15,
+            GreigeTypeId: null,
+            Name: v.name,
+            Description: v.description || "",
+            RMCodeBuilder: {
+              BaseFabricCode: "RMD",
+              FabricTypeCode: "W",
+              PrintTypeCode: variantPrintTypeCode,
             },
-          ],
-          RMSupplierDetails: [
-            {
-              SupplierId: userData?.supplierId || 606,
-              Price: v.price.toString(),
-              Priority: "1",
-              IsActive: true,
-              NewCode: variantNewCode,
-            },
-          ],
-          RMInventoryDetails: [
-            {
-              NewCode: variantNewCode,
-              Warehouse: 2,
-              CurrentStock: v.quantity.toString(),
-            },
-          ],
-          RMTags: [],
-          RMSolidColourId: null,
-        };
-      })),
+            UnitOfMeasureId: 1,
+            WarpLeft: null,
+            WeftLeft: null,
+            WarpRight: null,
+            WeftRight: null,
+            PrintTypeId: variantPrintTypeCode === "S" ? 2 : 3,
+            RMSolidColorText: v.type === "Solids" ? "S" : "", //@FIXME: later
+            RMImage: variantImageBase64 ? [variantImageBase64] : [],
+            RMVariationDetails: [
+              {
+                GeneralPrice: Number(v.price),
+                NewCode: variantNewCode,
+                RMVarAttributeValueId: 9,
+              },
+            ],
+            RMSupplierDetails: [
+              {
+                SupplierId: userData?.user_SupplierId,
+                Price: v.price.toString(),
+                Priority: "1",
+                IsActive: true,
+                NewCode: variantNewCode,
+              },
+            ],
+            RMInventoryDetails: [
+              {
+                NewCode: variantNewCode,
+                Warehouse: warehouseId,
+                CurrentStock: v.quantity.toString(),
+              },
+            ],
+            RMTags: [],
+            RMSolidColourId: null,
+          };
+        })
+      )),
     ];
 
     return RMsData;
   } catch (error) {
-    console.error('Error creating RMsData:', error);
+    console.error("Error creating RMsData:", error);
     throw error;
   }
-}; 
+};

@@ -22,7 +22,7 @@ export const rmStyles = StyleSheet.create({
   },
   imagePlaceholder: {
     height: 200,
-    backgroundColor: "#E0F7FA", // #FFFACD
+    backgroundColor: "#FFFACD", // #E0F7FA
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
@@ -36,6 +36,7 @@ export const rmStyles = StyleSheet.create({
     backgroundColor: "#F9F9F9",
     backgroundColor: "#fff",
     borderColor: "#ddd",
+    color: 'red',
     borderRadius: 8,
     marginBottom: 16,
   },

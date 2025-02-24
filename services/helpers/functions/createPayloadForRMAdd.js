@@ -19,23 +19,23 @@ export const createPayload = ({
   const requestUUID = uuidv4();
   const printTypeCode = type === "Solids" ? "S" : "P";
 
-  return {
+  const payload = {
     skuDetails: {
       appDbId: requestUUID,
       name: name,
       image: mainImage || "",
       categoryId: 15,
-      rmCodeBuilder: {
-        BaseFabricCode: "RMD",
-        FabricTypeCode: "W",
-        PrintTypeCode: printTypeCode,
-      },
       gsm: gsm.toString(),
       unitId: 1,
       baseFabricId: 288,
       printTypeId: type === "Solids" ? 2 : 3,
       width: width.toString(),
-      multipleVariation: variants.length > 0,
+      multipleVariation: true, // variants.length > 0
+      rmCodeBuilder: {
+        BaseFabricCode: "RMD",
+        FabricTypeCode: "W",
+        PrintTypeCode: printTypeCode,
+      },
       RMsData,
     },
     additionalInfo: {
@@ -45,4 +45,8 @@ export const createPayload = ({
     },
     skuType: "Fabric",
   };
+
+  console.log(">> Payload", JSON.stringify(payload, null, 2));
+
+  return payload;
 };

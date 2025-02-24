@@ -26,6 +26,7 @@ import { addRawMaterial } from "../../../../services/api/addRawMaterial.service"
 import { createRMsData } from "../../../../services/helpers/functions/createRmsDataForRMAdd";
 import { createPayload } from "../../../../services/helpers/functions/createPayloadForRMAdd";
 import { convertImageToBase64 } from "../../../../services/helpers/utilities/imageBase64Converter";
+import { fetchPrimaryWarehouseIdOfThisUser } from "../../../../services/api/getWarehouseId.service";
 
 function AddRMScreen() {
   const navigation = useNavigation();
@@ -154,6 +155,26 @@ function AddRMScreen() {
   };
 
   /**
+   * Fecth warehouseId for ADD API.
+   */
+  const fetchWarehouseId = async () => {
+    try {
+      // console.log("Token", token);
+      // console.log("User data:", userData);
+      // console.log("Getting warehosue Id.");
+      const warehouseId = await fetchPrimaryWarehouseIdOfThisUser(
+        token,
+        userData.user_SupplierId
+      );
+      console.log("got warehouse id:", warehouseId);
+      return warehouseId;
+    } catch (err) {
+      // console.log("here.");
+      throw new Error("Warehouses not found.");
+    }
+  };
+
+  /**
    * Constructs the payload and calls the addSku API.
    */
   const handleSave = async () => {
@@ -162,6 +183,11 @@ function AddRMScreen() {
       if (!name) {
         throw new Error("Name is required");
       }
+
+      const warehouseId = await fetchWarehouseId();
+
+      // Start timing
+      console.time("API Call Duration");
 
       // 1) Convert main image to base64
       const mainImageBase64 = await convertImageToBase64(mainImage);
@@ -177,6 +203,7 @@ function AddRMScreen() {
         mainImage,
         variants,
         userData,
+        warehouseId,
       });
 
       // 3) Create the payload using the helper function
@@ -197,6 +224,9 @@ function AddRMScreen() {
 
       // 4) Make the API call
       const data = await addRawMaterial(payload, token);
+
+      // End timing
+      console.timeEnd("API Call Duration");
 
       const temporaryItem = {
         greigeId: data?.data?.greigeId || Date.now(),
@@ -334,16 +364,6 @@ function AddRMScreen() {
         {/* Additional Info (Optional) */}
         <Text style={rmStyles.subHeading}>Additional Info</Text>
         <View style={rmStyles.row}>
-          <View style={rmStyles.rowItem}>
-            <TextInput
-              style={rmStyles.input}
-              label="Cost Price"
-              mode="outlined"
-              value={costPrice}
-              onChangeText={setCostPrice}
-              keyboardType="numeric"
-            />
-          </View>
           <View style={rmStyles.rowItem}>
             <TextInput
               style={rmStyles.input}

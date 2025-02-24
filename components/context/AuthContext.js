@@ -19,18 +19,18 @@ export const AuthProvider = ({ children }) => {
         AsyncStorage.getItem("userToken"),
         AsyncStorage.getItem("userData"),
       ]);
-      
+
       console.log("Stored token exists:", !!storedToken);
       console.log("Stored user data exists:", !!storedUserData);
-      
+
       if (storedToken && storedUserData) {
         const parsedUserData = JSON.parse(storedUserData);
         console.log("Loaded user data:", {
           id: parsedUserData.user_id,
           email: parsedUserData.user_email,
-          role: parsedUserData.user_role
+          role: parsedUserData.user_role,
         });
-        
+
         setToken(storedToken);
         setUserData(parsedUserData);
         console.log("Auth data loaded successfully");
@@ -56,15 +56,16 @@ export const AuthProvider = ({ children }) => {
       console.log("User data:", {
         id: user.user_id,
         email: user.user_email,
-        role: user.user_role
+        role: user.user_role,
+        supplierId: user.user_SupplierId,
       });
 
       // storing user data in async storage
       await Promise.all([
         AsyncStorage.setItem("userToken", token),
-        AsyncStorage.setItem("userData", JSON.stringify(user))
+        AsyncStorage.setItem("userData", JSON.stringify(user)),
       ]);
-      
+
       setToken(token);
       setUserData(user);
       console.log("Auth data stored successfully");
@@ -79,17 +80,22 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     console.log("=== Sign Out Process ===");
-    console.log("Current user:", userData ? {
-      id: userData.user_id,
-      email: userData.user_email,
-      role: userData.user_role
-    } : "No user data");
-    
+    console.log(
+      "Current user:",
+      userData
+        ? {
+            id: userData.user_id,
+            email: userData.user_email,
+            role: userData.user_role,
+          }
+        : "No user data"
+    );
+
     try {
       console.log("Removing auth data from AsyncStorage...");
       await Promise.all([
         AsyncStorage.removeItem("userToken"),
-        AsyncStorage.removeItem("userData")
+        AsyncStorage.removeItem("userData"),
       ]);
       console.log("AsyncStorage items removed successfully");
 
@@ -104,7 +110,7 @@ export const AuthProvider = ({ children }) => {
       console.error("Error type:", error.constructor.name);
       console.error("Error message:", error.message);
       console.error("Error stack:", error.stack);
-      
+
       // Even if AsyncStorage fails, we should still clear the context
       setToken(null);
       setUserData(null);

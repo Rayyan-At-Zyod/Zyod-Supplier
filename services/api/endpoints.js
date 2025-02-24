@@ -9,5 +9,6 @@ export const API_ENDPOINTS = {
   DELETE_ACCOUNT: "https://delete-account.example.com",
   ZYOD_PRIVACY_POLICY: "https://www.zyod.com/privacy-policy",
   ZYOD_TERMS_CONDITIONS: "https://www.zyod.com/terms-and-conditions",
+  ZYOD_USER_WAREHOUSE_ID_API: 'https://dev-api.zyod.com/v1/warehouse/',
   // Add other endpoints as needed
 };
