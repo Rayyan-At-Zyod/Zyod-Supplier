@@ -1,10 +1,10 @@
 // external library
 import React, { useState } from "react";
+import { TextInput } from "react-native-paper";
 import {
   View,
   Text,
   ScrollView,
-  TextInput,
   TouchableOpacity,
   Alert,
   Image,
@@ -249,7 +249,8 @@ function AddRMScreen() {
         {/* Name */}
         <TextInput
           style={rmStyles.input}
-          placeholder="Name"
+          label="Name"
+          mode="outlined"
           value={name}
           onChangeText={setName}
         />
@@ -259,7 +260,8 @@ function AddRMScreen() {
           <View style={rmStyles.rowItem}>
             <TextInput
               style={rmStyles.input}
-              placeholder="GSM"
+              label="GSM"
+              mode="outlined"
               value={gsm}
               onChangeText={setGSM}
               keyboardType="numeric"
@@ -268,7 +270,8 @@ function AddRMScreen() {
           <View style={rmStyles.rowItem}>
             <TextInput
               style={rmStyles.input}
-              placeholder="Width"
+              label="Width"
+              mode="outlined"
               value={width}
               onChangeText={setWidth}
               keyboardType="numeric"
@@ -281,7 +284,8 @@ function AddRMScreen() {
           <View style={rmStyles.rowItem}>
             <TextInput
               style={rmStyles.input}
-              placeholder="Price (Rs.)"
+              label="Price (Rs.)"
+              mode="outlined"
               value={price}
               onChangeText={setPrice}
               keyboardType="numeric"
@@ -289,10 +293,11 @@ function AddRMScreen() {
           </View>
           <View style={rmStyles.rowItem}>
             <TextInput
-              style={rmStyles.input}
-              placeholder="Quantity"
+              label="Quantity"
               value={quantity}
               onChangeText={setQuantity}
+              mode="outlined"
+              style={rmStyles.input}
               keyboardType="numeric"
             />
           </View>
@@ -320,7 +325,8 @@ function AddRMScreen() {
         {/* Construction / Print / Count */}
         <TextInput
           style={rmStyles.input}
-          placeholder="Count / Construction / Print"
+          label="Count / Construction / Print"
+          mode="outlined"
           value={constructionOrPrint}
           onChangeText={setConstructionOrPrint}
         />
@@ -331,7 +337,8 @@ function AddRMScreen() {
           <View style={rmStyles.rowItem}>
             <TextInput
               style={rmStyles.input}
-              placeholder="Cost Price"
+              label="Cost Price"
+              mode="outlined"
               value={costPrice}
               onChangeText={setCostPrice}
               keyboardType="numeric"
@@ -340,7 +347,8 @@ function AddRMScreen() {
           <View style={rmStyles.rowItem}>
             <TextInput
               style={rmStyles.input}
-              placeholder="Available Stock"
+              label="Available Stock"
+              mode="outlined"
               value={availableStock}
               onChangeText={setAvailableStock}
               keyboardType="numeric"
@@ -361,14 +369,16 @@ function AddRMScreen() {
 
             <TextInput
               style={rmStyles.input}
-              placeholder="Name"
+              label="Variant Name"
+              mode="outlined"
               value={variant.name}
               onChangeText={(text) => handleVariantChange(index, "name", text)}
             />
 
             <TextInput
               style={rmStyles.input}
-              placeholder="Description"
+              label="Variant Description"
+              mode="outlined"
               value={variant.description}
               onChangeText={(text) =>
                 handleVariantChange(index, "description", text)
@@ -401,7 +411,8 @@ function AddRMScreen() {
               <View style={rmStyles.rowItem}>
                 <TextInput
                   style={rmStyles.input}
-                  placeholder="Price"
+                  label="Variant Price"
+                  mode="outlined"
                   value={variant.price}
                   onChangeText={(text) =>
                     handleVariantChange(index, "price", text)
@@ -412,7 +423,8 @@ function AddRMScreen() {
               <View style={rmStyles.rowItem}>
                 <TextInput
                   style={rmStyles.input}
-                  placeholder="Quantity"
+                  label="Variant Quantity"
+                  mode="outlined"
                   value={variant.quantity}
                   onChangeText={(text) =>
                     handleVariantChange(index, "quantity", text)
@@ -425,7 +437,8 @@ function AddRMScreen() {
             {/* Width */}
             <TextInput
               style={rmStyles.input}
-              placeholder="Width"
+              label="Variant Width"
+              mode="outlined"
               value={variant.width}
               onChangeText={(text) => handleVariantChange(index, "width", text)}
               keyboardType="numeric"

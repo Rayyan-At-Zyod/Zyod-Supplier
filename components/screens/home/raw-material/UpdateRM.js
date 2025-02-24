@@ -4,23 +4,13 @@ import {
   View,
   Text,
   ScrollView,
-  TextInput,
-  TouchableOpacity,
-  Alert,
   Image,
 } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
-import { Ionicons } from "@expo/vector-icons";
-import { useDispatch } from 'react-redux';
-import { addMaterial } from "../../../../store/rawMaterialsSlice";
 
 // internal imports
-import { useAuth } from "../../../context/AuthContext";
 import LoadingModal from "../../../util/LoadingModal";
 import { rmStyles } from "../../../styles/updateRM.styles";
-import ImageSelectionModal from "../../../util/ImageSelectionModal";
-import { useImagePicker } from "../../../../hooks/useImagePicker";
-import { addRawMaterial } from "../../../../services/api/addRawMaterial.service";
 import { createRMsData } from "../../../../services/helpers/functions/createRmsDataForRMAdd";
 import { createPayload } from "../../../../services/helpers/functions/createPayloadForRMAdd";
 import { convertImageToBase64 } from "../../../../services/helpers/utilities/imageBase64Converter";

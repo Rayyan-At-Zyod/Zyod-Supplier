@@ -14,9 +14,15 @@ export const rmStyles = StyleSheet.create({
     marginBottom: 16,
     textAlign: "center",
   },
+  mainImage: {
+    width: "100%",
+    height: 200,
+    resizeMode: "cover",
+    borderRadius: 8,
+  },
   imagePlaceholder: {
     height: 200,
-    backgroundColor: "#FFFACD",
+    backgroundColor: "#E0F7FA", // #FFFACD
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
@@ -27,11 +33,10 @@ export const rmStyles = StyleSheet.create({
     color: "#555",
   },
   input: {
+    backgroundColor: "#F9F9F9",
     backgroundColor: "#fff",
-    borderWidth: 1,
     borderColor: "#ddd",
     borderRadius: 8,
-    padding: 12,
     marginBottom: 16,
   },
   row: {
@@ -51,6 +56,7 @@ export const rmStyles = StyleSheet.create({
   },
   label: {
     fontSize: 16,
+    marginLeft: 8,
     fontWeight: "500",
   },
   radioContainer: {
@@ -151,6 +157,7 @@ export const rmStyles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
+    marginBottom: 8,
   },
   // Modal styles
   modalOverlay: {
@@ -178,11 +185,5 @@ export const rmStyles = StyleSheet.create({
   modalOptionText: {
     fontSize: 16,
     color: "#007BFF",
-  },
-  mainImage: {
-    width: "100%",
-    height: 200,
-    resizeMode: "cover",
-    borderRadius: 8,
   },
 });

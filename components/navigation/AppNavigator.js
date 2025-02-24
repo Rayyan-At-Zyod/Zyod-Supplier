@@ -40,13 +40,14 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: "Edit Material",
                 headerTintColor: "black",
+                headerTitleAlign: "center",
                 headerStyle: {
                   backgroundColor: "white",
                 },
                 headerLeft: () => (
                   <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    style={{ marginLeft: 16 }}
+                    style={{ marginLeft: 8 }}
                   >
                     <Ionicons name="arrow-back" size={24} color="black" />
                   </TouchableOpacity>
@@ -61,13 +62,14 @@ const AppNavigator = () => {
                 headerShown: true,
                 headerTitle: "Add Raw Material",
                 headerTintColor: "black",
+                headerTitleAlign: "center",
                 headerStyle: {
                   backgroundColor: "white",
                 },
                 headerLeft: () => (
                   <TouchableOpacity
                     onPress={() => navigation.goBack()}
-                    style={{ marginLeft: 16 }}
+                    style={{ marginLeft: 8 }}
                   >
                     <Ionicons name="arrow-back" size={24} color="black" />
                   </TouchableOpacity>
