@@ -121,6 +121,7 @@ export const createRMsData = async ({
       )),
     ];
 
+    console.log(">>RMsData:", JSON.stringify(RMsData, null, 2));
     return RMsData;
   } catch (error) {
     console.error("Error creating RMsData:", error);

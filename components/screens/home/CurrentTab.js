@@ -12,16 +12,13 @@ import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 
 // internal imports
-import { fetchRawMaterials } from "../../../services/api/fetchRawMaterial.service";
-import {
-  setMaterials,
-  setLoading,
-  addMaterial,
-} from "../../../store/rawMaterialsSlice";
 import { useAuth } from "../../context/AuthContext";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
+import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 import { currentTabStyles } from "../../styles/CurrentTab.styles";
 import LoadingModal from "../../util/LoadingModal";
+import { loadRawMaterials } from "../../../services/helpers/functions/loadRMs";
+
 
 function CurrentTab() {
   const { token } = useAuth();
@@ -35,22 +32,13 @@ function CurrentTab() {
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
-  const loadRawMaterials = async () => {
-    dispatch(setLoading(true));
-    try {
-      const data = await fetchRawMaterials(token);
-      // console.log("✅ Fetched raw materials:", data.length);
-      dispatch(setMaterials(data.data));
-    } catch (error) {
-      // console.error("❌ Error fetching materials:", error);
-    } finally {
-      dispatch(setLoading(false));
-    }
-  };
+  //offline syncing
+  const { isOnline, setIsOnline } = useNetworkStatus();
+  // const [isSyncing, setIsSyncing] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadRawMaterials();
+    await loadRawMaterials(token, isOnline, dispatch);
     setRefreshing(false);
   };
 
@@ -60,10 +48,12 @@ function CurrentTab() {
   };
 
   useEffect(() => {
-    // if (__DEV__) return;
-    console.log("🔄 useEffect called: Fetching raw materials");
-    loadRawMaterials();
-  }, []);
+    const fetchData = async () => {
+      console.log("🔄 1st load useEffect has been called.");
+      await loadRawMaterials(token, isOnline, dispatch);
+    };
+    fetchData();
+  }, [token, isOnline]); // Add dependencies if needed (e.g., token, isOnline)
 
   const renderItem = ({ item }) => {
     return (
@@ -132,7 +122,9 @@ function CurrentTab() {
               <Text style={currentTabStyles.variationText}>
                 Width: {variation.width} m{"\n"}
                 {variation.availableQuantity
-                  ? `Stock: ${variation.availableQuantity} ${variation.unitCode.toLowerCase()}`
+                  ? `Stock: ${
+                      variation.availableQuantity
+                    } ${variation.unitCode.toLowerCase()}`
                   : "Out of Stock"}
                 {"\n"}
                 Price: ₹{variation.generalPrice}/{variation.unitCode}
@@ -147,6 +139,11 @@ function CurrentTab() {
   return (
     <View style={currentTabStyles.container}>
       {isLoading && <LoadingModal />}
+      <View>
+        <Text style={currentTabStyles.title}>
+          App is {isOnline ? "Online" : "Offline"}
+        </Text>
+      </View>
       <FlatList
         data={rawMaterials}
         renderItem={renderItem}

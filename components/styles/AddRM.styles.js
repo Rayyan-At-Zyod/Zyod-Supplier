@@ -22,7 +22,7 @@ export const rmStyles = StyleSheet.create({
   },
   imagePlaceholder: {
     height: 200,
-    backgroundColor: "#FFFACD", // #E0F7FA
+    backgroundColor: "#E0F7FA", // #FFFACD
     borderRadius: 8,
     justifyContent: "center",
     alignItems: "center",
@@ -43,7 +43,6 @@ export const rmStyles = StyleSheet.create({
   row: {
     flexDirection: "row",
     justifyContent: "space-between",
-    marginBottom: 16,
   },
   rowItem: {
     flex: 1,
@@ -106,6 +105,7 @@ export const rmStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
     marginVertical: 8,
+    marginLeft: 6,
   },
   variantContainer: {
     backgroundColor: "#f9f9f9",
@@ -158,7 +158,6 @@ export const rmStyles = StyleSheet.create({
     color: "white",
     fontSize: 16,
     fontWeight: "600",
-    marginBottom: 8,
   },
   // Modal styles
   modalOverlay: {

@@ -7,9 +7,10 @@ export const createPayload = ({
   width,
   mainImage,
   gsm,
-  costPrice,
-  availableStock,
+  price,
   RMsData,
+  quantity,
+  warehouseId,
 }) => {
   // Generate UUID for the request
   const requestUUID = uuidv4();
@@ -35,12 +36,19 @@ export const createPayload = ({
       RMsData,
     },
     additionalInfo: {
-      costPrice: costPrice.toString(),
-      availableStock: availableStock.toString(),
-      warehouseId: 2,
+      costPrice: price.toString(),
+      availableStock: quantity.toString(),
+      warehouseId: warehouseId,
     },
     skuType: "Fabric",
   };
+
+  console.log(
+    ">>in payload create, main details\nskuDetails:",
+    payload.skuDetails,
+    "\n>>additionalInfo:",
+    payload.additionalInfo
+  );
 
   return payload;
 };

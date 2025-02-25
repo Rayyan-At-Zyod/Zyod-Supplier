@@ -1,12 +1,9 @@
-import React, { useEffect, useState, useCallback } from "react";
+import React from "react";
 import {
   View,
-  Text,
   Image,
   StyleSheet,
-  StatusBar,
   SafeAreaView,
-  Platform,
 } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";

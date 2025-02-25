@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { fetchPrimaryWarehouseIdOfThisUser } from "../../services/api/getWarehouseId.service";
 
 const AuthContext = createContext({});
 
@@ -7,8 +8,10 @@ export const AuthProvider = ({ children }) => {
   const [token, setToken] = useState(null);
   const [userData, setUserData] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [warehouseId, setWarehouseId] = useState(null);
 
   useEffect(() => {
+    console.log('🔄 Auth context use effect.')
     loadStoredData();
   }, []);
 
@@ -33,6 +36,12 @@ export const AuthProvider = ({ children }) => {
 
         setToken(storedToken);
         setUserData(parsedUserData);
+        let newWarehouseId = await fetchPrimaryWarehouseIdOfThisUser(
+          storedToken,
+          parsedUserData.user_SupplierId
+        );
+        console.log("🥺 Warehouse ID:", newWarehouseId);
+        setWarehouseId(newWarehouseId);
         console.log("Auth data loaded successfully");
       } else {
         console.log("No stored auth data found");
@@ -68,6 +77,7 @@ export const AuthProvider = ({ children }) => {
 
       setToken(token);
       setUserData(user);
+      loadStoredData();
       console.log("Auth data stored successfully");
     } catch (error) {
       console.error("=== Error Storing Auth Data ===");
@@ -121,7 +131,9 @@ export const AuthProvider = ({ children }) => {
   };
 
   return (
-    <AuthContext.Provider value={{ token, userData, signIn, signOut, loading }}>
+    <AuthContext.Provider
+      value={{ token, userData, signIn, signOut, loading, warehouseId }}
+    >
       {children}
     </AuthContext.Provider>
   );

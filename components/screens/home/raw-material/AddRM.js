@@ -27,13 +27,16 @@ import { createRMsData } from "../../../../services/helpers/functions/createRmsD
 import { createPayload } from "../../../../services/helpers/functions/createPayloadForRMAdd";
 import { convertImageToBase64 } from "../../../../services/helpers/utilities/imageBase64Converter";
 import { fetchPrimaryWarehouseIdOfThisUser } from "../../../../services/api/getWarehouseId.service";
+import { useNetworkStatus } from "../../../../hooks/useNetworkStatus";
+import { loadRawMaterials } from "../../../../services/helpers/functions/loadRMs";
+import { queuePendingAction } from "../../../../services/offline/storage.service";
 
 function AddRMScreen() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
   // Pull token (and possibly userData) from your auth context
-  const { token, userData } = useAuth();
+  const { token, userData, warehouseId } = useAuth();
 
   // Top-level raw material form fields
   const [name, setName] = useState("");
@@ -45,10 +48,6 @@ function AddRMScreen() {
   const [constructionOrPrint, setConstructionOrPrint] = useState("");
   const [mainImage, setMainImage] = useState(""); // For storing a URI or base64
 
-  // Additional Info (if needed)
-  const [costPrice, setCostPrice] = useState("");
-  const [availableStock, setAvailableStock] = useState("");
-
   // Variants array
   const [variants, setVariants] = useState([]);
 
@@ -59,6 +58,8 @@ function AddRMScreen() {
 
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
+
+  const { isOnline, setIsOnline } = useNetworkStatus();
 
   /**
    * Adds a new empty variant row.
@@ -78,16 +79,12 @@ function AddRMScreen() {
     ]);
   };
 
-  /**
-   * Removes a variant at a specific index.
-   */
+  //Removes a variant at a specific index.
   const handleRemoveVariant = (index) => {
     setVariants((prev) => prev.filter((_, i) => i !== index));
   };
 
-  /**
-   * Updates a single field in a given variant.
-   */
+  // Updates a single field in a given variant.
   const handleVariantChange = (index, field, value) => {
     setVariants((prev) =>
       prev.map((variant, i) =>
@@ -96,17 +93,13 @@ function AddRMScreen() {
     );
   };
 
-  /**
-   * Handle the "Click Picture" or "Add Image" action.
-   */
+  // Handle the "Click Picture" or "Add Image" action.
   const openImageModal = (variantIndex = null) => {
     setImageModalIndex(variantIndex);
     setShowImageModal(true);
   };
 
-  /**
-   * Upload images
-   */
+  // Upload images
   const uploadImage = async (mode = "camera") => {
     try {
       const { uri, error } = await useImagePicker({ mode });
@@ -139,9 +132,7 @@ function AddRMScreen() {
     }
   };
 
-  /**
-   * Remove image
-   */
+  // Remove image
   const removeImage = async () => {
     try {
       saveImage(null);
@@ -154,37 +145,28 @@ function AddRMScreen() {
     }
   };
 
-  /**
-   * Fecth warehouseId for ADD API.
-   */
-  const fetchWarehouseId = async () => {
-    try {
-      // console.log("Token", token);
-      // console.log("User data:", userData);
-      // console.log("Getting warehosue Id.");
-      const warehouseId = await fetchPrimaryWarehouseIdOfThisUser(
-        token,
-        userData.user_SupplierId
-      );
-      // console.log("got warehouse id:", warehouseId);
-      return warehouseId;
-    } catch (err) {
-      // console.log("here.");
-      throw new Error("Warehouses not found.");
-    }
-  };
-
-  /**
-   * Constructs the payload and calls the addSku API.
-   */
+  // Constructs the payload and calls the addSku API.
   const handleSave = async () => {
     try {
-      setIsLoading(true);
       if (!name) {
         throw new Error("Name is required");
       }
-
-      const warehouseId = await fetchWarehouseId();
+      if (!mainImage) {
+        throw new Error("Add images");
+      }
+      if (!price) {
+        throw new Error("Price is required");
+      }
+      if (!gsm) {
+        throw new Error("GSM is required");
+      }
+      if (!width) {
+        throw new Error("Width is required");
+      }
+      if (!quantity) {
+        throw new Error("Quantity is required.");
+      }
+      setIsLoading(true);
 
       // 1) Convert main image to base64
       const mainImageBase64 = await convertImageToBase64(mainImage);
@@ -206,41 +188,47 @@ function AddRMScreen() {
       // 3) Create the payload using the helper function
       const payload = createPayload({
         name,
-        constructionOrPrint,
         type,
-        price,
         width,
-        quantity,
         mainImage: mainImageBase64,
         gsm,
-        costPrice,
-        availableStock,
-        variants,
+        price,
         RMsData,
+        quantity,
+        warehouseId,
       });
 
-      // 4) Make the API call
-      const data = await addRawMaterial(payload, token);
-
       const temporaryItem = {
-        greigeId: data?.data?.greigeId || Date.now(),
-        gsm: gsm,
-        rmVariations: [
-          {
-            rmVariationId: Date.now(),
-            name: name,
-            width: width,
-            availableQuantity: quantity,
-            unitCode: "mtr",
-            generalPrice: price,
-            rmImage: mainImage,
-          },
-        ],
+        frontend: {
+          greigeId: Date.now(),
+          gsm: gsm,
+          rmVariations: [
+            {
+              rmVariationId: Date.now(),
+              name: name,
+              width: width,
+              availableQuantity: quantity,
+              unitCode: "mtr",
+              generalPrice: price,
+              rmImage: mainImage,
+            },
+          ],
+        },
+        backend: {
+          payload,
+        },
       };
 
-      dispatch(addMaterial(temporaryItem));
-      setIsLoading(false);
+      // 4) Make the API call
+      if (isOnline) {
+        await addRawMaterial(payload, token);
+        loadRawMaterials(token, isOnline, dispatch);
+      } else {
+        await queuePendingAction({ type: "ADD", payload: temporaryItem.backend });
+        dispatch(addMaterial(temporaryItem.frontend));
+      }
       navigation.goBack();
+      setIsLoading(false);
     } catch (error) {
       setIsLoading(false);
       Alert.alert("Error", error.message);
@@ -347,6 +335,7 @@ function AddRMScreen() {
         </View>
 
         {/* Construction / Print / Count */}
+        <Text style={rmStyles.subHeading}>Additional Info</Text>
         <TextInput
           style={rmStyles.input}
           label="Count / Construction / Print"
@@ -354,21 +343,6 @@ function AddRMScreen() {
           value={constructionOrPrint}
           onChangeText={setConstructionOrPrint}
         />
-
-        {/* Additional Info (Optional) */}
-        <Text style={rmStyles.subHeading}>Additional Info</Text>
-        <View style={rmStyles.row}>
-          <View style={rmStyles.rowItem}>
-            <TextInput
-              style={rmStyles.input}
-              label="Available Stock"
-              mode="outlined"
-              value={availableStock}
-              onChangeText={setAvailableStock}
-              keyboardType="numeric"
-            />
-          </View>
-        </View>
 
         {/* Variants Section */}
         <Text style={rmStyles.subHeading}>Add Variants</Text>
