@@ -1,5 +1,5 @@
 // external library
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { TextInput } from "react-native-paper";
 import {
   View,
@@ -59,7 +59,15 @@ function AddRMScreen() {
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
 
-  const { isOnline, setIsOnline } = useNetworkStatus();
+  // Use the network status hook
+  const { isOnline } = useNetworkStatus(
+    () => {
+      // Callback when the app comes online
+      console.log("App is back online");
+    },
+    token,
+    dispatch
+  );
 
   /**
    * Adds a new empty variant row.
@@ -151,9 +159,9 @@ function AddRMScreen() {
       if (!name) {
         throw new Error("Name is required");
       }
-      if (!mainImage) {
-        throw new Error("Add images");
-      }
+      // if (!mainImage) {
+      //   throw new Error("Add images");
+      // }
       if (!price) {
         throw new Error("Price is required");
       }
@@ -163,9 +171,9 @@ function AddRMScreen() {
       if (!width) {
         throw new Error("Width is required");
       }
-      if (!quantity) {
-        throw new Error("Quantity is required.");
-      }
+      // if (!quantity) {
+      //   throw new Error("Quantity is required.");
+      // }
       setIsLoading(true);
 
       // 1) Convert main image to base64
@@ -199,24 +207,19 @@ function AddRMScreen() {
       });
 
       const temporaryItem = {
-        frontend: {
-          greigeId: Date.now(),
-          gsm: gsm,
-          rmVariations: [
-            {
-              rmVariationId: Date.now(),
-              name: name,
-              width: width,
-              availableQuantity: quantity,
-              unitCode: "mtr",
-              generalPrice: price,
-              rmImage: mainImage,
-            },
-          ],
-        },
-        backend: {
-          payload,
-        },
+        greigeId: Date.now(),
+        gsm: gsm,
+        rmVariations: [
+          {
+            rmVariationId: Date.now(),
+            name: name,
+            width: width,
+            availableQuantity: quantity,
+            unitCode: "mtr",
+            generalPrice: price,
+            rmImage: mainImage,
+          },
+        ],
       };
 
       // 4) Make the API call
@@ -224,8 +227,11 @@ function AddRMScreen() {
         await addRawMaterial(payload, token);
         loadRawMaterials(token, isOnline, dispatch);
       } else {
-        await queuePendingAction({ type: "ADD", payload: temporaryItem.backend });
-        dispatch(addMaterial(temporaryItem.frontend));
+        await queuePendingAction({
+          type: "ADD",
+          payload,
+        });
+        dispatch(addMaterial(temporaryItem));
       }
       navigation.goBack();
       setIsLoading(false);

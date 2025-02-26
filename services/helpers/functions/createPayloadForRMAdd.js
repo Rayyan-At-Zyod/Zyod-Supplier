@@ -43,12 +43,7 @@ export const createPayload = ({
     skuType: "Fabric",
   };
 
-  console.log(
-    ">>in payload create, main details\nskuDetails:",
-    payload.skuDetails,
-    "\n>>additionalInfo:",
-    payload.additionalInfo
-  );
+  console.error(">>in payload create", payload);
 
   return payload;
 };

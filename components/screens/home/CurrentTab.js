@@ -18,7 +18,7 @@ import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 import { currentTabStyles } from "../../styles/CurrentTab.styles";
 import LoadingModal from "../../util/LoadingModal";
 import { loadRawMaterials } from "../../../services/helpers/functions/loadRMs";
-
+import { processPendingActions } from "../../../services/offline/storage.service";
 
 function CurrentTab() {
   const { token } = useAuth();
@@ -33,7 +33,11 @@ function CurrentTab() {
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
   //offline syncing
-  const { isOnline, setIsOnline } = useNetworkStatus();
+  const { isOnline, setIsOnline } = useNetworkStatus(() => {
+    // Callback when the app comes online
+    console.error("App is back online");
+    processPendingActions();
+  }, token, dispatch);
   // const [isSyncing, setIsSyncing] = useState(false);
 
   const onRefresh = async () => {
