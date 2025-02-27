@@ -1,5 +1,5 @@
 // external library
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import { TextInput } from "react-native-paper";
 import {
   View,
@@ -11,7 +11,7 @@ import {
   KeyboardAvoidingView,
   Platform,
 } from "react-native";
-import { useRoute, useNavigation } from "@react-navigation/native";
+import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
 import { addMaterial } from "../../../../store/rawMaterialsSlice";
@@ -25,8 +25,6 @@ import { useImagePicker } from "../../../../hooks/useImagePicker";
 import { addRawMaterial } from "../../../../services/api/addRawMaterial.service";
 import { createRMsData } from "../../../../services/helpers/functions/createRmsDataForRMAdd";
 import { createPayload } from "../../../../services/helpers/functions/createPayloadForRMAdd";
-import { convertImageToBase64 } from "../../../../services/helpers/utilities/imageBase64Converter";
-import { fetchPrimaryWarehouseIdOfThisUser } from "../../../../services/api/getWarehouseId.service";
 import { useNetworkStatus } from "../../../../hooks/useNetworkStatus";
 import { loadRawMaterials } from "../../../../services/helpers/functions/loadRMs";
 import { queuePendingAction } from "../../../../services/offline/storage.service";
@@ -35,14 +33,14 @@ function AddRMScreen() {
   const navigation = useNavigation();
   const dispatch = useDispatch();
 
-  // Pull token (and possibly userData) from your auth context
+  // Pull token (and userData) from auth context
   const { token, userData, warehouseId } = useAuth();
 
   // Top-level raw material form fields
   const [name, setName] = useState("");
   const [gsm, setGSM] = useState("");
   const [width, setWidth] = useState("");
-  const [type, setType] = useState("Solids"); // "Solids" or "Prints"
+  const [type, setType] = useState("Solids");
   const [price, setPrice] = useState("");
   const [quantity, setQuantity] = useState("");
   const [constructionOrPrint, setConstructionOrPrint] = useState("");
@@ -159,9 +157,9 @@ function AddRMScreen() {
       if (!name) {
         throw new Error("Name is required");
       }
-      // if (!mainImage) {
-      //   throw new Error("Add images");
-      // }
+      if (!mainImage) {
+        throw new Error("Add images");
+      }
       if (!price) {
         throw new Error("Price is required");
       }
@@ -171,13 +169,13 @@ function AddRMScreen() {
       if (!width) {
         throw new Error("Width is required");
       }
-      // if (!quantity) {
-      //   throw new Error("Quantity is required.");
-      // }
+      if (!quantity) {
+        throw new Error("Quantity is required.");
+      }
       setIsLoading(true);
 
       // 1) Convert main image to base64
-      const mainImageBase64 = await convertImageToBase64(mainImage);
+      // const mainImageBase64 = await convertImageToBase64(mainImage);
 
       // 2) Create RMsData array using the imported function
       const RMsData = await createRMsData({
@@ -194,11 +192,12 @@ function AddRMScreen() {
       });
 
       // 3) Create the payload using the helper function
-      const payload = createPayload({
+      const payload = await createPayload({
         name,
         type,
         width,
-        mainImage: mainImageBase64,
+        // mainImage: mainImageBase64,
+        mainImage,
         gsm,
         price,
         RMsData,
@@ -211,7 +210,7 @@ function AddRMScreen() {
         gsm: gsm,
         rmVariations: [
           {
-            rmVariationId: Date.now(),
+            rmVariationId: Date.now() + 1,
             name: name,
             width: width,
             availableQuantity: quantity,
@@ -219,6 +218,15 @@ function AddRMScreen() {
             generalPrice: price,
             rmImage: mainImage,
           },
+          ...variants.map((variant, index) => ({
+            rmVariationId: (index + 1) * Date.now(),
+            name: variant.name,
+            width: variant.width,
+            availableQuantity: variant.quantity,
+            unitCode: "mtr",
+            generalPrice: variant.price,
+            rmImage: variant.image,
+          })),
         ],
       };
 

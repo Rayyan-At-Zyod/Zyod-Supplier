@@ -13,7 +13,7 @@ export const createRMsData = async ({
   warehouseId,
 }) => {
   try {
-    const mainImageBase64 = await convertImageToBase64(mainImage);
+    // const mainImageBase64 = await convertImageToBase64(mainImage);
     const printTypeCode = type === "Solids" ? "S" : "P";
     const newCode = width ? `_${width}` : "";
 
@@ -40,7 +40,8 @@ export const createRMsData = async ({
           FabricTypeCode: "W",
           PrintTypeCode: printTypeCode,
         },
-        RMImage: mainImageBase64 ? [mainImageBase64] : [],
+        // RMImage: mainImageBase64 ? [mainImageBase64] : [],
+        RMImage: mainImage,
         RMInventoryDetails: [
           {
             NewCode: newCode,
@@ -66,8 +67,10 @@ export const createRMsData = async ({
         ],
       },
       // Then process all variants
+      // In createRMsDataForRMAdd.js, how are we avoiding the first variant inclusion in the variants.map
       ...(await Promise.all(
         variants.map(async (v) => {
+          // const variantImageBase64 = await convertImageToBase64(v.image);
           const variantImageBase64 = await convertImageToBase64(v.image);
           const variantPrintTypeCode = v.type === "Solids" ? "S" : "P";
           const variantNewCode = v.width ? `_${v.width}` : "";
@@ -90,7 +93,8 @@ export const createRMsData = async ({
             WeftRight: null,
             PrintTypeId: variantPrintTypeCode === "S" ? 2 : 3,
             RMSolidColorText: v.type === "Solids" ? "S" : "", //@FIXME: later
-            RMImage: variantImageBase64 ? [variantImageBase64] : [],
+            // RMImage: variantImageBase64 ? [variantImageBase64] : [],
+            RMImage: v.image ? v.image : [],
             RMVariationDetails: [
               {
                 GeneralPrice: Number(v.price),
@@ -121,7 +125,7 @@ export const createRMsData = async ({
       )),
     ];
 
-    console.log(">>RMsData:", JSON.stringify(RMsData, null, 2));
+    // console.log(">>RMsData:", JSON.stringify(RMsData, null, 2));
     return RMsData;
   } catch (error) {
     console.error("Error creating RMsData:", error);

@@ -1,7 +1,9 @@
 import "react-native-get-random-values";
 import { v4 as uuidv4 } from "uuid";
+import { convertImageToBase64 } from "../utilities/imageBase64Converter";
 
-export const createPayload = ({
+// export const createPayload = ({
+export const createPayload = async ({
   name,
   type,
   width,
@@ -20,6 +22,7 @@ export const createPayload = ({
     skuDetails: {
       appDbId: requestUUID,
       name: name,
+      // image: mainImage ? await convertImageToBase64(mainImage) : "",
       image: mainImage || "",
       categoryId: 15,
       gsm: gsm.toString(),
@@ -43,7 +46,7 @@ export const createPayload = ({
     skuType: "Fabric",
   };
 
-  console.error(">>in payload create", payload);
+  // console.error(">>in payload create", payload);
 
   return payload;
 };

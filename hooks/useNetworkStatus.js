@@ -7,6 +7,7 @@ export const useNetworkStatus = (onOnline, token, dispatch) => {
 
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener((netInfoState) => {
+      console.error("X == useNetworkStatus effect == X");
       const wasOffline = !isOnline;
       setIsOnline(netInfoState.isConnected);
 

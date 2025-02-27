@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import {
   View,
   Text,
@@ -14,6 +14,7 @@ import { Linking } from "react-native";
 import { useAuth } from "../../context/AuthContext";
 import ProfileContent from "../../util/ProfileContent";
 import { API_ENDPOINTS } from "../../../services/api/endpoints";
+import { clearPendingActions } from "../../../services/offline/storage.service";
 
 const ProfileScreen = () => {
   const navigation = useNavigation();
@@ -30,6 +31,14 @@ const ProfileScreen = () => {
 
     Linking.openURL(url);
   };
+
+  // useEffect(() => {
+  //   console.error("🔄 Clearing pending actions on loading AddRM Screen.");
+  //   const doClear = async () => {
+  //     await clearPendingActions();
+  //   };
+  //   doClear();
+  // });
 
   return (
     <SafeAreaView style={styles.safeArea}>

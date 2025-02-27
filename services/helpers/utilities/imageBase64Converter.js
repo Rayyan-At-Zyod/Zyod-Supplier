@@ -1,6 +1,7 @@
-import * as FileSystem from 'expo-file-system';
+import * as FileSystem from "expo-file-system";
 
 export const convertImageToBase64 = async (uri) => {
+  console.log("uri:", uri);
   try {
     if (!uri) return null;
     const base64 = await FileSystem.readAsStringAsync(uri, {
@@ -8,7 +9,7 @@ export const convertImageToBase64 = async (uri) => {
     });
     return `data:image/jpeg;base64,${base64}`;
   } catch (error) {
-    console.error('Error converting image to base64:', error);
+    console.error("Error converting image to base64:", error);
     return null;
   }
-}; 
+};

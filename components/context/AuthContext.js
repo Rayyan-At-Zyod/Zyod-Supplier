@@ -11,7 +11,7 @@ export const AuthProvider = ({ children }) => {
   const [warehouseId, setWarehouseId] = useState(null);
 
   useEffect(() => {
-    console.log('🔄 Auth context use effect.')
+    console.log("🔄 Auth context use effect.");
     loadStoredData();
   }, []);
 
@@ -23,16 +23,8 @@ export const AuthProvider = ({ children }) => {
         AsyncStorage.getItem("userData"),
       ]);
 
-      console.log("Stored token exists:", !!storedToken);
-      console.log("Stored user data exists:", !!storedUserData);
-
       if (storedToken && storedUserData) {
         const parsedUserData = JSON.parse(storedUserData);
-        console.log("Loaded user data:", {
-          id: parsedUserData.user_id,
-          email: parsedUserData.user_email,
-          role: parsedUserData.user_role,
-        });
 
         setToken(storedToken);
         setUserData(parsedUserData);
@@ -42,7 +34,7 @@ export const AuthProvider = ({ children }) => {
         );
         console.log("🥺 Warehouse ID:", newWarehouseId);
         setWarehouseId(newWarehouseId);
-        console.log("Auth data loaded successfully");
+        console.log("=== Auth data loaded successfully ===");
       } else {
         console.log("No stored auth data found");
       }
@@ -53,22 +45,12 @@ export const AuthProvider = ({ children }) => {
       console.error("Error stack:", error.stack);
     } finally {
       setLoading(false);
-      console.log("Loading stored data completed");
     }
   };
 
   const signIn = async (token, user) => {
     console.log("=== Sign In Process ===");
     try {
-      console.log("Storing auth data...");
-      console.log("Token:", token);
-      console.log("User data:", {
-        id: user.user_id,
-        email: user.user_email,
-        role: user.user_role,
-        supplierId: user.user_SupplierId,
-      });
-
       // storing user data in async storage
       await Promise.all([
         AsyncStorage.setItem("userToken", token),
@@ -78,7 +60,7 @@ export const AuthProvider = ({ children }) => {
       setToken(token);
       setUserData(user);
       loadStoredData();
-      console.log("Auth data stored successfully");
+      console.log("Auth data stored successfully on sign in.");
     } catch (error) {
       console.error("=== Error Storing Auth Data ===");
       console.error("Error type:", error.constructor.name);
@@ -90,30 +72,14 @@ export const AuthProvider = ({ children }) => {
 
   const signOut = async () => {
     console.log("=== Sign Out Process ===");
-    console.log(
-      "Current user:",
-      userData
-        ? {
-            id: userData.user_id,
-            email: userData.user_email,
-            role: userData.user_role,
-          }
-        : "No user data"
-    );
-
     try {
-      console.log("Removing auth data from AsyncStorage...");
+      console.log("Removing auth data from app storage...");
       await Promise.all([
         AsyncStorage.removeItem("userToken"),
         AsyncStorage.removeItem("userData"),
       ]);
-      console.log("AsyncStorage items removed successfully");
-
-      console.log("Clearing auth context state...");
       setToken(null);
       setUserData(null);
-      console.log("Context state cleared");
-
       console.log("Sign out completed successfully");
     } catch (error) {
       console.error("=== Error During Sign Out ===");

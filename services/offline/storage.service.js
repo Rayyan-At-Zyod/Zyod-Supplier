@@ -1,6 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { addRawMaterial } from "../api/addRawMaterial.service";
 import { loadRawMaterials } from "../helpers/functions/loadRMs";
+import { setLoading } from "../../store/rawMaterialsSlice";
 
 export const saveToCache = async (key, data) => {
   try {
@@ -45,11 +46,12 @@ export const clearPendingActions = async () => {
 
 export const processPendingActions = async (token, dispatch) => {
   try {
+    dispatch(setLoading(true));
     const pendingActions = await loadFromCache("pendingActions");
     if (pendingActions && pendingActions.length > 0) {
       for (const action of pendingActions) {
         if (action.type === "ADD") {
-          console.log("Processing action payload:", action.payload);
+          console.error("Processing action payload:", action.payload);
           await addRawMaterial(action.payload, token);
         }
       }
@@ -58,5 +60,7 @@ export const processPendingActions = async (token, dispatch) => {
     }
   } catch (error) {
     console.error("Failed to process pending actions:", error);
+  } finally {
+    dispatch(setLoading(false));
   }
 };
