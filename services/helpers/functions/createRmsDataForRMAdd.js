@@ -67,7 +67,6 @@ export const createRMsData = async ({
         ],
       },
       // Then process all variants
-      // In createRMsDataForRMAdd.js, how are we avoiding the first variant inclusion in the variants.map
       ...(await Promise.all(
         variants.map(async (v) => {
           // const variantImageBase64 = await convertImageToBase64(v.image);

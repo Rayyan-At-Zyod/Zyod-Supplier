@@ -6,8 +6,7 @@ export const useNetworkStatus = (onOnline, token, dispatch) => {
   const [isOnline, setIsOnline] = useState(true);
 
   useEffect(() => {
-    const unsubscribe = NetInfo.addEventListener((netInfoState) => {
-      console.error("X == useNetworkStatus effect == X");
+    const unsubscribe = NetInfo.addEventListener(async (netInfoState) => {
       const wasOffline = !isOnline;
       setIsOnline(netInfoState.isConnected);
 
@@ -16,12 +15,13 @@ export const useNetworkStatus = (onOnline, token, dispatch) => {
         if (onOnline) {
           onOnline();
         }
-        processPendingActions(token, dispatch); // Process pending actions
+        await processPendingActions(token, dispatch); // Process pending actions
       }
     });
 
     return () => unsubscribe();
-  }, [isOnline, onOnline, token, dispatch]);
+    // }, [isOnline, onOnline, token, dispatch]);
+  }, [isOnline]);
 
   return { isOnline };
 };

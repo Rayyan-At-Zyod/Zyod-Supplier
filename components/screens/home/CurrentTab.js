@@ -33,20 +33,18 @@ function CurrentTab() {
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
   //offline syncing
-  const { isOnline, setIsOnline } = useNetworkStatus(
+  const { isOnline } = useNetworkStatus(
     () => {
       // Callback when the app comes online
-      console.error("App is back online");
-      processPendingActions();
+      console.log("App is back online");
     },
     token,
     dispatch
   );
-  // const [isSyncing, setIsSyncing] = useState(false);
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadRawMaterials(token, isOnline, dispatch);
+    await fetchData();
     setRefreshing(false);
   };
 
@@ -60,9 +58,8 @@ function CurrentTab() {
   };
 
   useEffect(() => {
-    console.error("🔄 current tab. fetch raw materials.");
     fetchData();
-  }, [token, isOnline]);
+  }, []);
 
   const renderItem = ({ item }) => {
     return (
@@ -147,7 +144,7 @@ function CurrentTab() {
 
   return (
     <View style={currentTabStyles.container}>
-      {isLoading && <LoadingModal />}
+      {isLoading && <LoadingModal visible={isLoading}/>}
       <View>
         <Text style={currentTabStyles.title}>
           App is {isOnline ? "Online" : "Offline"}

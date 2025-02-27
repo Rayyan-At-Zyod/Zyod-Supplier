@@ -17,6 +17,9 @@ import { API_ENDPOINTS } from "../../../services/api/endpoints";
 import { clearPendingActions } from "../../../services/offline/storage.service";
 
 const ProfileScreen = () => {
+  useEffect(() => {
+    clearPendingActions();
+  });
   const navigation = useNavigation();
   const { signOut, userData } = useAuth();
   const [menuVisible, setMenuVisible] = useState(false);
@@ -31,14 +34,6 @@ const ProfileScreen = () => {
 
     Linking.openURL(url);
   };
-
-  // useEffect(() => {
-  //   console.error("🔄 Clearing pending actions on loading AddRM Screen.");
-  //   const doClear = async () => {
-  //     await clearPendingActions();
-  //   };
-  //   doClear();
-  // });
 
   return (
     <SafeAreaView style={styles.safeArea}>

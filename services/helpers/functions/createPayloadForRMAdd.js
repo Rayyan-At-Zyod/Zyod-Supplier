@@ -46,7 +46,5 @@ export const createPayload = async ({
     skuType: "Fabric",
   };
 
-  // console.error(">>in payload create", payload);
-
   return payload;
 };

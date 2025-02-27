@@ -24,11 +24,8 @@ export const loadFromCache = async (key) => {
 export const queuePendingAction = async (action) => {
   try {
     const pendingActions = (await loadFromCache("pendingActions")) || [];
-    console.error("pendingActions after loading from cache", pendingActions);
-    console.error("action to be push on pendingActions", action);
     pendingActions.push(action);
     await saveToCache("pendingActions", pendingActions);
-    console.error("pendingActions after save", pendingActions);
   } catch (error) {
     console.error("Failed to queue new pending action:", error);
   }
@@ -48,10 +45,15 @@ export const processPendingActions = async (token, dispatch) => {
   try {
     dispatch(setLoading(true));
     const pendingActions = await loadFromCache("pendingActions");
-    if (pendingActions && pendingActions.length > 0) {
+    if (
+      pendingActions &&
+      pendingActions !== "" &&
+      Array.isArray(pendingActions) &&
+      pendingActions.length > 0
+    ) {
+      console.error("In, pendingActions:", pendingActions);
       for (const action of pendingActions) {
         if (action.type === "ADD") {
-          console.error("Processing action payload:", action.payload);
           await addRawMaterial(action.payload, token);
         }
       }
