@@ -47,11 +47,6 @@ const LoadingModal = ({ visible }) => {
   return (
     <Modal transparent visible={visible}>
       <View style={styles.container}>
-        {syncing && (
-          <Text style={styles.syncText}>
-            Syncing... Relax, this may take a while...
-          </Text>
-        )}
         <View style={styles.modalContent}>
           <Animated.View
             style={[
@@ -65,6 +60,11 @@ const LoadingModal = ({ visible }) => {
             ]}
           />
         </View>
+        {syncing && (
+          <Text style={styles.syncText}>
+            Syncing... {"\n"}✨ Relax, this may take a while... ✨
+          </Text>
+        )}
       </View>
     </Modal>
   );
@@ -74,8 +74,8 @@ const styles = StyleSheet.create({
   syncText: {
     color: "black",
     backgroundColor: "white",
-    padding: 2,
-    marginBottom: 2,
+    padding: 4,
+    marginVertical: 2,
     borderRadius: 5,
   },
   container: {
