@@ -28,6 +28,7 @@ import { createPayload } from "../../../../services/helpers/functions/createPayl
 import { useNetworkStatus } from "../../../../hooks/useNetworkStatus";
 import { loadRawMaterials } from "../../../../services/helpers/functions/loadRMs";
 import { queuePendingAction } from "../../../../services/offline/storage.service";
+import { validateAddRMForm } from "../../../../services/helpers/functions/addFormValidator";
 
 function AddRMScreen() {
   const navigation = useNavigation();
@@ -154,28 +155,32 @@ function AddRMScreen() {
   // Constructs the payload and calls the addSku API.
   const handleSave = async () => {
     try {
-      if (!name) {
-        throw new Error("Name is required");
+      // 1) Validate forms.
+      const validationError = validateAddRMForm({
+        name,
+        mainImage,
+        price,
+        gsm,
+        width,
+        quantity,
+      });
+      if (validationError) {
+        throw new Error(validationError);
       }
-      if (!mainImage) {
-        throw new Error("Add images");
-      }
-      if (!price) {
-        throw new Error("Price is required");
-      }
-      if (!gsm) {
-        throw new Error("GSM is required");
-      }
-      if (!width) {
-        throw new Error("Width is required");
-      }
-      if (!quantity) {
-        throw new Error("Quantity is required.");
-      }
+      variants.forEach((v) => {
+        const variantError = validateAddRMForm({
+          name: v.name,
+          mainImage: v.image,
+          price: v.price,
+          gsm,
+          width: v.width,
+          quantity: v.quantity,
+        });
+        if (variantError) {
+          throw new Error(variantError);
+        }
+      });
       setIsLoading(true);
-
-      // 1) Convert main image to base64
-      // const mainImageBase64 = await convertImageToBase64(mainImage);
 
       // 2) Create RMsData array using the imported function
       const RMsData = await createRMsData({

@@ -69,16 +69,21 @@ export const currentTabStyles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   variationsContainer: {
+    // @TODO: check next 3 lines and width in variationsContentContainer for carousel
+    // flexDirection: "row",
+    // flexWrap: "wrap",
+    // gap: 12,
     marginTop: 16,
-    flexDirection: "row",
-    flexWrap: "wrap",
-    gap: 12,
+  },
+  variationsContentContainer: {
+    paddingHorizontal: 4,
   },
   variationItem: {
+    // width: Platform.OS === "ios" ? "48%" : 171,
+    width: 250,
     backgroundColor: "#f8f8f8",
     padding: 12,
     borderRadius: 8,
-    width: Platform.OS === "ios" ? "48%" : 171,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,

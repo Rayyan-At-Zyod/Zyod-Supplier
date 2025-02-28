@@ -18,7 +18,6 @@ import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 import { currentTabStyles } from "../../styles/CurrentTab.styles";
 import LoadingModal from "../../util/LoadingModal";
 import { loadRawMaterials } from "../../../services/helpers/functions/loadRMs";
-import { processPendingActions } from "../../../services/offline/storage.service";
 
 function CurrentTab() {
   const { token } = useAuth();
@@ -28,11 +27,11 @@ function CurrentTab() {
   const isLoading = useSelector((state) => state.rawMaterials.loading);
   const [refreshing, setRefreshing] = useState(false);
 
-  // states for image display
+  // states for image display.
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
-  //offline syncing
+  //offline syncing.
   const { isOnline } = useNetworkStatus(
     () => {
       // Callback when the app comes online
@@ -41,6 +40,9 @@ function CurrentTab() {
     token,
     dispatch
   );
+
+  // Select variations.
+  const [selectedItem, setSelectedItem] = useState(null);
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -112,7 +114,37 @@ function CurrentTab() {
 
         {/* Variations section */}
         <View style={currentTabStyles.variationsContainer}>
-          {item.rmVariations.map((variation) => (
+          <FlatList
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            data={item.rmVariations}
+            keyExtractor={(variation) => variation.rmVariationId.toString()}
+            renderItem={({ item: variation }) => (
+              <View style={currentTabStyles.variationItem}>
+                <TouchableOpacity
+                  onPress={() => handleImagePress(variation.rmImage)}
+                >
+                  <Image
+                    source={{ uri: variation.rmImage }}
+                    style={currentTabStyles.variationImage}
+                  />
+                </TouchableOpacity>
+                <Text style={currentTabStyles.variationText}>
+                  Width: {variation.width} m{"\n"}
+                  {variation.availableQuantity
+                    ? `Stock: ${
+                        variation.availableQuantity
+                      } ${variation.unitCode.toLowerCase()}`
+                    : "Out of Stock"}
+                  {"\n"}
+                  Price: ₹{variation.generalPrice}/{variation.unitCode}
+                </Text>
+              </View>
+            )}
+            contentContainerStyle={currentTabStyles.variationsContentContainer}
+            ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
+          />
+          {/* {item.rmVariations.map((variation) => (
             <View
               key={variation.rmVariationId}
               style={currentTabStyles.variationItem}
@@ -136,7 +168,7 @@ function CurrentTab() {
                 Price: ₹{variation.generalPrice}/{variation.unitCode}
               </Text>
             </View>
-          ))}
+          ))} */}
         </View>
       </View>
     );
@@ -144,7 +176,7 @@ function CurrentTab() {
 
   return (
     <View style={currentTabStyles.container}>
-      {isLoading && <LoadingModal visible={isLoading}/>}
+      {isLoading && <LoadingModal visible={isLoading} />}
       <View>
         <Text style={currentTabStyles.title}>
           App is {isOnline ? "Online" : "Offline"}
