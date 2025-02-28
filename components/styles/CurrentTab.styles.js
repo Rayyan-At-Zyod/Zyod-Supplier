@@ -10,9 +10,9 @@ export const currentTabStyles = StyleSheet.create({
   },
   card: {
     backgroundColor: "white",
-    borderRadius: 8,
-    borderBottomLeftRadius: 100,
-    borderBottomRightRadius: 100,
+    borderRadius: 16,
+    borderBottomLeftRadius: 75,
+    borderBottomRightRadius: 75,
     marginBottom: 8,
     elevation: 2,
     shadowColor: "#000",
@@ -83,7 +83,9 @@ export const currentTabStyles = StyleSheet.create({
   },
   variationsContentContainer: {
     flexGrow: 1,
+    // marginHorizontal: 100,
     justifyContent: 'space-around',
+    gap: 20,
     paddingHorizontal: 4,
   },
   variationItem: {
@@ -95,10 +97,6 @@ export const currentTabStyles = StyleSheet.create({
     paddingHorizontal: 6,
     marginBottom: 4,
     borderRadius: 36,
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    gap: 8,
     ...Platform.select({
       ios: {
         shadowColor: "#000",

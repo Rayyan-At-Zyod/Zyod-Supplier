@@ -1,5 +1,5 @@
 // external library
-import React, { useState } from "react";
+import React, { useState, useRef } from "react";
 import { TextInput } from "react-native-paper";
 import {
   View,
@@ -27,7 +27,11 @@ import { createRMsData } from "../../../../services/helpers/functions/createRmsD
 import { createPayload } from "../../../../services/helpers/functions/createPayloadForRMAdd";
 import { useNetworkStatus } from "../../../../hooks/useNetworkStatus";
 import { loadRawMaterials } from "../../../../services/helpers/functions/loadRMs";
-import { queuePendingAction } from "../../../../services/offline/storage.service";
+import {
+  loadFromCache,
+  queuePendingAction,
+  saveToCache,
+} from "../../../../services/offline/storage.service";
 import { validateAddRMForm } from "../../../../services/helpers/functions/addFormValidator";
 
 function AddRMScreen() {
@@ -57,6 +61,13 @@ function AddRMScreen() {
 
   // Loading state
   const [isLoading, setIsLoading] = useState(false);
+
+  // useRefs
+  const gsmRef = useRef();
+  const widthRef = useRef();
+  const priceRef = useRef();
+  const quantityRef = useRef();
+  const descriptionRef = useRef();
 
   // Use the network status hook
   const { isOnline } = useNetworkStatus(
@@ -244,6 +255,8 @@ function AddRMScreen() {
           type: "ADD",
           payload,
         });
+        const loadedData = await loadFromCache("cachedData");
+        await saveToCache("cachedData", [temporaryItem, ...loadedData]);
         dispatch(addMaterial(temporaryItem));
       }
       navigation.goBack();
@@ -260,7 +273,10 @@ function AddRMScreen() {
       behavior={Platform.OS === "ios" ? "padding" : "height"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
     >
-      <ScrollView contentContainerStyle={rmStyles.scrollContainer}>
+      <ScrollView
+        contentContainerStyle={rmStyles.scrollContainer}
+        // keyboardShouldPersistTaps="handled"
+      >
         <Text style={rmStyles.heading}>Create Raw Material</Text>
 
         {/* Main Product Image */}
@@ -283,6 +299,8 @@ function AddRMScreen() {
           label="Name"
           mode="outlined"
           value={name}
+          returnKeyType="next"
+          onSubmitEditing={() => gsmRef.current && gsmRef.current.focus()}
           onChangeText={setName}
         />
 
@@ -291,21 +309,31 @@ function AddRMScreen() {
           <View style={rmStyles.rowItem}>
             <TextInput
               style={rmStyles.input}
+              ref={gsmRef}
               label="GSM"
               mode="outlined"
               value={gsm}
+              returnKeyType="next"
+              onSubmitEditing={() =>
+                widthRef.current && widthRef.current.focus()
+              }
               onChangeText={setGSM}
-              keyboardType="numeric"
+              keyboardType="number-pad"
             />
           </View>
           <View style={rmStyles.rowItem}>
             <TextInput
               style={rmStyles.input}
+              ref={widthRef}
               label="Width"
               mode="outlined"
               value={width}
+              returnKeyType="next"
+              onSubmitEditing={() =>
+                priceRef.current && priceRef.current.focus()
+              }
               onChangeText={setWidth}
-              keyboardType="numeric"
+              keyboardType="number-pad"
             />
           </View>
         </View>
@@ -315,21 +343,31 @@ function AddRMScreen() {
           <View style={rmStyles.rowItem}>
             <TextInput
               style={rmStyles.input}
+              ref={priceRef}
               label="Price (Rs.)"
               mode="outlined"
               value={price}
+              returnKeyType="next"
+              onSubmitEditing={() =>
+                quantityRef.current && quantityRef.current.focus()
+              }
               onChangeText={setPrice}
-              keyboardType="numeric"
+              keyboardType="number-pad"
             />
           </View>
           <View style={rmStyles.rowItem}>
             <TextInput
               label="Quantity"
+              ref={quantityRef}
               value={quantity}
+              returnKeyType="next"
+              onSubmitEditing={() =>
+                descriptionRef.current && descriptionRef.current.focus()
+              }
               onChangeText={setQuantity}
               mode="outlined"
               style={rmStyles.input}
-              keyboardType="numeric"
+              keyboardType="number-pad"
             />
           </View>
         </View>
@@ -357,9 +395,12 @@ function AddRMScreen() {
         <Text style={rmStyles.subHeading}>Additional Info</Text>
         <TextInput
           style={rmStyles.input}
+          ref={descriptionRef}
           label="Count / Construction / Print"
           mode="outlined"
           value={constructionOrPrint}
+          returnKeyType="done"
+          onSubmitEditing={handleSave}
           onChangeText={setConstructionOrPrint}
         />
 
@@ -424,7 +465,7 @@ function AddRMScreen() {
                   onChangeText={(text) =>
                     handleVariantChange(index, "price", text)
                   }
-                  keyboardType="numeric"
+                  keyboardType="number-pad"
                 />
               </View>
               <View style={rmStyles.rowItem}>
@@ -436,7 +477,7 @@ function AddRMScreen() {
                   onChangeText={(text) =>
                     handleVariantChange(index, "quantity", text)
                   }
-                  keyboardType="numeric"
+                  keyboardType="number-pad"
                 />
               </View>
             </View>
@@ -448,7 +489,7 @@ function AddRMScreen() {
               mode="outlined"
               value={variant.width}
               onChangeText={(text) => handleVariantChange(index, "width", text)}
-              keyboardType="numeric"
+              keyboardType="number-pad"
             />
 
             {/* Variant Image */}
