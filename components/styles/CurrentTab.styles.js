@@ -11,7 +11,7 @@ export const currentTabStyles = StyleSheet.create({
   card: {
     backgroundColor: "white",
     borderRadius: 8,
-    marginBottom: 16,
+    marginBottom: 8,
     elevation: 2,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 2 },
@@ -78,13 +78,13 @@ export const currentTabStyles = StyleSheet.create({
     backgroundColor: "#f8f8f8",
     padding: 12,
     borderRadius: 8,
-    width: Platform.OS === 'ios' ? '48%' : 171,
+    width: Platform.OS === "ios" ? "48%" : 171,
     flexDirection: "row",
     alignItems: "center",
     gap: 8,
     ...Platform.select({
       ios: {
-        shadowColor: '#000',
+        shadowColor: "#000",
         shadowOffset: { width: 0, height: 1 },
         shadowOpacity: 0.2,
         shadowRadius: 2,

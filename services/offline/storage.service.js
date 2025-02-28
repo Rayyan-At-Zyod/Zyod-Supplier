@@ -52,7 +52,7 @@ export const processPendingActions = async (token, dispatch) => {
       pendingActions.length > 0
     ) {
       dispatch(setSyncing(true));
-      console.error("In, pendingActions:", pendingActions);
+      // console.error("In, pendingActions:", pendingActions);
       for (const action of pendingActions) {
         if (action.type === "ADD") {
           await addRawMaterial(action.payload, token);
