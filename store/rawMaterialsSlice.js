@@ -5,12 +5,16 @@ const rawMaterialsSlice = createSlice({
   initialState: {
     items: [],
     loading: false,
+    syncing: false,
   },
   reducers: {
     setLoading: (state, action) => {
       // console.log("📢 setLoading called:", action.payload);
-
       state.loading = action.payload;
+    },
+    setSyncing: (state, action) => {
+      // console.log("📢 setSyncing called:", action.payload);
+      state.syncing = action.payload;
     },
     addMaterial: (state, action) => {
       // console.log("📢 addMaterial called:", action.payload);
@@ -28,6 +32,6 @@ const rawMaterialsSlice = createSlice({
   },
 });
 
-export const { addMaterial, setMaterials, setLoading } =
+export const { addMaterial, setMaterials, setLoading, setSyncing } =
   rawMaterialsSlice.actions;
 export default rawMaterialsSlice.reducer;

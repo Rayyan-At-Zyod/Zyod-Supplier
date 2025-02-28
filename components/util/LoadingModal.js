@@ -1,8 +1,10 @@
 import React, { useEffect } from "react";
-import { Modal, View, StyleSheet, Animated, Easing } from "react-native";
+import { Modal, View, StyleSheet, Animated, Easing, Text } from "react-native";
+import { useSelector } from "react-redux";
 
 const LoadingModal = ({ visible }) => {
   const animatedValue = new Animated.Value(0);
+  const syncing = useSelector((state) => state.rawMaterials.syncing);
 
   useEffect(() => {
     if (visible) {
@@ -25,7 +27,7 @@ const LoadingModal = ({ visible }) => {
         ])
       ).start();
     }
-  }, [visible]);
+  }, [visible, syncing]);
 
   const size = animatedValue.interpolate({
     inputRange: [0, 1],
@@ -45,6 +47,11 @@ const LoadingModal = ({ visible }) => {
   return (
     <Modal transparent visible={visible}>
       <View style={styles.container}>
+        {syncing && (
+          <Text style={styles.syncText}>
+            Syncing... Relax, this may take a while...
+          </Text>
+        )}
         <View style={styles.modalContent}>
           <Animated.View
             style={[
@@ -64,6 +71,13 @@ const LoadingModal = ({ visible }) => {
 };
 
 const styles = StyleSheet.create({
+  syncText: {
+    color: "black",
+    backgroundColor: "white",
+    padding: 2,
+    marginBottom: 2,
+    borderRadius: 5,
+  },
   container: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",

@@ -1,7 +1,7 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { addRawMaterial } from "../api/addRawMaterial.service";
 import { loadRawMaterials } from "../helpers/functions/loadRMs";
-import { setLoading } from "../../store/rawMaterialsSlice";
+import { setLoading, setSyncing } from "../../store/rawMaterialsSlice";
 
 export const saveToCache = async (key, data) => {
   try {
@@ -51,6 +51,7 @@ export const processPendingActions = async (token, dispatch) => {
       Array.isArray(pendingActions) &&
       pendingActions.length > 0
     ) {
+      dispatch(setSyncing(true));
       console.error("In, pendingActions:", pendingActions);
       for (const action of pendingActions) {
         if (action.type === "ADD") {
@@ -58,6 +59,7 @@ export const processPendingActions = async (token, dispatch) => {
         }
       }
       await clearPendingActions();
+      dispatch(setSyncing(false));
       loadRawMaterials(token, true, dispatch); // Reload materials from the server
     }
   } catch (error) {
