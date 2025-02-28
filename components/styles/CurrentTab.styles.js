@@ -11,6 +11,8 @@ export const currentTabStyles = StyleSheet.create({
   card: {
     backgroundColor: "white",
     borderRadius: 8,
+    borderBottomLeftRadius: 100,
+    borderBottomRightRadius: 100,
     marginBottom: 8,
     elevation: 2,
     shadowColor: "#000",
@@ -28,8 +30,8 @@ export const currentTabStyles = StyleSheet.create({
     margin: 12,
     zIndex: 1,
     backgroundColor: "rgba(255, 255, 255, 0.9)",
-    padding: 10,
-    borderRadius: 12,
+    padding: 12,
+    borderRadius: 18,
     shadowColor: "#000",
     shadowOffset: { width: 0, height: 1 },
     shadowOpacity: 0.6,
@@ -39,6 +41,10 @@ export const currentTabStyles = StyleSheet.create({
   topContainer: {
     flexDirection: "row",
     gap: 16,
+  },
+  detailsContainer: {
+    flexDirection: "row",
+    // gap: 4,
   },
   materialImage: {
     width: 120,
@@ -76,16 +82,22 @@ export const currentTabStyles = StyleSheet.create({
     marginTop: 16,
   },
   variationsContentContainer: {
+    flexGrow: 1,
+    justifyContent: 'space-around',
     paddingHorizontal: 4,
   },
   variationItem: {
     // width: Platform.OS === "ios" ? "48%" : 171,
-    width: 250,
     backgroundColor: "#f8f8f8",
-    padding: 12,
-    borderRadius: 8,
+    // backgroundColor: "brown",
+    color: "black",
+    paddingVertical: 6,
+    paddingHorizontal: 6,
+    marginBottom: 4,
+    borderRadius: 36,
     flexDirection: "row",
     alignItems: "center",
+    justifyContent: "space-between",
     gap: 8,
     ...Platform.select({
       ios: {
@@ -100,9 +112,9 @@ export const currentTabStyles = StyleSheet.create({
     }),
   },
   variationImage: {
-    width: 60,
-    height: 60,
-    borderRadius: 20,
+    width: 65,
+    height: 65,
+    borderRadius: 30,
   },
   variationText: {
     flex: 1,
