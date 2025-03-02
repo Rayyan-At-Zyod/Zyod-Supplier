@@ -1,5 +1,5 @@
 // external library
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, createRef } from "react";
 import { TextInput } from "react-native-paper";
 import {
   View,
@@ -68,6 +68,8 @@ function AddRMScreen() {
   const priceRef = useRef();
   const quantityRef = useRef();
   const descriptionRef = useRef();
+  const [variantRefs, setVariantRefs] = useState([]);
+  const saveButtonRef = useRef();
 
   // Use the network status hook
   const { isOnline } = useNetworkStatus(
@@ -95,11 +97,22 @@ function AddRMScreen() {
         image: "",
       },
     ]);
+    setVariantRefs((prev) => [
+      ...prev,
+      {
+        nameRef: createRef(),
+        descriptionRef: createRef(),
+        priceRef: createRef(),
+        quantityRef: createRef(),
+        widthRef: createRef(),
+      },
+    ]);
   };
 
   //Removes a variant at a specific index.
   const handleRemoveVariant = (index) => {
     setVariants((prev) => prev.filter((_, i) => i !== index));
+    setVariantRefs((prev) => prev.filter((_, i) => i !== index));
   };
 
   // Updates a single field in a given variant.
@@ -394,13 +407,20 @@ function AddRMScreen() {
         {/* Construction / Print / Count */}
         <Text style={rmStyles.subHeading}>Additional Info</Text>
         <TextInput
+          key={`descriptionSendButtonChange-${variants.length}`}
           style={rmStyles.input}
           ref={descriptionRef}
           label="Count / Construction / Print"
           mode="outlined"
           value={constructionOrPrint}
-          returnKeyType="done"
-          onSubmitEditing={handleSave}
+          returnKeyType={variants.length > 0 ? "send" : "done"}
+          onSubmitEditing={() => {
+            if (variants.length > 0) {
+              variantRefs[0]?.nameRef.current?.focus();
+            } else {
+              handleSave();
+            }
+          }}
           onChangeText={setConstructionOrPrint}
         />
 
@@ -416,18 +436,28 @@ function AddRMScreen() {
             </TouchableOpacity>
 
             <TextInput
+              ref={variantRefs[index]?.nameRef}
               style={rmStyles.input}
               label="Variant Name"
               mode="outlined"
               value={variant.name}
+              returnKeyType="next"
+              onSubmitEditing={() =>
+                variantRefs[index]?.descriptionRef.current?.focus()
+              }
               onChangeText={(text) => handleVariantChange(index, "name", text)}
             />
 
             <TextInput
+              ref={variantRefs[index]?.descriptionRef}
               style={rmStyles.input}
               label="Variant Description"
               mode="outlined"
               value={variant.description}
+              returnKeyType="next"
+              onSubmitEditing={() =>
+                variantRefs[index]?.priceRef.current?.focus()
+              }
               onChangeText={(text) =>
                 handleVariantChange(index, "description", text)
               }
@@ -458,10 +488,15 @@ function AddRMScreen() {
             <View style={rmStyles.row}>
               <View style={rmStyles.rowItem}>
                 <TextInput
+                  ref={variantRefs[index]?.priceRef}
                   style={rmStyles.input}
                   label="Variant Price"
                   mode="outlined"
                   value={variant.price}
+                  returnKeyType="next"
+                  onSubmitEditing={() =>
+                    variantRefs[index]?.quantityRef.current?.focus()
+                  }
                   onChangeText={(text) =>
                     handleVariantChange(index, "price", text)
                   }
@@ -470,10 +505,15 @@ function AddRMScreen() {
               </View>
               <View style={rmStyles.rowItem}>
                 <TextInput
+                  ref={variantRefs[index]?.quantityRef}
                   style={rmStyles.input}
                   label="Variant Quantity"
                   mode="outlined"
                   value={variant.quantity}
+                  returnKeyType="next"
+                  onSubmitEditing={() =>
+                    variantRefs[index]?.widthRef.current?.focus()
+                  }
                   onChangeText={(text) =>
                     handleVariantChange(index, "quantity", text)
                   }
@@ -484,10 +524,14 @@ function AddRMScreen() {
 
             {/* Width */}
             <TextInput
+              ref={variantRefs[index]?.widthRef}
               style={rmStyles.input}
               label="Variant Width"
               mode="outlined"
               value={variant.width}
+              // returnKeyType="send"
+              returnKeyType="send"
+              onSubmitEditing={() => openImageModal(index)}
               onChangeText={(text) => handleVariantChange(index, "width", text)}
               keyboardType="number-pad"
             />
@@ -518,7 +562,11 @@ function AddRMScreen() {
           <Text style={rmStyles.addVariantText}>+ Add Variant</Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={rmStyles.saveButton} onPress={handleSave}>
+        <TouchableOpacity
+          ref={saveButtonRef}
+          style={rmStyles.saveButton}
+          onPress={handleSave}
+        >
           <Text style={rmStyles.saveButtonText}>Save Raw Material</Text>
         </TouchableOpacity>
       </ScrollView>

@@ -75,26 +75,20 @@ export const currentTabStyles = StyleSheet.create({
     alignSelf: "flex-start",
   },
   variationsContainer: {
-    // @TODO: check next 3 lines and width in variationsContentContainer for carousel
-    // flexDirection: "row",
-    // flexWrap: "wrap",
-    // gap: 12,
     marginTop: 16,
+    // backgroundColor: 'pink',
   },
   variationsContentContainer: {
-    flexGrow: 1,
-    // marginHorizontal: 100,
-    justifyContent: 'space-around',
-    gap: 20,
-    paddingHorizontal: 4,
+    justifyContent: 'space-evenly',
+    gap: 10,
+    flexDirection: "row",
+    flexWrap: "wrap",
   },
   variationItem: {
-    // width: Platform.OS === "ios" ? "48%" : 171,
     backgroundColor: "#f8f8f8",
-    // backgroundColor: "brown",
     color: "black",
-    paddingVertical: 6,
-    paddingHorizontal: 6,
+    paddingVertical: 2,
+    paddingHorizontal: 2,
     marginBottom: 4,
     borderRadius: 36,
     ...Platform.select({
@@ -112,7 +106,7 @@ export const currentTabStyles = StyleSheet.create({
   variationImage: {
     width: 65,
     height: 65,
-    borderRadius: 30,
+    borderRadius: 33,
   },
   variationText: {
     flex: 1,

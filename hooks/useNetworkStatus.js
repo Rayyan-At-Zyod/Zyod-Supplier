@@ -8,20 +8,25 @@ export const useNetworkStatus = (onOnline, token, dispatch) => {
   useEffect(() => {
     const unsubscribe = NetInfo.addEventListener(async (netInfoState) => {
       const wasOffline = !isOnline;
-      setIsOnline(netInfoState.isConnected);
+      const nowOnline = netInfoState.isConnected;
+      
+      setIsOnline(nowOnline);
 
-      // Trigger the callback if we were offline and now online
-      if (wasOffline && netInfoState.isConnected) {
+      // Only trigger sync when transitioning from offline to online
+      if (wasOffline && nowOnline) {
         if (onOnline) {
           onOnline();
         }
-        await processPendingActions(token, dispatch); // Process pending actions
+        try {
+          await processPendingActions(token, dispatch);
+        } catch (error) {
+          console.error("Failed to process pending actions:", error);
+        }
       }
     });
 
     return () => unsubscribe();
-    // }, [isOnline, onOnline, token, dispatch]);
-  }, [isOnline]);
+  }, [isOnline, onOnline, token, dispatch]);
 
   return { isOnline };
 };

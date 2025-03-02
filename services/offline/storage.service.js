@@ -52,15 +52,26 @@ export const processPendingActions = async (token, dispatch) => {
       pendingActions.length > 0
     ) {
       dispatch(setSyncing(true));
-      // console.error("In, pendingActions:", pendingActions);
+      
+      // Process each action individually with error handling
       for (const action of pendingActions) {
-        if (action.type === "ADD") {
-          await addRawMaterial(action.payload, token);
+        try {
+          if (action.type === "ADD") {
+            await addRawMaterial(action.payload, token);
+            // Remove this specific action from pending queue after success
+            const remainingActions = pendingActions.filter(a => a !== action);
+            await saveToCache("pendingActions", remainingActions);
+          }
+        } catch (error) {
+          console.error(`Failed to process action:`, error);
+          // Keep the failed action in queue
+          continue;
         }
       }
-      await clearPendingActions();
+      
       dispatch(setSyncing(false));
-      loadRawMaterials(token, true, dispatch); // Reload materials from the server
+      // Reload materials only after all actions are processed
+      await loadRawMaterials(token, true, dispatch);
     }
   } catch (error) {
     console.error("Failed to process pending actions:", error);

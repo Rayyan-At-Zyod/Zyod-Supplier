@@ -72,35 +72,50 @@ const MaterialCard = ({ item, handleImagePress }) => {
 
       {/* Variations section */}
       <View style={currentTabStyles.variationsContainer}>
-        <FlatList
-          horizontal
-          showsHorizontalScrollIndicator={false}
-          data={item.rmVariations}
-          keyExtractor={(variation) => variation.rmVariationId.toString()}
-          renderItem={({ item: variation }) => (
+        <View style={currentTabStyles.variationsContentContainer}>
+          {item.rmVariations.map((variation) => (
             <TouchableOpacity
+              key={variation.rmVariationId.toString()}
               style={currentTabStyles.variationItem}
-              onPress={() => {
-                setSelectedVariation(variation);
-                // handleImagePress(variation.rmImage);
-              }}
+              onPress={() => setSelectedVariation(variation)}
             >
-              {/* <TouchableOpacity
-                onPress={() => handleImagePress(variation.rmImage)}
-              > */}
               <Image
                 source={{ uri: variation.rmImage }}
                 style={currentTabStyles.variationImage}
               />
-              {/* </TouchableOpacity> */}
             </TouchableOpacity>
-          )}
-          contentContainerStyle={currentTabStyles.variationsContentContainer}
-          ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
-        />
+          ))}
+        </View>
       </View>
     </View>
   );
 };
 
 export default MaterialCard;
+
+{/* <View style={currentTabStyles.variationsContainer}>
+  <FlatList
+    horizontal
+    showsHorizontalScrollIndicator={false}
+    data={item.rmVariations}
+    keyExtractor={(variation) => variation.rmVariationId.toString()}
+    renderItem={({ item: variation }) => (
+      <TouchableOpacity
+        style={currentTabStyles.variationItem}
+        onPress={() => {
+          setSelectedVariation(variation);
+          // handleImagePress(variation.rmImage);
+        }}
+      >
+        <TouchableOpacity onPress={() => handleImagePress(variation.rmImage)}>
+          <Image
+            source={{ uri: variation.rmImage }}
+            style={currentTabStyles.variationImage}
+          />
+        </TouchableOpacity>
+      </TouchableOpacity>
+    )}
+    contentContainerStyle={currentTabStyles.variationsContentContainer}
+    ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
+  />
+</View>; */}

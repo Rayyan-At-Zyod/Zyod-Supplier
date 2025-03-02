@@ -36,7 +36,7 @@ export const rmStyles = StyleSheet.create({
     backgroundColor: "#F9F9F9",
     backgroundColor: "#fff",
     borderColor: "#ddd",
-    color: 'red',
+    color: "red",
     borderRadius: 8,
     marginBottom: 16,
   },
@@ -140,7 +140,7 @@ export const rmStyles = StyleSheet.create({
     padding: 12,
     borderRadius: 8,
     alignItems: "center",
-    marginBottom: 24,
+    marginBottom: 18,
   },
   addVariantText: {
     fontSize: 16,
@@ -152,7 +152,7 @@ export const rmStyles = StyleSheet.create({
     borderRadius: 8,
     alignItems: "center",
     marginTop: 8,
-    marginBottom: 24,
+    marginBottom: 64,
   },
   saveButtonText: {
     color: "white",
