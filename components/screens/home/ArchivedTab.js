@@ -9,15 +9,12 @@ import {
 } from "react-native";
 import {
   clearPendingActions,
-  loadFromCache,
   processCurrentAction,
   processPendingActions,
-  saveToCache,
 } from "../../../services/offline/storage.service";
 import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 import MaterialCard from "./MaterialCard";
 import { useAuth } from "../../context/AuthContext";
-import { v4 as uuidv4 } from "uuid";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setLoading,
@@ -25,6 +22,7 @@ import {
 } from "../../../store/rawMaterialsSlice";
 import { archivedTabStyles } from "../../styles/ArchivedTab.styles";
 import LoadingModal from "../../util/LoadingModal";
+import { loadPendingMaterials } from "../../../services/helpers/functions/loadPendingMaterials";
 
 const ArchivedTab = () => {
   const dispatch = useDispatch();
@@ -33,19 +31,6 @@ const ArchivedTab = () => {
   const syncing = useSelector((state) => state.rawMaterials.syncing);
   const { isOnline } = useNetworkStatus();
   const { token } = useAuth();
-
-  const loadPendingMaterials = async () => {
-    try {
-      const pendingActions = (await loadFromCache("pendingActions")) || [];
-      // Filter only ADD actions and transform them into displayable format
-      const pendingAdds = pendingActions.filter(
-        (action) => action.type === "ADD"
-      );
-      dispatch(setOfflineMaterials(pendingAdds));
-    } catch (error) {
-      console.error("Error loading pending materials:", error);
-    }
-  };
 
   const renderItem = ({ item }) => (
     <View style={archivedTabStyles.cardContainer}>
@@ -60,7 +45,7 @@ const ArchivedTab = () => {
             try {
               dispatch(setLoading(true));
               await processCurrentAction(item.id, token);
-              await loadPendingMaterials();
+              await loadPendingMaterials(dispatch);
             } catch (error) {
               console.error("Failed to process item:", error);
             } finally {
@@ -75,7 +60,7 @@ const ArchivedTab = () => {
   );
 
   useEffect(() => {
-    loadPendingMaterials();
+    loadPendingMaterials(dispatch);
   }, []);
 
   return (
@@ -84,7 +69,7 @@ const ArchivedTab = () => {
         <View style={archivedTabStyles.actionButtons}>
           <TouchableOpacity
             style={archivedTabStyles.loadButton}
-            onPress={loadPendingMaterials}
+            onPress={() => loadPendingMaterials(dispatch)}
           >
             <Text style={archivedTabStyles.loadButtonText}>
               Load Saved Actions
@@ -97,7 +82,7 @@ const ArchivedTab = () => {
                 try {
                   dispatch(setLoading(true));
                   await processPendingActions(token);
-                  await loadPendingMaterials();
+                  await loadPendingMaterials(dispatch);
                 } catch (error) {
                   console.error("Failed to process all items:", error);
                 } finally {
@@ -112,7 +97,7 @@ const ArchivedTab = () => {
             style={archivedTabStyles.loadButton}
             onPress={async () => {
               await clearPendingActions();
-              await loadPendingMaterials();
+              await loadPendingMaterials(dispatch);
             }}
           >
             <Text style={archivedTabStyles.loadButtonText}>Delete all</Text>
