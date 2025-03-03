@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useEffect } from "react";
 import { Modal, View, StyleSheet, Animated, Easing, Text } from "react-native";
 import { useSelector } from "react-redux";
 
@@ -6,27 +6,16 @@ const LoadingModal = ({ visible }) => {
   const animatedValue = new Animated.Value(0);
   const syncing = useSelector((state) => state.rawMaterials.syncing);
 
-  const messages = [
-    "Sending images to server takes time...",
-    "Signing you in should be instant...",
-    "Descriptions for your variants is not necessary...",
-    "You can add as many variants as you want...",
-    "Uploading images to the server may take a while...",
-  ];
-  const [randomMessage, setRandomMessage] = useState("");
-
   useEffect(() => {
     if (visible) {
       Animated.loop(
         Animated.sequence([
-          // Circle to Square
           Animated.timing(animatedValue, {
             toValue: 1,
             duration: 600,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: false,
           }),
-          // Square to Circle
           Animated.timing(animatedValue, {
             toValue: 0,
             duration: 600,
@@ -72,13 +61,6 @@ const LoadingModal = ({ visible }) => {
         {syncing && (
           <Text style={styles.syncText}>
             Syncing... {"\n"}✨ Relax, this may take a while... ✨
-          </Text>
-        )}
-        {!syncing && (
-          <Text style={styles.syncText}>
-            <Text style={styles.syncText}>
-              {messages[Math.floor(Math.random() * messages.length)]}
-            </Text>
           </Text>
         )}
       </View>

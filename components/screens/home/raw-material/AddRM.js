@@ -267,6 +267,7 @@ function AddRMScreen() {
         await queuePendingAction({
           type: "ADD",
           payload,
+          temporaryDisplay: temporaryItem,
         });
         const loadedData = await loadFromCache("cachedData");
         await saveToCache("cachedData", [temporaryItem, ...loadedData]);
