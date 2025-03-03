@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   View,
   Text,
-  Image,
+  Alert,
   FlatList,
   TouchableOpacity,
   RefreshControl,
@@ -33,15 +33,8 @@ function CurrentTab() {
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
   //offline syncing.
-  const { isOnline } = useNetworkStatus(
-    () => {
-      // Callback when the app comes online
-      console.log("App is back online");
-    },
-    token,
-    dispatch
-  );
-  
+  const { isOnline } = useNetworkStatus();
+
   const onRefresh = async () => {
     setRefreshing(true);
     await fetchData();
@@ -62,18 +55,32 @@ function CurrentTab() {
   }, []);
 
   const renderItem = ({ item }) => {
-    return (
-      <MaterialCard item={item} handleImagePress={handleImagePress} />
-    );
+    return <MaterialCard item={item} handleImagePress={handleImagePress} />;
   };
 
   return (
     <View style={currentTabStyles.container}>
       {isLoading && <LoadingModal visible={isLoading} />}
-      <View>
+      <View style={{ flexDirection: "row", justifyContent: "space-evenly" }}>
         <Text style={currentTabStyles.title}>
-          App is {isOnline ? "Online" : "Offline"}
+          App is{" "}
+          <Text style={{ fontWeight: 600 }}>
+            {isOnline ? "Online" : "Offline"}
+          </Text>
         </Text>
+        <TouchableOpacity
+          style={currentTabStyles.title}
+          onPress={() => {
+            if (isOnline) onRefresh();
+            else
+              Alert.alert(
+                "No internet connection",
+                "Fetching last saved offline data from the app cache."
+              );
+          }}
+        >
+          <Text>{isOnline ? "Pull to refresh" : "Load offline data"}</Text>
+        </TouchableOpacity>
       </View>
       <FlatList
         data={rawMaterials}

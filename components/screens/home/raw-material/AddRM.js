@@ -72,14 +72,7 @@ function AddRMScreen() {
   const saveButtonRef = useRef();
 
   // Use the network status hook
-  const { isOnline } = useNetworkStatus(
-    () => {
-      // Callback when the app comes online
-      console.log("App is back online");
-    },
-    token,
-    dispatch
-  );
+  const { isOnline } = useNetworkStatus();
 
   /**
    * Adds a new empty variant row.
@@ -269,9 +262,9 @@ function AddRMScreen() {
           payload,
           temporaryDisplay: temporaryItem,
         });
-        const loadedData = await loadFromCache("cachedData");
-        await saveToCache("cachedData", [temporaryItem, ...loadedData]);
-        dispatch(addMaterial(temporaryItem));
+        // const loadedData = await loadFromCache("cachedData");
+        // await saveToCache("cachedData", [temporaryItem, ...loadedData]);
+        // dispatch(addMaterial(temporaryItem));
       }
       navigation.goBack();
       setIsLoading(false);

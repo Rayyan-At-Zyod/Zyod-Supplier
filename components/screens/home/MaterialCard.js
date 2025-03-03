@@ -5,7 +5,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { currentTabStyles } from "../../styles/CurrentTab.styles";
 import { useNavigation } from "@react-navigation/native";
 
-const MaterialCard = ({ item, handleImagePress }) => {
+const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
   const navigation = useNavigation();
   // Initialize selectedVariation with the first variation.
   const [selectedVariation, setSelectedVariation] = useState(
@@ -15,17 +15,18 @@ const MaterialCard = ({ item, handleImagePress }) => {
   return (
     <View style={currentTabStyles.card}>
       {/* Edit button */}
-      <TouchableOpacity
-        style={currentTabStyles.editButton}
-        onPress={() =>
-          navigation.navigate("EditRawMaterial", {
-            material: item,
-          })
-        }
-      >
-        <Ionicons name="pencil" size={18} color="black" />
-      </TouchableOpacity>
-
+      {showEditButton && (
+        <TouchableOpacity
+          style={currentTabStyles.editButton}
+          onPress={() =>
+            navigation.navigate("EditRawMaterial", {
+              material: item,
+            })
+          }
+        >
+          <Ionicons name="pencil" size={18} color="black" />
+        </TouchableOpacity>
+      )}
       <View style={currentTabStyles.topContainer}>
         {/* Main image from the selected variation */}
         {selectedVariation?.rmImage && (
@@ -93,7 +94,8 @@ const MaterialCard = ({ item, handleImagePress }) => {
 
 export default MaterialCard;
 
-{/* <View style={currentTabStyles.variationsContainer}>
+{
+  /* <View style={currentTabStyles.variationsContainer}>
   <FlatList
     horizontal
     showsHorizontalScrollIndicator={false}
@@ -118,4 +120,5 @@ export default MaterialCard;
     contentContainerStyle={currentTabStyles.variationsContentContainer}
     ItemSeparatorComponent={() => <View style={{ width: 12 }} />}
   />
-</View>; */}
+</View>; */
+}

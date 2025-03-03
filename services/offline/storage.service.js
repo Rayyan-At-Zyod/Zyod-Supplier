@@ -2,6 +2,8 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { addRawMaterial } from "../api/addRawMaterial.service";
 import { loadRawMaterials } from "../helpers/functions/loadRMs";
 import { setLoading, setSyncing } from "../../store/rawMaterialsSlice";
+import { v4 as uuidv4 } from "uuid";
+import { store } from "../../store/store";
 
 export const saveToCache = async (key, data) => {
   try {
@@ -24,10 +26,18 @@ export const loadFromCache = async (key) => {
 export const queuePendingAction = async (action) => {
   try {
     const pendingActions = (await loadFromCache("pendingActions")) || [];
-    pendingActions.push(action);
-    await saveToCache("pendingActions", pendingActions);
+    
+    const actionWithId = {
+      ...action,
+      id: uuidv4(), // Using 'id' instead of 'appDbId'
+      timestamp: Date.now(),
+    };
+
+    await saveToCache("pendingActions", [...pendingActions, actionWithId]);
+    return actionWithId.id;
   } catch (error) {
-    console.error("Failed to queue new pending action:", error);
+    console.error("Error queuing pending action:", error);
+    throw error;
   }
 };
 
@@ -41,41 +51,68 @@ export const clearPendingActions = async () => {
   }
 };
 
-export const processPendingActions = async (token, dispatch) => {
+/**
+ * Process a single pending action by its id
+ * @param {string} id - The unique identifier for the pending action
+ * @param {string} token - The authentication token
+ * @returns {Promise<void>}
+ */
+export const processCurrentAction = async (id, token) => {
   try {
-    dispatch(setLoading(true));
-    const pendingActions = await loadFromCache("pendingActions");
-    if (
-      pendingActions &&
-      pendingActions !== "" &&
-      Array.isArray(pendingActions) &&
-      pendingActions.length > 0
-    ) {
-      dispatch(setSyncing(true));
+    store.dispatch(setSyncing(true));
+    
+    const pendingActions = (await loadFromCache("pendingActions")) || [];
+    const actionToProcess = pendingActions.find(action => action.id === id);
+    
+    if (!actionToProcess) {
+      console.error(`No pending action found with id: ${id}`);
+      return;
+    }
+
+    if (actionToProcess.type === "ADD") {
+      // Use the existing addRawMaterial service
+      const response = await addRawMaterial(actionToProcess.payload, token);
       
-      // Process each action individually with error handling
-      for (const action of pendingActions) {
-        try {
-          if (action.type === "ADD") {
-            await addRawMaterial(action.payload, token);
-            // Remove this specific action from pending queue after success
-            const remainingActions = pendingActions.filter(a => a !== action);
-            await saveToCache("pendingActions", remainingActions);
-          }
-        } catch (error) {
-          console.error(`Failed to process action:`, error);
-          // Keep the failed action in queue
-          continue;
-        }
+      if (response) {
+        // Remove the processed action from pending actions
+        const updatedPendingActions = pendingActions.filter(
+          action => action.id !== id
+        );
+        await saveToCache("pendingActions", updatedPendingActions);
+        
+        // Reload the materials to update the UI
+        await loadRawMaterials(token, true, store.dispatch);
       }
-      
-      dispatch(setSyncing(false));
-      // Reload materials only after all actions are processed
-      await loadRawMaterials(token, true, dispatch);
     }
   } catch (error) {
-    console.error("Failed to process pending actions:", error);
+    console.error("Error processing single action:", error);
+    throw error;
   } finally {
-    dispatch(setLoading(false));
+    store.dispatch(setSyncing(false));
+  }
+};
+
+/**
+ * Process all pending actions
+ * @param {string} token - The authentication token
+ * @returns {Promise<void>}
+ */
+export const processPendingActions = async (token) => {
+  try {
+    store.dispatch(setSyncing(true));
+    const pendingActions = (await loadFromCache("pendingActions")) || [];
+    
+    for (const action of pendingActions) {
+      try {
+        await processCurrentAction(action.id, token);
+      } catch (error) {
+        console.error(`Failed to process action ${action.id}:`, error);
+      }
+    }
+  } catch (error) {
+    console.error("Error processing pending actions:", error);
+    throw error;
+  } finally {
+    store.dispatch(setSyncing(false));
   }
 };
