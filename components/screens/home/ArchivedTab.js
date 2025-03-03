@@ -19,14 +19,18 @@ import MaterialCard from "./MaterialCard";
 import { useAuth } from "../../context/AuthContext";
 import { v4 as uuidv4 } from "uuid";
 import { useDispatch, useSelector } from "react-redux";
-import { setLoading } from "../../../store/rawMaterialsSlice";
+import {
+  setLoading,
+  setOfflineMaterials,
+} from "../../../store/rawMaterialsSlice";
 import { archivedTabStyles } from "../../styles/ArchivedTab.styles";
 import LoadingModal from "../../util/LoadingModal";
 
 const ArchivedTab = () => {
-  const [pendingMaterials, setPendingMaterials] = useState([]);
   const dispatch = useDispatch();
-  const { loading } = useSelector((state) => state.rawMaterials.loading);
+  const offlineItems = useSelector((state) => state.rawMaterials.offlineItems);
+  const loading = useSelector((state) => state.rawMaterials.loading);
+  const syncing = useSelector((state) => state.rawMaterials.syncing);
   const { isOnline } = useNetworkStatus();
   const { token } = useAuth();
 
@@ -37,7 +41,7 @@ const ArchivedTab = () => {
       const pendingAdds = pendingActions.filter(
         (action) => action.type === "ADD"
       );
-      setPendingMaterials(pendingAdds);
+      dispatch(setOfflineMaterials(pendingAdds));
     } catch (error) {
       console.error("Error loading pending materials:", error);
     }
@@ -54,12 +58,13 @@ const ArchivedTab = () => {
           style={archivedTabStyles.pendingBadge}
           onPress={async () => {
             try {
-              console.error("This item's ID is", item.id);
-              console.error("This item is", item);
+              dispatch(setLoading(true));
               await processCurrentAction(item.id, token);
               await loadPendingMaterials();
             } catch (error) {
               console.error("Failed to process item:", error);
+            } finally {
+              dispatch(setLoading(false));
             }
           }}
         >
@@ -70,10 +75,7 @@ const ArchivedTab = () => {
   );
 
   useEffect(() => {
-    // dispatch(setLoading(true));
-    console.log("Hi Rayyan.");
     loadPendingMaterials();
-    // dispatch(setLoading(false));
   }, []);
 
   return (
@@ -93,10 +95,13 @@ const ArchivedTab = () => {
               style={archivedTabStyles.loadButton}
               onPress={async () => {
                 try {
+                  dispatch(setLoading(true));
                   await processPendingActions(token);
                   await loadPendingMaterials();
                 } catch (error) {
                   console.error("Failed to process all items:", error);
+                } finally {
+                  dispatch(setLoading(false));
                 }
               }}
             >
@@ -113,10 +118,10 @@ const ArchivedTab = () => {
             <Text style={archivedTabStyles.loadButtonText}>Delete all</Text>
           </TouchableOpacity>
         </View>
-        {pendingMaterials.length > 0 ? (
+        {offlineItems.length > 0 ? (
           <>
             <Text style={archivedTabStyles.header}>
-              Pending Materials ({pendingMaterials.length})
+              Pending Materials ({offlineItems.length})
             </Text>
             <Text style={archivedTabStyles.subHeader}>
               {isOnline
@@ -124,11 +129,11 @@ const ArchivedTab = () => {
                 : "⚠️ Offline - Items will sync when online"}
             </Text>
             <FlatList
-              data={pendingMaterials}
+              data={offlineItems}
               renderItem={renderItem}
               keyExtractor={(item) => item.temporaryDisplay.greigeId.toString()}
               contentContainerStyle={archivedTabStyles.listContainer}
-              extraData={pendingMaterials.length}
+              extraData={offlineItems.length}
             />
           </>
         ) : (
@@ -144,7 +149,7 @@ const ArchivedTab = () => {
           </View>
         )}
       </View>
-      <LoadingModal visible={loading} />
+      <LoadingModal visible={loading || syncing} />
     </>
   );
 };

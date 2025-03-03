@@ -4,6 +4,7 @@ const rawMaterialsSlice = createSlice({
   name: "rawMaterials",
   initialState: {
     items: [],
+    offlineItems: [],
     loading: false,
     syncing: false,
   },
@@ -21,17 +22,31 @@ const rawMaterialsSlice = createSlice({
       state.items = [action.payload, ...state.items]; // Ensure a new reference
     },
     setMaterials: (state, action) => {
-      // console.log(
-      //   "📢 setMaterials called with:",
-      //   action.payload.length,
-      //   "items"
-      // );
+      // console.log("📢 setMaterials called with:",
+      //   action.payload.length, "items");
 
       state.items = action.payload;
+    },
+    addOfflineMaterial: (state, action) => {
+      // console.log("📢 addOfflineMaterial called:", action.payload);
+      state.offlineItems = [action.payload, ...state.items];
+    },
+    setOfflineMaterials: (state, action) => {
+      // console.log(
+      //   "📢 setOfflineMaterials called with:",
+      //   action.payload.length, "items");
+
+      state.offlineItems = action.payload;
     },
   },
 });
 
-export const { addMaterial, setMaterials, setLoading, setSyncing } =
-  rawMaterialsSlice.actions;
+export const {
+  addMaterial,
+  setMaterials,
+  addOfflineMaterial,
+  setOfflineMaterials,
+  setLoading,
+  setSyncing,
+} = rawMaterialsSlice.actions;
 export default rawMaterialsSlice.reducer;
