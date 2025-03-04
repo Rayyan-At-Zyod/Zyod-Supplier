@@ -11,8 +11,6 @@ export const currentTabStyles = StyleSheet.create({
   card: {
     backgroundColor: "white",
     borderRadius: 16,
-    borderBottomLeftRadius: 75,
-    borderBottomRightRadius: 75,
     marginBottom: 8,
     elevation: 2,
     shadowColor: "#000",
@@ -22,6 +20,10 @@ export const currentTabStyles = StyleSheet.create({
     overflow: "hidden",
     position: "relative",
     padding: 16,
+  },
+  cardWithVariations: {
+    borderBottomLeftRadius: 75,
+    borderBottomRightRadius: 75,
   },
   editButton: {
     position: "absolute",
@@ -38,13 +40,29 @@ export const currentTabStyles = StyleSheet.create({
     shadowRadius: 2,
     elevation: 5,
   },
+  showVariationsButton: {
+    position: "absolute",
+    top: 64,
+    right: 4,
+    margin: 12,
+    zIndex: 1,
+    backgroundColor: "rgba(255, 255, 255, 0.6)",
+    padding: 12,
+    borderRadius: 18,
+    shadowColor: "#000",
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.6,
+    shadowRadius: 2,
+    elevation: 5,
+  },
   topContainer: {
     flexDirection: "row",
     gap: 16,
   },
   detailsContainer: {
     flexDirection: "row",
-    // gap: 4,
+    justifyContent: "flex-start",
+    gap: 0,
   },
   materialImage: {
     width: 120,
@@ -53,7 +71,7 @@ export const currentTabStyles = StyleSheet.create({
     resizeMode: "cover",
   },
   mainInfoContainer: {
-    flex: 1,
+    flex: 0.9,
     justifyContent: "space-between",
   },
   materialName: {
@@ -79,7 +97,7 @@ export const currentTabStyles = StyleSheet.create({
     // backgroundColor: 'pink',
   },
   variationsContentContainer: {
-    justifyContent: 'space-evenly',
+    justifyContent: "space-evenly",
     gap: 10,
     flexDirection: "row",
     flexWrap: "wrap",

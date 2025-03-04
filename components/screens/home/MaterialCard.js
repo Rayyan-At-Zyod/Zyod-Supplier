@@ -7,13 +7,21 @@ import { useNavigation } from "@react-navigation/native";
 
 const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
   const navigation = useNavigation();
+  const [showVariants, setShowVariants] = useState(false);
+  const [showVariantsToggle, setShowVariantsToggle] = useState(true);
   // Initialize selectedVariation with the first variation.
   const [selectedVariation, setSelectedVariation] = useState(
     item.rmVariations?.[0]
   );
 
   return (
-    <View style={currentTabStyles.card}>
+    <View
+      style={
+        showVariants
+          ? [currentTabStyles.card, currentTabStyles.cardWithVariations]
+          : currentTabStyles.card
+      }
+    >
       {/* Edit button */}
       {showEditButton && (
         <TouchableOpacity
@@ -25,6 +33,18 @@ const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
           }
         >
           <Ionicons name="pencil" size={18} color="black" />
+        </TouchableOpacity>
+      )}
+      {showVariantsToggle && (
+        <TouchableOpacity
+          style={currentTabStyles.showVariationsButton}
+          onPress={() => setShowVariants(!showVariants)}
+        >
+          <Ionicons
+            name={showVariants ? "arrow-up-sharp" : `arrow-down-circle`}
+            size={18}
+            color="black"
+          />
         </TouchableOpacity>
       )}
       <View style={currentTabStyles.topContainer}>
@@ -72,22 +92,24 @@ const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
       </View>
 
       {/* Variations section */}
-      <View style={currentTabStyles.variationsContainer}>
-        <View style={currentTabStyles.variationsContentContainer}>
-          {item.rmVariations.map((variation) => (
-            <TouchableOpacity
-              key={variation.rmVariationId.toString()}
-              style={currentTabStyles.variationItem}
-              onPress={() => setSelectedVariation(variation)}
-            >
-              <Image
-                source={{ uri: variation.rmImage }}
-                style={currentTabStyles.variationImage}
-              />
-            </TouchableOpacity>
-          ))}
+      {showVariants && (
+        <View style={currentTabStyles.variationsContainer}>
+          <View style={currentTabStyles.variationsContentContainer}>
+            {item.rmVariations.map((variation) => (
+              <TouchableOpacity
+                key={variation.rmVariationId.toString()}
+                style={currentTabStyles.variationItem}
+                onPress={() => setSelectedVariation(variation)}
+              >
+                <Image
+                  source={{ uri: variation.rmImage }}
+                  style={currentTabStyles.variationImage}
+                />
+              </TouchableOpacity>
+            ))}
+          </View>
         </View>
-      </View>
+      )}
     </View>
   );
 };
