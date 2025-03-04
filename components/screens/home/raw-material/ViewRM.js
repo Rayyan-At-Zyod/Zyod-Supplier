@@ -1,21 +1,16 @@
 // external library
 import React from "react";
-import {
-  View,
-  Text,
-  ScrollView,
-  Image,
-} from "react-native";
+import { View, Text, ScrollView, Image } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
 // internal imports
 import LoadingModal from "../../../util/LoadingModal";
-import { rmStyles } from "../../../styles/updateRM.styles";
+import { rmStyles } from "../../../styles/viewRM.styles";
 import { createRMsData } from "../../../../services/helpers/functions/createRmsDataForRMAdd";
 import { createPayload } from "../../../../services/helpers/functions/createPayloadForRMAdd";
 import { convertImageToBase64 } from "../../../../services/helpers/utilities/imageBase64Converter";
 
-function UpdateRMScreen() {
+function ViewRMScreen() {
   const route = useRoute();
   const { material } = route.params; // Get the material data from navigation params
 
@@ -40,7 +35,9 @@ function UpdateRMScreen() {
 
         {/* Name */}
         <Text style={rmStyles.label}>Name:</Text>
-        <Text style={rmStyles.input}>{material.rmVariations[0]?.name || "No Name"}</Text>
+        <Text style={rmStyles.input}>
+          {material.rmVariations[0]?.name || "No Name"}
+        </Text>
 
         {/* GSM & Width */}
         <View style={rmStyles.row}>
@@ -50,7 +47,9 @@ function UpdateRMScreen() {
           </View>
           <View style={rmStyles.rowItem}>
             <Text style={rmStyles.label}>Width:</Text>
-            <Text style={rmStyles.input}>{material.rmVariations[0]?.width || "N/A"}</Text>
+            <Text style={rmStyles.input}>
+              {material.rmVariations[0]?.width || "N/A"}
+            </Text>
           </View>
         </View>
 
@@ -58,21 +57,29 @@ function UpdateRMScreen() {
         <View style={rmStyles.row}>
           <View style={rmStyles.rowItem}>
             <Text style={rmStyles.label}>Price (Rs.):</Text>
-            <Text style={rmStyles.input}>{material.rmVariations[0]?.generalPrice || "N/A"}</Text>
+            <Text style={rmStyles.input}>
+              {material.rmVariations[0]?.generalPrice || "N/A"}
+            </Text>
           </View>
           <View style={rmStyles.rowItem}>
             <Text style={rmStyles.label}>Quantity:</Text>
-            <Text style={rmStyles.input}>{material.rmVariations[0]?.availableQuantity || "N/A"}</Text>
+            <Text style={rmStyles.input}>
+              {material.rmVariations[0]?.availableQuantity || "N/A"}
+            </Text>
           </View>
         </View>
 
         {/* Type */}
         <Text style={rmStyles.label}>Type:</Text>
-        <Text style={rmStyles.input}>{material.rmVariations[0]?.type || "N/A"}</Text>
+        <Text style={rmStyles.input}>
+          {material.rmVariations[0]?.type || "N/A"}
+        </Text>
 
         {/* Description */}
         <Text style={rmStyles.label}>Description:</Text>
-        <Text style={rmStyles.input}>{material.rmVariations[0]?.description || "N/A"}</Text>
+        <Text style={rmStyles.input}>
+          {material.rmVariations[0]?.description || "N/A"}
+        </Text>
 
         {/* Variants Section */}
         <Text style={rmStyles.subHeading}>Variants</Text>
@@ -88,10 +95,14 @@ function UpdateRMScreen() {
             <Text style={rmStyles.input}>{variation.width || "N/A"}</Text>
 
             <Text style={rmStyles.label}>Variant Price:</Text>
-            <Text style={rmStyles.input}>{variation.generalPrice || "N/A"}</Text>
+            <Text style={rmStyles.input}>
+              {variation.generalPrice || "N/A"}
+            </Text>
 
             <Text style={rmStyles.label}>Variant Quantity:</Text>
-            <Text style={rmStyles.input}>{variation.availableQuantity || "N/A"}</Text>
+            <Text style={rmStyles.input}>
+              {variation.availableQuantity || "N/A"}
+            </Text>
 
             {variation.rmImage && (
               <Image
@@ -106,4 +117,4 @@ function UpdateRMScreen() {
   );
 }
 
-export default UpdateRMScreen;
+export default ViewRMScreen;

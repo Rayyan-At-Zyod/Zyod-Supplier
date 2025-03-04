@@ -5,7 +5,7 @@ import { ActivityIndicator, View, TouchableOpacity } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { useAuth } from "../context/AuthContext";
-import UpdateRMScreen from "../screens/home/raw-material/UpdateRM";
+import ViewRMScreen from "../screens/home/raw-material/ViewRM";
 import AddRMScreen from "../screens/home/raw-material/AddRM";
 import SignInScreen from "../screens/auth/SignInScreen";
 import HomeNavigatorScreen from "./HomeNavigator";
@@ -26,8 +26,8 @@ const AppNavigator = () => {
             options={{ headerShown: false }}
           />
           <Stack.Screen
-            name="EditRawMaterial"
-            component={UpdateRMScreen}
+            name="ViewRawMaterial"
+            component={ViewRMScreen}
             options={{
               headerShown: true,
               headerTitle: "Edit Material",
