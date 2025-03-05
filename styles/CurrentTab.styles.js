@@ -163,7 +163,6 @@ export const currentTabStyles = StyleSheet.create({
     shadowRadius: 4,
   },
   stockAdjustContainer: {
-    marginTop: 8,
     gap: 12,
   },
   stockInput: {

@@ -60,9 +60,10 @@ export const archivedTabStyles = StyleSheet.create({
   },
   pendingBadge: {
     position: "absolute",
-    top: 8,
-    right: 8,
+    top: 10,
+    right: 60,
     backgroundColor: "#FFA500",
+    opacity: 1,
     paddingHorizontal: 8,
     paddingVertical: 4,
     borderRadius: 4,

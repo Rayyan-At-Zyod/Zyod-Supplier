@@ -14,7 +14,7 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
-import { addMaterial } from "../../../store/rawMaterialsSlice";
+import { addMaterial, setLoading } from "../../../store/rawMaterialsSlice";
 
 // internal imports
 import { useAuth } from "../../../context/AuthContext";
@@ -58,9 +58,6 @@ function AddRMScreen() {
   const [showImageModal, setShowImageModal] = useState(false);
   const [imageModalIndex, setImageModalIndex] = useState(null);
   // index to know which variant (or main image) we're editing
-
-  // Loading state
-  const [isLoading, setIsLoading] = useState(false);
 
   // useRefs
   const gsmRef = useRef();
@@ -172,6 +169,7 @@ function AddRMScreen() {
   // Constructs the payload and calls the addSku API.
   const handleSave = async () => {
     try {
+      dispatch(setLoading(true));
       // 1) Validate forms.
       const validationError = validateAddRMForm({
         name,
@@ -197,7 +195,6 @@ function AddRMScreen() {
           throw new Error(variantError);
         }
       });
-      setIsLoading(true);
 
       // 2) Create RMsData array using the imported function
       const RMsData = await createRMsData({
@@ -267,10 +264,11 @@ function AddRMScreen() {
         // dispatch(addMaterial(temporaryItem));
       }
       navigation.goBack();
-      setIsLoading(false);
     } catch (error) {
-      setIsLoading(false);
-      Alert.alert("Error", error.message);
+      console.error("Error submitting form:", error);
+      Alert.alert("Error", "Failed to submit form. Please try again.");
+    } finally {
+      dispatch(setLoading(false));
     }
   };
 
@@ -573,8 +571,6 @@ function AddRMScreen() {
         removeImage={removeImage}
         openImageModal={openImageModal}
       />
-
-      <LoadingModal visible={isLoading} />
     </KeyboardAvoidingView>
   );
 }

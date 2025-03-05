@@ -3,6 +3,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { ActivityIndicator, View, TouchableOpacity } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
+import { useSelector } from "react-redux";
 
 import { useAuth } from "../../context/AuthContext";
 import ViewRMScreen from "../screens/raw-material/ViewRM";
@@ -19,7 +20,7 @@ const AppNavigator = () => {
 
   return (
     <>
-      {/* <LoadingModal visible={loading} /> */}
+      <LoadingModal />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {token ? (
           <>

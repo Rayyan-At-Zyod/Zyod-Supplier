@@ -12,17 +12,19 @@ import {
   Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading } from "../../../store/rawMaterialsSlice";
 import { useAuth } from "../../../context/AuthContext";
-import LoadingModal from "../../util/LoadingModal";
 import { API_ENDPOINTS } from "../../../services/api/endpoints";
 
 const SignInScreen = ({ navigation }) => {
   const { signIn } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const passwordRef = useRef();
+  const dispatch = useDispatch();
+  const loading = useSelector((state) => state.rawMaterials.loading);
 
   const handleSignIn = async () => {
     console.log("=== Sign In Attempt ===");
@@ -35,7 +37,7 @@ const SignInScreen = ({ navigation }) => {
       return;
     }
 
-    setLoading(true);
+    dispatch(setLoading(true));
     setError("");
 
     try {
@@ -78,14 +80,9 @@ const SignInScreen = ({ navigation }) => {
       await signIn(data.data.token, data.data.user);
       console.log("Sign in successful");
     } catch (err) {
-      console.error("=== Sign In Error ===");
-      console.error("Error type:", err.constructor.name);
-      console.error("Error message:", err.message);
-      console.error("Error stack:", err.stack);
       setError(err.message || "An error occurred during sign in");
     } finally {
-      console.log("Sign in attempt completed");
-      setLoading(false);
+      dispatch(setLoading(false));
     }
   };
 
@@ -112,6 +109,7 @@ const SignInScreen = ({ navigation }) => {
               textContentType="username"
               autoComplete="username"
               autoCapitalize="none"
+              returnKeyType="next"
             />
 
             <TextInput
@@ -124,13 +122,11 @@ const SignInScreen = ({ navigation }) => {
               textContentType="password"
               autoComplete="password"
               autoCapitalize="none"
+              returnKeyType="send"
+              onSubmitEditing={handleSignIn}
             />
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleSignIn}
-              disabled={loading}
-            >
+            <TouchableOpacity style={styles.button} onPress={handleSignIn}>
               {loading ? (
                 <ActivityIndicator color="white" />
               ) : (
@@ -138,8 +134,6 @@ const SignInScreen = ({ navigation }) => {
               )}
             </TouchableOpacity>
           </View>
-
-          <LoadingModal visible={loading} />
         </SafeAreaView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>

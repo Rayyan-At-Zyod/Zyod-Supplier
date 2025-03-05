@@ -57,6 +57,8 @@ export const AuthProvider = ({ children }) => {
         AsyncStorage.setItem("userData", JSON.stringify(user)),
       ]);
 
+      console.log("user data:", userData);
+      console.log("user token:", token);
       setToken(token);
       setUserData(user);
       loadStoredData();

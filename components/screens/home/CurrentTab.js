@@ -10,6 +10,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { setLoading } from "../../../store/rawMaterialsSlice";
 
 // internal imports
 import { useAuth } from "../../../context/AuthContext";
@@ -60,7 +61,6 @@ function CurrentTab() {
 
   return (
     <View style={currentTabStyles.container}>
-      {isLoading && <LoadingModal visible={isLoading} />}
       <View style={{ flexDirection: "row", justifyContent: "space-evenly" }}>
         <Text style={currentTabStyles.title}>
           App is{" "}

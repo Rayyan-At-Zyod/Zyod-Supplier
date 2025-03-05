@@ -12,30 +12,33 @@ import { Ionicons } from "@expo/vector-icons";
 import { currentTabStyles } from "../../../styles/CurrentTab.styles";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
-import { setLoading, updateItems } from "../../../store/rawMaterialsSlice";
+import {
+  setLoading,
+  updateMaterials,
+  updateOfflineMaterials,
+} from "../../../store/rawMaterialsSlice";
 import { updateRM } from "../../../services/api/updateRmStock.service";
 import { useAuth } from "../../../context/AuthContext";
+import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
+import { updateAnOfflineMaterialAction } from "../../../services/offline/storage.service";
 
-const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
+const MaterialCard = ({ item, handleImagePress, onUpdateQuantity }) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const { warehouseId, token } = useAuth();
   const [showVariants, setShowVariants] = useState(false);
-  // stock update specific state
+  const { isOnline } = useNetworkStatus();
   const [isEditing, setIsEditing] = useState(false);
   const [stockQuantity, setStockQuantity] = useState("");
   const [operationType, setOperationType] = useState("STOCK IN");
-  // Initialize selectedVariation with the first variation.
-  const [selectedVariation, setSelectedVariation] = useState(
-    item.rmVariations?.[0]
-  );
+  const [selectedVariationIndex, setSelectedVariationIndex] = useState(0);
+  const selectedVariation = item.rmVariations[selectedVariationIndex];
 
   const handleStockUpdate = async () => {
     if (!stockQuantity || stockQuantity.trim() === "") {
       Alert.alert("Error", "Please enter a valid quantity");
       return;
     }
-
     const quantity = parseInt(stockQuantity);
     if (isNaN(quantity) || quantity <= 0) {
       Alert.alert("Error", "Please enter a valid positive number");
@@ -44,36 +47,46 @@ const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
 
     try {
       dispatch(setLoading(true));
-
-      const payload = {
-        warehouseId,
-        reason: "Stock adjustment",
-        itemDetailsArray: [
-          {
-            itemId: selectedVariation.rmVariationId,
-            itemCode: selectedVariation.newCode,
-            itemType: "Fabric",
-            itemUnit: selectedVariation.unitCode,
-            operationType,
-            quantityChange: quantity,
-          },
-        ],
-      };
-
-      await updateRM(payload, token);
-      
       // Calculate new quantity based on operation type
-      const currentQuantity = selectedVariation.availableQuantity || 0;
-      const newQuantity = operationType === "STOCK IN" 
-        ? currentQuantity + quantity 
-        : currentQuantity - quantity;
-      
-      // Update Redux store
-      dispatch(updateItems({
-        itemId: selectedVariation.rmVariationId,
-        newQuantity: newQuantity
-      }));
+      const currentQuantity =
+        Number.parseInt(selectedVariation.availableQuantity) || 0;
+      const newQuantity =
+        operationType === "STOCK IN"
+          ? currentQuantity + quantity
+          : currentQuantity - quantity;
+      if (!isOnline) {
+        // For offline materials
+        await updateAnOfflineMaterialAction(
+          selectedVariation.rmVariationId,
+          newQuantity
+        );
+      } else {
+        // For online materials
+        const payload = {
+          warehouseId,
+          reason: "Stock adjustment",
+          itemDetailsArray: [
+            {
+              itemId: selectedVariation.rmVariationId,
+              itemCode: selectedVariation.newCode,
+              itemType: "Fabric",
+              itemUnit: selectedVariation.unitCode,
+              operationType,
+              quantityChange: quantity,
+            },
+          ],
+        };
+        // Send to API
+        await updateRM(payload, token);
 
+        // Update Redux store after actually changing database
+        dispatch(
+          updateMaterials({
+            itemId: selectedVariation.rmVariationId,
+            newQuantity: newQuantity,
+          })
+        );
+      }
       Alert.alert("Success", "Stock updated successfully");
       setIsEditing(false);
       setStockQuantity("");
@@ -107,17 +120,19 @@ const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
       )}
 
       {/* Edit button & Variants Toggle */}
-      {showEditButton && !isEditing && (
+      {!isEditing && (
         <>
-          <TouchableOpacity
-            style={currentTabStyles.editButton}
-            onPress={() => {
-              setIsEditing(true);
-              setShowVariants(false);
-            }}
-          >
-            <Ionicons name="trail-sign-outline" size={20} color="black" />
-          </TouchableOpacity>
+          {!isOnline && (
+            <TouchableOpacity
+              style={currentTabStyles.editButton}
+              onPress={() => {
+                setIsEditing(true);
+                setShowVariants(false);
+              }}
+            >
+              <Ionicons name="trail-sign-outline" size={20} color="black" />
+            </TouchableOpacity>
+          )}
           <TouchableOpacity
             style={currentTabStyles.showVariationsButton}
             onPress={() => setShowVariants(!showVariants)}
@@ -165,7 +180,7 @@ const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
             Description: {selectedVariation?.description || "N/A"}
           </Text>
 
-          {!isEditing ? (
+          {!isEditing && isOnline ? (
             <>
               <Text style={currentTabStyles.description}>
                 Stock:{" "}
@@ -197,7 +212,7 @@ const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
                 placeholder="Enter quantity"
                 value={stockQuantity}
                 onChangeText={setStockQuantity}
-                keyboardType="numeric"
+                keyboardType="number-pad"
               />
               <View style={currentTabStyles.stockButtonsContainer}>
                 <TouchableOpacity
@@ -254,11 +269,11 @@ const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
       {showVariants && !isEditing && (
         <View style={currentTabStyles.variationsContainer}>
           <View style={currentTabStyles.variationsContentContainer}>
-            {item.rmVariations.map((variation) => (
+            {item.rmVariations.map((variation, index) => (
               <TouchableOpacity
                 key={variation.rmVariationId.toString()}
                 style={currentTabStyles.variationItem}
-                onPress={() => setSelectedVariation(variation)}
+                onPress={() => setSelectedVariationIndex(index)}
               >
                 <Image
                   source={{ uri: variation.rmImage }}

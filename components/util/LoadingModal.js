@@ -2,12 +2,13 @@ import React, { useEffect } from "react";
 import { Modal, View, StyleSheet, Animated, Easing, Text } from "react-native";
 import { useSelector } from "react-redux";
 
-const LoadingModal = ({ visible }) => {
+const LoadingModal = () => {
   const animatedValue = new Animated.Value(0);
   const syncing = useSelector((state) => state.rawMaterials.syncing);
+  const loading = useSelector((state) => state.rawMaterials.loading);
 
   useEffect(() => {
-    if (visible) {
+    if (loading) {
       Animated.loop(
         Animated.sequence([
           Animated.timing(animatedValue, {
@@ -25,7 +26,7 @@ const LoadingModal = ({ visible }) => {
         ])
       ).start();
     }
-  }, [visible, syncing]);
+  }, [loading, syncing]);
 
   const size = animatedValue.interpolate({
     inputRange: [0, 1],
@@ -43,7 +44,7 @@ const LoadingModal = ({ visible }) => {
   });
 
   return (
-    <Modal transparent visible={visible}>
+    <Modal transparent visible={loading}>
       <View style={styles.container}>
         <View style={styles.modalContent}>
           <Animated.View

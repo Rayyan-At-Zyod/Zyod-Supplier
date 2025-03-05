@@ -10,7 +10,10 @@ export const loadRawMaterials = async (token, isOnline, dispatch) => {
     try {
       dispatch(setLoading(true));
       const data = await fetchRawMaterials(token);
-      console.log("✅ Fetched raw materials: (length)", data.data.length);
+      console.log(
+        "✅ Fetched raw materials: (length)",
+        JSON.stringify(data.data, null, 2)
+      );
       dispatch(setMaterials(data.data));
       // Optionally, update the cache:
       await saveToCache("cachedData", data.data);
