@@ -101,8 +101,7 @@ const rawMaterialsSlice = createSlice({
     setOfflineMaterials: (state, action) => {
       console.log(
         "📢 setOfflineMaterials called with:",
-        action.payload.length,
-        "items"
+        JSON.stringify(action.payload, null, 2)
       );
 
       state.offlineItems = action.payload;

@@ -18,7 +18,6 @@ import { addMaterial, setLoading } from "../../../store/rawMaterialsSlice";
 
 // internal imports
 import { useAuth } from "../../../context/AuthContext";
-import LoadingModal from "../../util/LoadingModal";
 import { rmStyles } from "../../../styles/AddRM.styles";
 import ImageSelectionModal from "../../util/ImageSelectionModal";
 import { useImagePicker } from "../../../hooks/useImagePicker";

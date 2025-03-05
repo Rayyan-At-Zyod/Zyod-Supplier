@@ -132,11 +132,14 @@ export const updateAnOfflineMaterialAction = async (
   try {
     const pendingActions = await loadFromCache("pendingActions");
     const updatedPendingActions = pendingActions.map((action) => {
-      const hasTargetVariation = action.temporaryDisplay.rmVariations?.some(
+      // First find the variation in temporaryDisplay to get its index
+      const variationIndex = action.temporaryDisplay.rmVariations.findIndex(
         (variation) => variation.rmVariationId === theRmVariationId
       );
-      if (!hasTargetVariation) return action;
-      // Create new temporary display with updated quantity
+
+      if (variationIndex === -1) return action;
+
+      // Update temporaryDisplay part
       const updatedVariations = action.temporaryDisplay.rmVariations.map(
         (variation) => {
           if (variation.rmVariationId === theRmVariationId) {
@@ -145,23 +148,42 @@ export const updateAnOfflineMaterialAction = async (
           return variation;
         }
       );
-      // const updatedVariationsInPayload = action.payload.skuDetails.RMsData.rmVariations.map(variation => {
-      //   if(variation.rmVariationId === id) {
-      //     return {...variation, availableQuantity: newQuantity}
-      //   }
-      //   return variation;
-      // });
+
+      // Update payload part - RMsData needs to be updated at the same index
+      const updatedRMsData = action.payload.skuDetails.RMsData.map((rmData, index) => {
+        if (index === variationIndex) {
+          return {
+            ...rmData,
+            RMInventoryDetails: rmData.RMInventoryDetails.map(detail => ({
+              ...detail,
+              CurrentStock: String(newQuantity) // Convert to string to match the format
+            }))
+          };
+        }
+        return rmData;
+      });
+
       return {
         ...action,
         temporaryDisplay: {
           ...action.temporaryDisplay,
           rmVariations: updatedVariations,
         },
+        payload: {
+          ...action.payload,
+          skuDetails: {
+            ...action.payload.skuDetails,
+            RMsData: updatedRMsData
+          }
+        }
       };
     });
 
     await saveToCache("pendingActions", updatedPendingActions);
-    store.dispatch(updateOfflineMaterials({ theRmVariationId, newQuantity }));
+    store.dispatch(updateOfflineMaterials({ 
+      itemId: theRmVariationId,
+      newQuantity 
+    }));
   } catch (err) {
     console.error("Error updating offline action:", err);
     throw err;

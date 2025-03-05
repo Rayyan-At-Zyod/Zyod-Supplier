@@ -56,6 +56,7 @@ const ArchivedTab = () => {
       <MaterialCard
         item={item.temporaryDisplay}
         handleImagePress={handleImagePress}
+        isOfflineItem={true}
       />
       {isOnline && (
         <TouchableOpacity
@@ -135,7 +136,7 @@ const ArchivedTab = () => {
           renderItem={renderItem}
           keyExtractor={(item) => item.temporaryDisplay.greigeId.toString()}
           contentContainerStyle={archivedTabStyles.listContainer}
-          extraData={offlineItems.length}
+          extraData={JSON.stringify(offlineItems)}
           refreshControl={
             <RefreshControl
               refreshing={loading}

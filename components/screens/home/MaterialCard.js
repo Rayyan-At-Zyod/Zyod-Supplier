@@ -22,7 +22,7 @@ import { useAuth } from "../../../context/AuthContext";
 import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 import { updateAnOfflineMaterialAction } from "../../../services/offline/storage.service";
 
-const MaterialCard = ({ item, handleImagePress, onUpdateQuantity }) => {
+const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
   const navigation = useNavigation();
   const dispatch = useDispatch();
   const { warehouseId, token } = useAuth();
@@ -53,7 +53,9 @@ const MaterialCard = ({ item, handleImagePress, onUpdateQuantity }) => {
       const newQuantity =
         operationType === "STOCK IN"
           ? currentQuantity + quantity
-          : currentQuantity - quantity;
+          : currentQuantity - quantity >= 0
+          ? currentQuantity - quantity
+          : 0;
       if (!isOnline) {
         // For offline materials
         await updateAnOfflineMaterialAction(
@@ -62,6 +64,13 @@ const MaterialCard = ({ item, handleImagePress, onUpdateQuantity }) => {
         );
       } else {
         // For online materials
+        if (isOfflineItem) {
+          Alert.alert(
+            "=== Feature under construction ===",
+            "Update of offline items can be done only when app is offline also. Please sync this item once online."
+          );
+          return;
+        }
         const payload = {
           warehouseId,
           reason: "Stock adjustment",
@@ -122,17 +131,16 @@ const MaterialCard = ({ item, handleImagePress, onUpdateQuantity }) => {
       {/* Edit button & Variants Toggle */}
       {!isEditing && (
         <>
-          {!isOnline && (
-            <TouchableOpacity
-              style={currentTabStyles.editButton}
-              onPress={() => {
-                setIsEditing(true);
-                setShowVariants(false);
-              }}
-            >
-              <Ionicons name="trail-sign-outline" size={20} color="black" />
-            </TouchableOpacity>
-          )}
+          <TouchableOpacity
+            style={currentTabStyles.editButton}
+            onPress={() => {
+              setIsEditing(true);
+              setShowVariants(false);
+            }}
+          >
+            <Ionicons name="trail-sign-outline" size={20} color="black" />
+          </TouchableOpacity>
+
           <TouchableOpacity
             style={currentTabStyles.showVariationsButton}
             onPress={() => setShowVariants(!showVariants)}
@@ -180,7 +188,7 @@ const MaterialCard = ({ item, handleImagePress, onUpdateQuantity }) => {
             Description: {selectedVariation?.description || "N/A"}
           </Text>
 
-          {!isEditing && isOnline ? (
+          {!isEditing ? (
             <>
               <Text style={currentTabStyles.description}>
                 Stock:{" "}
