@@ -1,5 +1,5 @@
-import { setOfflineMaterials } from "../../../store/rawMaterialsSlice";
-import { loadFromCache } from "../../offline/storage.service";
+import { setOfflineMaterials } from "../../store/rawMaterialsSlice";
+import { loadFromCache } from "../offline/storage.service";
 
 export const loadPendingMaterials = async (dispatch) => {
   try {

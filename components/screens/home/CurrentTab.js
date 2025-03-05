@@ -12,12 +12,12 @@ import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
 
 // internal imports
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
 import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
-import { currentTabStyles } from "../../styles/CurrentTab.styles";
+import { currentTabStyles } from "../../../styles/CurrentTab.styles";
 import LoadingModal from "../../util/LoadingModal";
-import { loadRawMaterials } from "../../../services/helpers/functions/loadRMs";
+import { loadRawMaterials } from "../../../services/functions/loadRMs";
 import MaterialCard from "./MaterialCard";
 
 function CurrentTab() {

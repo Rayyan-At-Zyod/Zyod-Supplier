@@ -14,25 +14,25 @@ import {
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
-import { addMaterial } from "../../../../store/rawMaterialsSlice";
+import { addMaterial } from "../../../store/rawMaterialsSlice";
 
 // internal imports
 import { useAuth } from "../../../context/AuthContext";
-import LoadingModal from "../../../util/LoadingModal";
+import LoadingModal from "../../util/LoadingModal";
 import { rmStyles } from "../../../styles/AddRM.styles";
-import ImageSelectionModal from "../../../util/ImageSelectionModal";
-import { useImagePicker } from "../../../../hooks/useImagePicker";
-import { addRawMaterial } from "../../../../services/api/addRawMaterial.service";
-import { createRMsData } from "../../../../services/helpers/functions/createRmsDataForRMAdd";
-import { createPayload } from "../../../../services/helpers/functions/createPayloadForRMAdd";
-import { useNetworkStatus } from "../../../../hooks/useNetworkStatus";
-import { loadRawMaterials } from "../../../../services/helpers/functions/loadRMs";
+import ImageSelectionModal from "../../util/ImageSelectionModal";
+import { useImagePicker } from "../../../hooks/useImagePicker";
+import { addRawMaterial } from "../../../services/api/addRawMaterial.service";
+import { createRMsData } from "../../../services/functions/createRmsDataForRMAdd";
+import { createPayload } from "../../../services/functions/createPayloadForRMAdd";
+import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
+import { loadRawMaterials } from "../../../services/functions/loadRMs";
 import {
   loadFromCache,
   queuePendingAction,
   saveToCache,
-} from "../../../../services/offline/storage.service";
-import { validateAddRMForm } from "../../../../services/helpers/functions/addFormValidator";
+} from "../../../services/offline/storage.service";
+import { validateAddRMForm } from "../../../services/validation/addFormValidator";
 
 function AddRMScreen() {
   const navigation = useNavigation();

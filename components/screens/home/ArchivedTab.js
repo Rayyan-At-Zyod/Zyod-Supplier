@@ -14,15 +14,15 @@ import {
 } from "../../../services/offline/storage.service";
 import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 import MaterialCard from "./MaterialCard";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setLoading,
   setOfflineMaterials,
 } from "../../../store/rawMaterialsSlice";
-import { archivedTabStyles } from "../../styles/ArchivedTab.styles";
+import { archivedTabStyles } from "../../../styles/ArchivedTab.styles";
 import LoadingModal from "../../util/LoadingModal";
-import { loadPendingMaterials } from "../../../services/helpers/functions/loadPendingMaterials";
+import { loadPendingMaterials } from "../../../services/functions/loadPendingMaterials";
 
 const ArchivedTab = () => {
   const dispatch = useDispatch();

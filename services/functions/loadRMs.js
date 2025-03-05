@@ -1,9 +1,9 @@
 // loadRawMaterials.js
 // (Send the specific parameters)
 
-import { setLoading, setMaterials } from "../../../store/rawMaterialsSlice";
-import { fetchRawMaterials } from "../../api/fetchRawMaterial.service";
-import { loadFromCache, saveToCache } from "../../offline/storage.service";
+import { setLoading, setMaterials } from "../../store/rawMaterialsSlice";
+import { fetchRawMaterials } from "../api/fetchRawMaterial.service";
+import { loadFromCache, saveToCache } from "../offline/storage.service";
 
 export const loadRawMaterials = async (token, isOnline, dispatch) => {
   if (isOnline) {

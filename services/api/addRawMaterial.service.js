@@ -1,4 +1,4 @@
-import { convertImageToBase64 } from "../helpers/utilities/imageBase64Converter";
+import { convertImageToBase64} from '../utilities/imageBase64Converter'
 import { API_ENDPOINTS } from "./endpoints";
 
 export const addRawMaterial = async (payload, token) => {
@@ -48,7 +48,7 @@ export const addRawMaterial = async (payload, token) => {
     skuDetails: {
       ...payload.skuDetails,
       image: await convertImageToBase64(payload.skuDetails.image),
-      RMsData: newRMsData, // @TODO:
+      RMsData: newRMsData,
     },
   };
 

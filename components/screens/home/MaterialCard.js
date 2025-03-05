@@ -9,12 +9,12 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { currentTabStyles } from "../../styles/CurrentTab.styles";
+import { currentTabStyles } from "../../../styles/CurrentTab.styles";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
-import { setLoading } from "../../../store/rawMaterialsSlice";
+import { setLoading, updateItems } from "../../../store/rawMaterialsSlice";
 import { updateRM } from "../../../services/api/updateRmStock.service";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 
 const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
   const navigation = useNavigation();
@@ -61,6 +61,19 @@ const MaterialCard = ({ item, handleImagePress, showEditButton = true }) => {
       };
 
       await updateRM(payload, token);
+      
+      // Calculate new quantity based on operation type
+      const currentQuantity = selectedVariation.availableQuantity || 0;
+      const newQuantity = operationType === "STOCK IN" 
+        ? currentQuantity + quantity 
+        : currentQuantity - quantity;
+      
+      // Update Redux store
+      dispatch(updateItems({
+        itemId: selectedVariation.rmVariationId,
+        newQuantity: newQuantity
+      }));
+
       Alert.alert("Success", "Stock updated successfully");
       setIsEditing(false);
       setStockQuantity("");

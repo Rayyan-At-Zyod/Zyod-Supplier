@@ -1,7 +1,7 @@
 import React from "react";
 import { View, Image, TouchableOpacity, Text, Modal } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { rmStyles } from "../styles/AddRM.styles";
+import { rmStyles } from "../../styles/AddRM.styles";
 
 function ImageSelectionModal({
   mainImage,

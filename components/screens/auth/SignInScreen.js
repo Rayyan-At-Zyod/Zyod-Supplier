@@ -12,7 +12,7 @@ import {
   Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 import LoadingModal from "../../util/LoadingModal";
 import { API_ENDPOINTS } from "../../../services/api/endpoints";
 

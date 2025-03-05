@@ -1,6 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { addRawMaterial } from "../api/addRawMaterial.service";
-import { loadRawMaterials } from "../helpers/functions/loadRMs";
+import { loadRawMaterials } from "../functions/loadRMs";
 import { setLoading, setSyncing } from "../../store/rawMaterialsSlice";
 import { v4 as uuidv4 } from "uuid";
 import { store } from "../../store/store";
@@ -65,7 +65,7 @@ export const processCurrentAction = async (id, token) => {
     const actionToProcess = pendingActions.find(action => action.id === id);
     
     if (!actionToProcess) {
-      console.error(`No pending action found with id: ${id}`);
+      console.error(`No pending action found with id: ${id}`);cu
       return;
     }
 

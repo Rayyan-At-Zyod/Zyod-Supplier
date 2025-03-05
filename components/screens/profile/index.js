@@ -11,7 +11,7 @@ import {
 import { Ionicons } from "@expo/vector-icons";
 import { useNavigation } from "@react-navigation/native";
 import { Linking } from "react-native";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 import ProfileContent from "../../util/ProfileContent";
 import { API_ENDPOINTS } from "../../../services/api/endpoints";
 import { clearPendingActions } from "../../../services/offline/storage.service";

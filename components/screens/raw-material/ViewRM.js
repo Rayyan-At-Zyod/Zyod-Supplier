@@ -4,11 +4,7 @@ import { View, Text, ScrollView, Image } from "react-native";
 import { useRoute, useNavigation } from "@react-navigation/native";
 
 // internal imports
-import LoadingModal from "../../../util/LoadingModal";
 import { rmStyles } from "../../../styles/viewRM.styles";
-import { createRMsData } from "../../../../services/helpers/functions/createRmsDataForRMAdd";
-import { createPayload } from "../../../../services/helpers/functions/createPayloadForRMAdd";
-import { convertImageToBase64 } from "../../../../services/helpers/utilities/imageBase64Converter";
 
 function ViewRMScreen() {
   const route = useRoute();

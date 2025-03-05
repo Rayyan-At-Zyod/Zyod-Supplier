@@ -27,6 +27,29 @@ const rawMaterialsSlice = createSlice({
 
       state.items = action.payload;
     },
+    updateItems: (state, action) => {
+      const { itemId, newQuantity } = action.payload;
+      state.items = state.items.map((item) => {
+        const updatedRmVariations = item.rmVariations?.map((rmVariation) => {
+          if (rmVariation.rmVariationId === itemId) {
+            return {
+              ...rmVariation,
+              availableQuantity: newQuantity,
+            };
+          } else {
+            return rmVariation;
+          }
+        });
+        console.log("hey:", {
+          ...item,
+          rmVariations: updatedRmVariations || item.rmVariations,
+        });
+        return {
+          ...item,
+          rmVariations: updatedRmVariations || item.rmVariations,
+        };
+      });
+    },
     addOfflineMaterial: (state, action) => {
       // console.log("📢 addOfflineMaterial called:", action.payload);
       state.offlineItems = [action.payload, ...state.items];
@@ -48,5 +71,6 @@ export const {
   setOfflineMaterials,
   setLoading,
   setSyncing,
+  updateItems,
 } = rawMaterialsSlice.actions;
 export default rawMaterialsSlice.reducer;

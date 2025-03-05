@@ -1,6 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { fetchPrimaryWarehouseIdOfThisUser } from "../../services/api/getWarehouseId.service";
+import { fetchPrimaryWarehouseIdOfThisUser } from "../services/api/getWarehouseId.service";
 
 const AuthContext = createContext({});
 
