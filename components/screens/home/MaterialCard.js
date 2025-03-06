@@ -57,20 +57,24 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           ? currentQuantity - quantity
           : 0;
       if (!isOnline) {
-        // For offline materials
+        // Offline ka offline time me kardia
         await updateAnOfflineMaterialAction(
           selectedVariation.rmVariationId,
           newQuantity
         );
+        // online ka offline me karna hai.
+        
       } else {
         // For online materials
         if (isOfflineItem) {
+          // offline ka online me block kardia (sync hoyga lele.)
           Alert.alert(
             "=== Feature under construction ===",
             "Update of offline items can be done only when app is offline also. Please sync this item once online."
           );
           return;
         }
+        // online ka online me kardia.
         const payload = {
           warehouseId,
           reason: "Stock adjustment",
