@@ -3,13 +3,13 @@ import { addRawMaterial } from "../api/addRawMaterial.service";
 import { loadRawMaterials } from "../functions/loadRMs";
 import {
   addOfflineMaterial,
-  setLoading,
-  setOfflineMaterials,
+  setMaterials,
   setSyncing,
   updateOfflineMaterials,
 } from "../../store/rawMaterialsSlice";
 import { v4 as uuidv4 } from "uuid";
 import { store } from "../../store/store";
+import { updateRM } from "../api/updateRmStock.service";
 
 export const saveToCache = async (key, data) => {
   try {
@@ -88,6 +88,20 @@ export const processCurrentAction = async (id, token) => {
         // Reload the materials to update the UI
         await loadRawMaterials(token, true, store.dispatch);
       }
+    } else if (actionToProcess.type === "UPDATE") {
+      // Use the existing addRawMaterial service
+      const response = await updateRM(actionToProcess.payload, token);
+
+      if (response) {
+        // Remove the processed action from pending actions
+        const updatedPendingActions = pendingActions.filter(
+          (action) => action.id !== id
+        );
+        await saveToCache("pendingActions", updatedPendingActions);
+
+        // Reload the materials to update the UI
+        await loadRawMaterials(token, true, store.dispatch);
+      }
     }
   } catch (error) {
     console.error("Error processing single action:", error);
@@ -123,33 +137,75 @@ export const processPendingActions = async (token) => {
 };
 
 export const updateAnOnlineMaterialAction = async (
-  // complete the params
-  griegeId,
+  theGreigeId,
   theRmVariationId,
-  newQuantity
+  theNewQuantity,
+  operationType,
+  quantityToBeChanged,
+  item,
+  warehouseId
 ) => {
   try {
-    // The app is offline right now. 
+    // The app is offline right now.
+    // Load cached data
+    const cachedData = (await loadFromCache("cachedData")) || [];
 
-    // Load from cachedData.
-
-    // 1. Find the online item with that griegeId
+    // 1. Find the online item with that greigeId
+    const onlineItem = cachedData.find((item) => item.greigeId === theGreigeId);
+    if (!onlineItem) throw new Error("Item not found in cache.");
 
     // 2. Find the object with the corresponding rmVariationId
+    const variationObject = onlineItem.rmVariations.find(
+      (rmv) => rmv.rmVariationId == theRmVariationId
+    );
+    if (!variationObject) throw new Error("Variation not found.");
 
-    // 3. Update its availableQuantity
+    // 3. Create the temporaryDisplay format for offline storage
+    const temporaryDisplay = {
+      ...onlineItem,
+      rmVariations: onlineItem.rmVariations.map((v) => {
+        if (v.rmVariationId === theRmVariationId)
+          return { ...v, availableQuantity: theNewQuantity.toString() };
+        return v;
+      }),
+    };
 
-    // 4. Create a corresponding pendingAction
+    // 4. Create a corresponding pendingAction with the API payload format
+    const pendingAction = {
+      type: "UPDATE",
+      temporaryDisplay,
+      payload: {
+        warehouseId,
+        reason: "Stock adjustment",
+        itemDetailsArray: [
+          {
+            itemId: theRmVariationId, // important
+            itemCode: variationObject.newCode || variationObject.rmCode,
+            itemType: "Fabric",
+            itemUnit: variationObject.unitCode,
+            operationType, // important
+            quantityChange: quantityToBeChanged, // important
+            oldStockQuantity: variationObject.availableQuantity, // important Store old quantity for conflict detection
+          },
+        ],
+      },
+    };
 
-    // Add the pending action to the queue of pending actions using queuePendingAction method
-    
-    // save the new cachedData to cache
+    // Add the pending action to the queue
+    await queuePendingAction(pendingAction);
 
-    // STore updates
-    // 1. Remove the item from the online items list using its greige ID
+    // Update cached data
+    const updatedCachedData = cachedData.filter(
+      (item) => item.greigeId !== theGreigeId
+    );
+    await saveToCache("cachedData", updatedCachedData);
 
-    // 2. Add new item to offlineItems
-    
+    // Update Redux store
+    store.dispatch(setMaterials(updatedCachedData)); // Remove from online items
+  } catch (err) {
+    console.error("Error updating online material in offline mode:", err);
+    throw err;
+  }
 };
 
 export const updateAnOfflineMaterialAction = async (
@@ -163,9 +219,7 @@ export const updateAnOfflineMaterialAction = async (
       const variationIndex = action.temporaryDisplay.rmVariations.findIndex(
         (variation) => variation.rmVariationId === theRmVariationId
       );
-
       if (variationIndex === -1) return action;
-
       // Update temporaryDisplay part
       const updatedVariations = action.temporaryDisplay.rmVariations.map(
         (variation) => {
@@ -175,21 +229,21 @@ export const updateAnOfflineMaterialAction = async (
           return variation;
         }
       );
-
       // Update payload part - RMsData needs to be updated at the same index
-      const updatedRMsData = action.payload.skuDetails.RMsData.map((rmData, index) => {
-        if (index === variationIndex) {
-          return {
-            ...rmData,
-            RMInventoryDetails: rmData.RMInventoryDetails.map(detail => ({
-              ...detail,
-              CurrentStock: String(newQuantity) // Convert to string to match the format
-            }))
-          };
+      const updatedRMsData = action.payload.skuDetails.RMsData.map(
+        (rmData, index) => {
+          if (index === variationIndex) {
+            return {
+              ...rmData,
+              RMInventoryDetails: rmData.RMInventoryDetails.map((detail) => ({
+                ...detail,
+                CurrentStock: String(newQuantity), // Convert to string to match the format
+              })),
+            };
+          }
+          return rmData;
         }
-        return rmData;
-      });
-
+      );
       return {
         ...action,
         temporaryDisplay: {
@@ -200,17 +254,19 @@ export const updateAnOfflineMaterialAction = async (
           ...action.payload,
           skuDetails: {
             ...action.payload.skuDetails,
-            RMsData: updatedRMsData
-          }
-        }
+            RMsData: updatedRMsData,
+          },
+        },
       };
     });
 
     await saveToCache("pendingActions", updatedPendingActions);
-    store.dispatch(updateOfflineMaterials({ 
-      itemId: theRmVariationId,
-      newQuantity 
-    }));
+    store.dispatch(
+      updateOfflineMaterials({
+        itemId: theRmVariationId,
+        newQuantity,
+      })
+    );
   } catch (err) {
     console.error("Error updating offline action:", err);
     throw err;

@@ -20,7 +20,10 @@ import {
 import { updateRM } from "../../../services/api/updateRmStock.service";
 import { useAuth } from "../../../context/AuthContext";
 import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
-import { updateAnOfflineMaterialAction } from "../../../services/offline/storage.service";
+import {
+  updateAnOfflineMaterialAction,
+  updateAnOnlineMaterialAction,
+} from "../../../services/offline/storage.service";
 
 const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
   const navigation = useNavigation();
@@ -57,31 +60,27 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           ? currentQuantity - quantity
           : 0;
       if (!isOnline) {
-        // Offline ka offline time me kardia
-        await updateAnOfflineMaterialAction(
-          selectedVariation.rmVariationId,
-          newQuantity
-        );
-        // online ka offline me karna hai. @TODO: online item updates during offline app times
-        console.error("Item which was online.", JSON.stringify(item, null, 2));
-        const payload = {
-          warehouseId,
-          reason: "Stock adjustment",
-          itemDetailsArray: [
-            {
-              itemId: selectedVariation.rmVariationId,
-              itemCode: selectedVariation.newCode,
-              itemType: "Fabric",
-              itemUnit: selectedVariation.unitCode,
-              operationType,
-              quantityChange: quantity,
-            },
-          ],
-        };
+        if (isOfflineItem) {
+          // For offline materials
+          await updateAnOfflineMaterialAction(
+            selectedVariation.rmVariationId,
+            newQuantity
+          );
+        } else {
+          // For online materials during offline mode
+          await updateAnOnlineMaterialAction(
+            item.greigeId,
+            selectedVariation.rmVariationId,
+            newQuantity,
+            operationType,
+            quantity,
+            item,
+            warehouseId
+          );
+        }
       } else {
         // For online materials
         if (isOfflineItem) {
-          // offline ka online me block kardia (sync hoyga lele.)
           Alert.alert(
             "=== Feature under construction ===",
             "Update of offline items can be done only when app is offline also. Please sync this item once online."

@@ -8,8 +8,9 @@ export const loadPendingMaterials = async (dispatch) => {
     const pendingAdds = pendingActions.filter(
       (action) => action.type === "ADD"
     );
-    dispatch(setOfflineMaterials(pendingAdds));
+    // dispatch(setOfflineMaterials(pendingAdds));
+    dispatch(setOfflineMaterials(pendingActions));
   } catch (error) {
     console.error("Error loading pending materials:", error);
   }
-}; 
+};

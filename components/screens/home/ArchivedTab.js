@@ -18,7 +18,6 @@ import { useAuth } from "../../../context/AuthContext";
 import { useDispatch, useSelector } from "react-redux";
 import {
   setLoading,
-  setOfflineMaterials,
   setSyncing,
   updateOfflineMaterials,
 } from "../../../store/rawMaterialsSlice";

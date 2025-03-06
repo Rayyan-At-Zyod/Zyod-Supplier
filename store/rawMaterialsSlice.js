@@ -17,10 +17,6 @@ const rawMaterialsSlice = createSlice({
       console.log("📢 setSyncing called:", action.payload);
       state.syncing = action.payload;
     },
-    addMaterial: (state, action) => {
-      console.log("📢 addMaterial called:", action.payload);
-      state.items = [action.payload, ...state.items]; // Ensure a new reference
-    },
     setMaterials: (state, action) => {
       console.log(
         "📢 setMaterials called with:",
@@ -28,6 +24,10 @@ const rawMaterialsSlice = createSlice({
         "items"
       );
       state.items = action.payload;
+    },
+    addMaterial: (state, action) => {
+      console.log("📢 addMaterial called:", action.payload);
+      state.items = [action.payload, ...state.items]; // Ensure a new reference
     },
     updateMaterials: (state, action) => {
       const { itemId, newQuantity } = action.payload;
@@ -59,6 +59,14 @@ const rawMaterialsSlice = createSlice({
           rmVariations: updatedRmVariations,
         };
       });
+    },
+    setOfflineMaterials: (state, action) => {
+      console.log(
+        "📢 setOfflineMaterials called with:",
+        JSON.stringify(action.payload, null, 2)
+      );
+
+      state.offlineItems = action.payload;
     },
     addOfflineMaterial: (state, action) => {
       console.log("📢 addOfflineMaterial called:", action.payload);
@@ -97,14 +105,6 @@ const rawMaterialsSlice = createSlice({
           },
         };
       });
-    },
-    setOfflineMaterials: (state, action) => {
-      console.log(
-        "📢 setOfflineMaterials called with:",
-        JSON.stringify(action.payload, null, 2)
-      );
-
-      state.offlineItems = action.payload;
     },
   },
 });
