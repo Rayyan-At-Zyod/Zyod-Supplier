@@ -32,13 +32,11 @@ export const loadFromCache = async (key) => {
 export const queuePendingAction = async (action) => {
   try {
     const pendingActions = (await loadFromCache("pendingActions")) || [];
-
     const actionWithId = {
       ...action,
       id: uuidv4(), // Using 'id' instead of 'appDbId'
       timestamp: Date.now(),
     };
-
     await saveToCache("pendingActions", [...pendingActions, actionWithId]);
     store.dispatch(addOfflineMaterial(actionWithId));
     return actionWithId.id;
@@ -73,7 +71,6 @@ export const processCurrentAction = async (id, token) => {
 
     if (!actionToProcess) {
       console.error(`No pending action found with id: ${id}`);
-      cu;
       return;
     }
 
@@ -123,6 +120,36 @@ export const processPendingActions = async (token) => {
   } finally {
     store.dispatch(setSyncing(false));
   }
+};
+
+export const updateAnOnlineMaterialAction = async (
+  // complete the params
+  griegeId,
+  theRmVariationId,
+  newQuantity
+) => {
+  try {
+    // The app is offline right now. 
+
+    // Load from cachedData.
+
+    // 1. Find the online item with that griegeId
+
+    // 2. Find the object with the corresponding rmVariationId
+
+    // 3. Update its availableQuantity
+
+    // 4. Create a corresponding pendingAction
+
+    // Add the pending action to the queue of pending actions using queuePendingAction method
+    
+    // save the new cachedData to cache
+
+    // STore updates
+    // 1. Remove the item from the online items list using its greige ID
+
+    // 2. Add new item to offlineItems
+    
 };
 
 export const updateAnOfflineMaterialAction = async (

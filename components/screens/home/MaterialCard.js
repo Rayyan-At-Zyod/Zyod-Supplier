@@ -62,8 +62,22 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           selectedVariation.rmVariationId,
           newQuantity
         );
-        // online ka offline me karna hai.
-        
+        // online ka offline me karna hai. @TODO: online item updates during offline app times
+        console.error("Item which was online.", JSON.stringify(item, null, 2));
+        const payload = {
+          warehouseId,
+          reason: "Stock adjustment",
+          itemDetailsArray: [
+            {
+              itemId: selectedVariation.rmVariationId,
+              itemCode: selectedVariation.newCode,
+              itemType: "Fabric",
+              itemUnit: selectedVariation.unitCode,
+              operationType,
+              quantityChange: quantity,
+            },
+          ],
+        };
       } else {
         // For online materials
         if (isOfflineItem) {
