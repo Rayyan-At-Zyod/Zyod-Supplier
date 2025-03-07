@@ -251,16 +251,15 @@ function AddRMScreen() {
       // 4) Make the API call
       if (isOnline) {
         await addRawMaterial(payload, token);
-        loadRawMaterials(token, isOnline, dispatch);
+        await loadRawMaterials(token, isOnline, dispatch);
+        const newCache = (await loadFromCache("cachedData")) || [];
+        console.log("items in cache", newCache);
       } else {
         await queuePendingAction({
           type: "ADD",
           payload,
           temporaryDisplay: temporaryItem,
         });
-        // const loadedData = await loadFromCache("cachedData");
-        // await saveToCache("cachedData", [temporaryItem, ...loadedData]);
-        // dispatch(addMaterial(temporaryItem));
       }
       navigation.goBack();
     } catch (error) {

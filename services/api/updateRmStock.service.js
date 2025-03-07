@@ -1,9 +1,6 @@
 import { API_ENDPOINTS } from "./endpoints";
 
 export const updateRM = async (payload, token) => {
-  console.log("reading update:", JSON.stringify(payload));
-  console.log("reading token:", token);
-
   try {
     const response = await fetch(
       API_ENDPOINTS.ADJUST_STOCK_INVENTORY_FOR_ITEMS_API,
@@ -25,7 +22,6 @@ export const updateRM = async (payload, token) => {
 
     // First check if response is ok
     if (!response.ok) {
-      console.error("res:", response);
       // Try to parse error response as JSON
       let errorMessage;
       try {

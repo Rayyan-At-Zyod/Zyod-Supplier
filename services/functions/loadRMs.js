@@ -10,13 +10,10 @@ export const loadRawMaterials = async (token, isOnline, dispatch) => {
     try {
       dispatch(setLoading(true));
       const data = await fetchRawMaterials(token);
-      // console.log(
-      //   "✅ Fetched raw materials: (length)",
-      //   JSON.stringify(data.data, null, 2)
-      // );
-      dispatch(setMaterials(data.data));
-      // Optionally, update the cache:
       await saveToCache("cachedData", data.data);
+      // const newCache = (await loadFromCache("cachedData")) || [];
+      // console.log(">>items in cache", JSON.stringify(newCache, null, 2));
+      dispatch(setMaterials(data.data));
     } catch (error) {
       console.error("❌ Online but error fetching materials:", error);
       const cachedData = await loadFromCache("cachedData");
@@ -30,7 +27,6 @@ export const loadRawMaterials = async (token, isOnline, dispatch) => {
   } else {
     console.error("❌✅ Offline. Loading from cache...");
     const cachedData = await loadFromCache("cachedData");
-    console.error("🔐 Using cached data, which is\n", cachedData);
     if (cachedData) {
       dispatch(setMaterials(cachedData));
     }

@@ -24,6 +24,7 @@ import {
   updateAnOfflineMaterialAction,
   updateAnOnlineMaterialAction,
 } from "../../../services/offline/storage.service";
+import { loadRawMaterials } from "../../../services/functions/loadRMs";
 
 const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
   const navigation = useNavigation();
@@ -56,9 +57,12 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
       const newQuantity =
         operationType === "STOCK IN"
           ? currentQuantity + quantity
-          : currentQuantity - quantity >= 0
-          ? currentQuantity - quantity
-          : 0;
+          : currentQuantity - quantity;
+      if (currentQuantity < quantity && operationType === "STOCK OUT") {
+        Alert.alert("Error", "You can't decrease stock to negative values.");
+        return;
+      }
+      // offline
       if (!isOnline) {
         if (isOfflineItem) {
           // For offline materials
@@ -79,7 +83,8 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           );
         }
       } else {
-        // For online materials
+        // online
+        // Online me offline item.
         if (isOfflineItem) {
           Alert.alert(
             "=== Feature under construction ===",
@@ -102,16 +107,8 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
             },
           ],
         };
-        // Send to API
         await updateRM(payload, token);
-
-        // Update Redux store after actually changing database
-        dispatch(
-          updateMaterials({
-            itemId: selectedVariation.rmVariationId,
-            newQuantity: newQuantity,
-          })
-        );
+        await loadRawMaterials(token, isOnline, dispatch);
       }
       Alert.alert("Success", "Stock updated successfully");
       setIsEditing(false);

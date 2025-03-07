@@ -192,6 +192,11 @@ export const updateAnOnlineMaterialAction = async (
     };
 
     // Add the pending action to the queue
+    console.error("1. hey rayyan");
+    // console.error(
+    //   "New action in pendingactions",
+    //   JSON.stringify(pendingAction, null, 2)
+    // );
     await queuePendingAction(pendingAction);
 
     // Update cached data
@@ -230,34 +235,84 @@ export const updateAnOfflineMaterialAction = async (
         }
       );
       // Update payload part - RMsData needs to be updated at the same index
-      const updatedRMsData = action.payload.skuDetails.RMsData.map(
-        (rmData, index) => {
-          if (index === variationIndex) {
-            return {
-              ...rmData,
-              RMInventoryDetails: rmData.RMInventoryDetails.map((detail) => ({
-                ...detail,
-                CurrentStock: String(newQuantity), // Convert to string to match the format
-              })),
-            };
+      if (action.type === "ADD") {
+        // We are updating a material that is new and was made offline. So just update the stock in its payload.
+        const updatedRMsData = action.payload.skuDetails.RMsData.map(
+          (rmData, index) => {
+            if (index === variationIndex) {
+              return {
+                ...rmData,
+                RMInventoryDetails: rmData.RMInventoryDetails.map((detail) => ({
+                  ...detail,
+                  CurrentStock: String(newQuantity), // Convert to string to match the format
+                })),
+              };
+            }
+            return rmData;
           }
-          return rmData;
-        }
-      );
-      return {
-        ...action,
-        temporaryDisplay: {
-          ...action.temporaryDisplay,
-          rmVariations: updatedVariations,
-        },
-        payload: {
-          ...action.payload,
-          skuDetails: {
-            ...action.payload.skuDetails,
-            RMsData: updatedRMsData,
+        );
+        return {
+          ...action,
+          temporaryDisplay: {
+            ...action.temporaryDisplay,
+            rmVariations: updatedVariations,
           },
-        },
-      };
+          payload: {
+            ...action.payload,
+            skuDetails: {
+              ...action.payload.skuDetails,
+              RMsData: updatedRMsData,
+            },
+          },
+        };
+      } else if (action.type === "UPDATE") {
+        // We are updating a material that was made online. So we need to update the stock in
+        // its payload and also update the variation in temporaryDisplay.
+        console.error("action correct place", action);
+        const variationIndex = action.payload.itemDetailsArray.findIndex(
+          (variation) => variation.itemId === theRmVariationId
+        );
+        if (variationIndex === -1) return action;
+        const updatedItemDetailsArray = action.payload.itemDetailsArray.map(
+          (variation) => {
+            if (variation.itemId === theRmVariationId) {
+              // we have old stock qty
+              // we have old qty change
+              // we have operation type
+              // we have the new qty
+              // new qty change = old qty - new qty
+              const oldStockQuantity = Number.parseInt(
+                action.payload.itemDetailsArray[variationIndex].oldStockQuantity
+              );
+              const newOperationType =
+                newQuantity - oldStockQuantity >= 0 ? "STOCK IN" : "STOCK OUT";
+              const newQtyChange = newQuantity - oldStockQuantity;
+              return {
+                ...variation,
+                quantityChange: newQtyChange,
+                operationType: newOperationType,
+              };
+            }
+            return variation;
+          }
+        );
+        const newAction = {
+          ...action,
+          temporaryDisplay: {
+            ...action.temporaryDisplay,
+            rmVariations: updatedVariations,
+          },
+          payload: {
+            ...action.payload,
+            itemDetailsArray: updatedItemDetailsArray,
+          },
+        };
+        console.error(
+          "action correct place",
+          JSON.stringify(newAction, null, 2)
+        );
+        return newAction;
+      }
     });
 
     await saveToCache("pendingActions", updatedPendingActions);
