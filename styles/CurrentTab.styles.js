@@ -7,6 +7,7 @@ export const currentTabStyles = StyleSheet.create({
   },
   listContainer: {
     padding: 16,
+    paddingBottom: 75,
   },
   card: {
     backgroundColor: "white",

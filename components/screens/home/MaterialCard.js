@@ -72,6 +72,18 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           );
         } else {
           // For online materials during offline mode
+          const nonSelectedRmVariationIds = item.rmVariations
+            .map((rmv) => rmv.rmVariationId)
+            .filter((rmvId) => rmvId !== selectedVariation.rmVariationId);
+
+          const nonSelectedRmVariationQuantities = item.rmVariations
+            .map((rmv) => {
+              return rmv.rmVariationId === selectedVariation.rmVariationId
+                ? null
+                : rmv.availableQuantity;
+            })
+            .filter((quantity) => quantity !== null);
+
           await updateAnOnlineMaterialAction(
             item.greigeId,
             selectedVariation.rmVariationId,
@@ -79,7 +91,9 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
             operationType,
             quantity,
             item,
-            warehouseId
+            warehouseId,
+            nonSelectedRmVariationIds,
+            nonSelectedRmVariationQuantities
           );
         }
       } else {

@@ -143,7 +143,9 @@ export const updateAnOnlineMaterialAction = async (
   operationType,
   quantityToBeChanged,
   item,
-  warehouseId
+  warehouseId,
+  nonSelectedRmVariationIds,
+  nonSelectedRmVariationQuantities
 ) => {
   try {
     // The app is offline right now.
@@ -187,16 +189,27 @@ export const updateAnOnlineMaterialAction = async (
             quantityChange: quantityToBeChanged, // important
             oldStockQuantity: variationObject.availableQuantity, // important Store old quantity for conflict detection
           },
+          ...nonSelectedRmVariationIds.map((id, index) => {
+            return {
+              itemId: id,
+              itemCode: variationObject.newCode || variationObject.rmCode,
+              itemType: "Fabric",
+              itemUnit: variationObject.unitCode,
+              operationType,
+              quantityChange: 0, // Set to zero for non-selected variations
+              oldStockQuantity: nonSelectedRmVariationQuantities[index],
+            };
+          }),
         ],
       },
     };
 
     // Add the pending action to the queue
     console.error("1. hey rayyan");
-    // console.error(
-    //   "New action in pendingactions",
-    //   JSON.stringify(pendingAction, null, 2)
-    // );
+    console.error(
+      "New in pendingAction.payload.itemDetailsArray",
+      JSON.stringify(pendingAction.payload.itemDetailsArray, null, 2)
+    );
     await queuePendingAction(pendingAction);
 
     // Update cached data
@@ -268,7 +281,6 @@ export const updateAnOfflineMaterialAction = async (
       } else if (action.type === "UPDATE") {
         // We are updating a material that was made online. So we need to update the stock in
         // its payload and also update the variation in temporaryDisplay.
-        console.error("action correct place", action);
         const variationIndex = action.payload.itemDetailsArray.findIndex(
           (variation) => variation.itemId === theRmVariationId
         );
