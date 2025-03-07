@@ -3,7 +3,7 @@ import { View, Image, StyleSheet, SafeAreaView } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 
-import ArchivedTab from "./ArchivedTab";
+import OfflineMaterialsTab from "./OfflineTab";
 import CurrentTab from "./CurrentTab";
 import ZYOD from "../../../assets/ZYOD.jpg";
 
@@ -30,10 +30,10 @@ function HomeScreen() {
         >
           <TopTab.Screen
             name="Current"
-            options={{ title: "Current" }}
+            options={{ title: "Your Materials" }}
             component={CurrentTab}
           />
-          <TopTab.Screen name="Archived" component={ArchivedTab} />
+          <TopTab.Screen name="Offline Materials" component={OfflineMaterialsTab} />
         </TopTab.Navigator>
       </View>
 

@@ -21,11 +21,11 @@ import {
   setSyncing,
   updateOfflineMaterials,
 } from "../../../store/rawMaterialsSlice";
-import { archivedTabStyles } from "../../../styles/ArchivedTab.styles";
+import { offlineTabStyles } from "../../../styles/OfflineTab.styles";
 import { loadPendingMaterials } from "../../../services/functions/loadPendingMaterials";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
 
-const ArchivedTab = () => {
+const OfflineMaterialsTab = () => {
   const dispatch = useDispatch();
   const offlineItems = useSelector((state) => state.rawMaterials.offlineItems);
   const loading = useSelector((state) => state.rawMaterials.loading);
@@ -51,7 +51,7 @@ const ArchivedTab = () => {
   };
 
   const renderItem = ({ item }) => (
-    <View style={archivedTabStyles.cardContainer}>
+    <View style={offlineTabStyles.cardContainer}>
       <MaterialCard
         item={item.temporaryDisplay}
         handleImagePress={handleImagePress}
@@ -59,7 +59,7 @@ const ArchivedTab = () => {
       />
       {isOnline && (
         <TouchableOpacity
-          style={archivedTabStyles.pendingBadge}
+          style={offlineTabStyles.pendingBadge}
           onPress={async () => {
             try {
               dispatch(setLoading(true));
@@ -72,26 +72,26 @@ const ArchivedTab = () => {
             }
           }}
         >
-          <Text style={archivedTabStyles.pendingText}>Pending Sync</Text>
+          <Text style={offlineTabStyles.pendingText}>Pending Sync</Text>
         </TouchableOpacity>
       )}
     </View>
   );
 
   return (
-    <View style={archivedTabStyles.container}>
-      <View style={archivedTabStyles.actionButtons}>
+    <View style={offlineTabStyles.container}>
+      <View style={offlineTabStyles.actionButtons}>
         <TouchableOpacity
-          style={archivedTabStyles.loadButton}
+          style={offlineTabStyles.loadButton}
           onPress={() => loadPendingMaterials(dispatch)}
         >
-          <Text style={archivedTabStyles.loadButtonText}>
+          <Text style={offlineTabStyles.loadButtonText}>
             Load Saved Actions
           </Text>
         </TouchableOpacity>
         {isOnline && (
           <TouchableOpacity
-            style={archivedTabStyles.loadButton}
+            style={offlineTabStyles.loadButton}
             onPress={async () => {
               try {
                 dispatch(setLoading(true));
@@ -104,24 +104,24 @@ const ArchivedTab = () => {
               }
             }}
           >
-            <Text style={archivedTabStyles.loadButtonText}>Process All</Text>
+            <Text style={offlineTabStyles.loadButtonText}>Process All</Text>
           </TouchableOpacity>
         )}
         <TouchableOpacity
-          style={archivedTabStyles.loadButton}
+          style={offlineTabStyles.loadButton}
           onPress={async () => {
             await clearPendingActions();
             await loadPendingMaterials(dispatch);
           }}
         >
-          <Text style={archivedTabStyles.loadButtonText}>Delete all</Text>
+          <Text style={offlineTabStyles.loadButtonText}>Delete all</Text>
         </TouchableOpacity>
       </View>
       <>
-        <Text style={archivedTabStyles.header}>
-          Pending Materials ({offlineItems.length})
+        <Text style={offlineTabStyles.header}>
+          Pending Offline Materials ({offlineItems.length})
         </Text>
-        <Text style={archivedTabStyles.subHeader}>
+        <Text style={offlineTabStyles.subHeader}>
           {isOnline
             ? `✅ Online${
                 offlineItems.length > 0
@@ -134,7 +134,7 @@ const ArchivedTab = () => {
           data={offlineItems}
           renderItem={renderItem}
           keyExtractor={(item) => item.temporaryDisplay.greigeId.toString()}
-          contentContainerStyle={archivedTabStyles.listContainer}
+          contentContainerStyle={offlineTabStyles.listContainer}
           extraData={JSON.stringify(offlineItems)}
           refreshControl={
             <RefreshControl
@@ -156,4 +156,4 @@ const ArchivedTab = () => {
   );
 };
 
-export default ArchivedTab;
+export default OfflineMaterialsTab;

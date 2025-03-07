@@ -1,6 +1,6 @@
 import { StyleSheet, Platform } from "react-native";
 
-export const archivedTabStyles = StyleSheet.create({
+export const offlineTabStyles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: "#f5f5f5",
