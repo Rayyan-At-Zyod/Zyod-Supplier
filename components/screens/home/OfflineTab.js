@@ -10,9 +10,7 @@ import {
 import {
   clearPendingActions,
   processCurrentAction,
-  processPendingActions,
 } from "../../../services/offline/storage.service";
-import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 import MaterialCard from "./MaterialCard";
 import { useAuth } from "../../../context/AuthContext";
 import { useDispatch, useSelector } from "react-redux";
@@ -20,16 +18,19 @@ import { setLoading } from "../../../store/rawMaterialsSlice";
 import { offlineTabStyles } from "../../../styles/OfflineTab.styles";
 import { loadPendingMaterials } from "../../../services/functions/loadPendingMaterials";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
+import { useSync } from "../../../context/SyncContext";
 
 const OfflineMaterialsTab = () => {
   const dispatch = useDispatch();
   const offlineItems = useSelector((state) => state.rawMaterials.offlineItems);
   const loading = useSelector((state) => state.rawMaterials.loading);
   const syncing = useSelector((state) => state.rawMaterials.syncing);
-  const { isOnline } = useNetworkStatus();
   const { token } = useAuth();
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  
+  // Use the sync context instead of useNetworkStatus
+  const { isOnline, isSyncing, lastSyncTime, syncOfflineData } = useSync();
 
   useEffect(() => {
     loadPendingMaterials(dispatch);
@@ -53,59 +54,11 @@ const OfflineMaterialsTab = () => {
         handleImagePress={handleImagePress}
         isOfflineItem={true}
       />
-      {isOnline && (
-        <TouchableOpacity
-          style={offlineTabStyles.pendingBadge}
-          onPress={async () => {
-            try {
-              dispatch(setLoading(true));
-              await processCurrentAction(item.id, token);
-              await loadPendingMaterials(dispatch);
-            } catch (error) {
-              console.error("Failed to process item:", error);
-            } finally {
-              dispatch(setLoading(false));
-            }
-          }}
-        >
-          <Text style={offlineTabStyles.pendingText}>Pending Sync</Text>
-        </TouchableOpacity>
-      )}
     </View>
   );
 
   return (
     <View style={offlineTabStyles.container}>
-      <View style={offlineTabStyles.actionButtons}>
-        {isOnline && offlineItems.length > 0 && (
-          <TouchableOpacity
-            style={offlineTabStyles.loadButton}
-            onPress={async () => {
-              try {
-                dispatch(setLoading(true));
-                await processPendingActions(token);
-                await loadPendingMaterials(dispatch);
-              } catch (error) {
-                console.error("Failed to process all items:", error);
-              } finally {
-                dispatch(setLoading(false));
-              }
-            }}
-          >
-            <Text style={offlineTabStyles.loadButtonText}>Process All</Text>
-          </TouchableOpacity>
-        )}
-        {/* Delete all pending actions */}
-        {/* <TouchableOpacity
-          style={offlineTabStyles.loadButton}
-          onPress={async () => {
-            await clearPendingActions();
-            await loadPendingMaterials(dispatch);
-          }}
-        >
-          <Text style={offlineTabStyles.loadButtonText}>Delete all</Text>
-        </TouchableOpacity> */}
-      </View>
       <>
         <Text style={offlineTabStyles.header}>
           Pending Offline Materials ({offlineItems.length})
@@ -114,10 +67,11 @@ const OfflineMaterialsTab = () => {
           {isOnline
             ? `✅ Online${
                 offlineItems.length > 0
-                  ? " - You can upload the items now using the buttons below."
+                  ? " - Auto-sync is enabled. Last sync: " + 
+                    (lastSyncTime ? new Date(lastSyncTime).toLocaleTimeString() : "Never")
                   : ""
               }`
-            : "⚠️ Offline - Items will sync when online"}
+            : "⚠️ Offline - Items will sync automatically when online"}
         </Text>
         <FlatList
           data={offlineItems}

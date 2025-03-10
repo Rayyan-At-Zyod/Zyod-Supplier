@@ -2,6 +2,7 @@ import { convertImageToBase64} from '../utilities/imageBase64Converter'
 import { API_ENDPOINTS } from "./endpoints";
 
 export const addRawMaterial = async (payload, token) => {
+  console.log("token?", token);
   const newRMsData = await Promise.all(
     payload.skuDetails.RMsData.map(async (rmd) => {
       return Object.fromEntries(

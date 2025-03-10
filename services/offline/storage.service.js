@@ -76,10 +76,10 @@ export const processCurrentAction = async (id, token) => {
 
     if (actionToProcess.type === "ADD") {
       // Use the existing addRawMaterial service
-      const response = await addRawMaterial(actionToProcess.payload, id, token);
+      const response = await addRawMaterial(actionToProcess.payload, token);
 
       if (response) {
-        doIfSuccess(pendingActions, token);
+        doIfSuccess(pendingActions, id, token);
       }
     } else if (actionToProcess.type === "UPDATE") {
       // Use the existing addRawMaterial service

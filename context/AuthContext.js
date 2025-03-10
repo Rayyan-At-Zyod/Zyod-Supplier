@@ -1,6 +1,7 @@
 import React, { createContext, useState, useContext, useEffect } from "react";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { fetchPrimaryWarehouseIdOfThisUser } from "../services/api/getWarehouseId.service";
+import { startBackgroundSync } from "../services/background/backgroundSync";
 
 const AuthContext = createContext({});
 
@@ -18,9 +19,10 @@ export const AuthProvider = ({ children }) => {
   const loadStoredData = async () => {
     console.log("=== Loading Stored Auth Data ===");
     try {
-      const [storedToken, storedUserData] = await Promise.all([
+      const [storedToken, storedUserData, authData] = await Promise.all([
         AsyncStorage.getItem("userToken"),
         AsyncStorage.getItem("userData"),
+        AsyncStorage.getItem("authData"),
       ]);
 
       if (storedToken && storedUserData) {
@@ -35,6 +37,11 @@ export const AuthProvider = ({ children }) => {
         console.log("🥺 Warehouse ID:", newWarehouseId);
         setWarehouseId(newWarehouseId);
         console.log("=== Auth data loaded successfully ===");
+        
+        // If we don't have authData for background tasks, store it now
+        if (!authData) {
+          await AsyncStorage.setItem("authData", JSON.stringify({ token: storedToken }));
+        }
       } else {
         console.log("No stored auth data found");
       }
@@ -55,6 +62,7 @@ export const AuthProvider = ({ children }) => {
       await Promise.all([
         AsyncStorage.setItem("userToken", token),
         AsyncStorage.setItem("userData", JSON.stringify(user)),
+        AsyncStorage.setItem("authData", JSON.stringify({ token })),
       ]);
 
       console.log("user data:", userData);
@@ -62,6 +70,12 @@ export const AuthProvider = ({ children }) => {
       setToken(token);
       setUserData(user);
       loadStoredData();
+      
+      // Schedule a background sync task in case there are pending items
+      startBackgroundSync().catch(error => {
+        console.error('Failed to start background sync after sign in:', error);
+      });
+      
       console.log("Auth data stored successfully on sign in.");
     } catch (error) {
       console.error("=== Error Storing Auth Data ===");
@@ -79,6 +93,7 @@ export const AuthProvider = ({ children }) => {
       await Promise.all([
         AsyncStorage.removeItem("userToken"),
         AsyncStorage.removeItem("userData"),
+        AsyncStorage.removeItem("authData"),
       ]);
       setToken(null);
       setUserData(null);

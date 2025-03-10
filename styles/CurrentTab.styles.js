@@ -217,4 +217,18 @@ export const currentTabStyles = StyleSheet.create({
     fontSize: 16,
     color: '#333',
   },
+  // Sync status banner styles
+  syncStatusBanner: {
+    backgroundColor: "#333",
+    padding: 12,
+    flexDirection: "row",
+    justifyContent: "center",
+    alignItems: "center",
+  },
+  syncStatusText: {
+    color: "white",
+    fontSize: 14,
+    fontWeight: "500",
+    textAlign: "center",
+  },
 });

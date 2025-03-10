@@ -16,10 +16,10 @@ import { setLoading, setHasMoreItems } from "../../../store/rawMaterialsSlice";
 // internal imports
 import { useAuth } from "../../../context/AuthContext";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
-import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 import { currentTabStyles } from "../../../styles/CurrentTab.styles";
 import { loadRawMaterials } from "../../../services/functions/loadRMs";
 import MaterialCard from "./MaterialCard";
+import { useSync } from "../../../context/SyncContext";
 
 function CurrentTab() {
   const { token } = useAuth();
@@ -29,16 +29,16 @@ function CurrentTab() {
   const isLoading = useSelector((state) => state.rawMaterials.loading);
   const hasMoreItems = useSelector((state) => state.rawMaterials.hasMoreItems);
   const [refreshing, setRefreshing] = useState(false);
-  const [loadingMore, setLoadingMore] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [loadingMore, setLoadingMore] = useState(false);
   const PAGE_SIZE = 10;
 
   // states for image display.
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
 
-  //offline syncing.
-  const { isOnline } = useNetworkStatus();
+  // Use the sync context instead of useNetworkStatus
+  const { isOnline, isSyncing, hasPendingItems, syncOfflineData } = useSync();
 
   const onRefresh = async () => {
     setRefreshing(true);
@@ -46,9 +46,12 @@ function CurrentTab() {
     setCurrentPage(1);
     dispatch(setHasMoreItems(true));
     await fetchData(1);
-    setCurrentPage(1);
-    dispatch(setHasMoreItems(true));
-    await fetchData(1);
+    
+    // If we have pending items, also trigger a sync
+    if (isOnline && hasPendingItems) {
+      await syncOfflineData();
+    }
+    
     setRefreshing(false);
   };
 
@@ -58,33 +61,20 @@ function CurrentTab() {
   };
 
   const fetchData = async (page = 1) => {
-    await loadRawMaterials(
-      token,
-      isOnline,
-      dispatch,
-      page,
-      PAGE_SIZE,
-      page > 1
-    );
+    await loadRawMaterials(token, isOnline, dispatch, page, PAGE_SIZE, page > 1);
   };
 
   const loadMoreData = async () => {
-    // Don't load more if already loading, refreshing, or no more items are available...
-    if (isLoading || refreshing || loadingMore || !hasMoreItems || !isOnline)
-      return;
+    // Don't load more if already loading, refreshing, or no more items
+    if (isLoading || refreshing || loadingMore || !hasMoreItems || !isOnline) return;
+    
     setLoadingMore(true);
     const nextPage = currentPage + 1;
-
+    
     try {
-      const result = await loadRawMaterials(
-        token,
-        isOnline,
-        dispatch,
-        nextPage,
-        PAGE_SIZE,
-        true
-      );
-      // check for new items exist or not...
+      const result = await loadRawMaterials(token, isOnline, dispatch, nextPage, PAGE_SIZE, true);
+      
+      // Check if we received any new items
       if (result && result.data && result.data.length > 0) {
         setCurrentPage(nextPage);
       } else {
@@ -117,29 +107,27 @@ function CurrentTab() {
     );
   };
 
+  // Render a sync status indicator if there are pending items
+  const renderSyncStatus = () => {
+    if (!hasPendingItems) return null;
+    
+    return (
+      <View style={currentTabStyles.syncStatusBanner}>
+        <Text style={currentTabStyles.syncStatusText}>
+          {isSyncing 
+            ? "Syncing offline changes..." 
+            : isOnline 
+              ? "Offline changes will sync automatically" 
+              : "Offline changes will sync when online"}
+        </Text>
+        {isSyncing && <ActivityIndicator size="small" color="white" style={{ marginLeft: 8 }} />}
+      </View>
+    );
+  };
+
   return (
     <View style={currentTabStyles.container}>
-      {/* <View style={{ flexDirection: "row", justifyContent: "space-evenly" }}>
-        <Text style={currentTabStyles.title}>
-          App is{" "}
-          <Text style={{ fontWeight: 600 }}>
-            {isOnline ? "Online" : "Offline"}
-          </Text>
-        </Text>
-        <TouchableOpacity
-          style={currentTabStyles.title}
-          onPress={() => {
-            if (isOnline) onRefresh();
-            else
-              Alert.alert(
-                "No internet connection",
-                "Fetching last saved offline data from the app cache."
-              );
-          }}
-        >
-          <Text>{isOnline ? "Pull to refresh" : "Load offline data"}</Text>
-        </TouchableOpacity>
-      </View> */}
+      {renderSyncStatus()}
       <FlatList
         data={rawMaterials}
         renderItem={renderItem}
