@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   View,
   Text,
@@ -10,6 +10,7 @@ import {
   TouchableWithoutFeedback,
   Keyboard,
   ScrollView,
+  Alert,
 } from "react-native";
 import { TextInput } from "react-native-paper";
 import { SafeAreaView } from "react-native";
@@ -89,6 +90,21 @@ const SignUpScreen = () => {
 
   const dispatch = useDispatch();
   const loading = useSelector((state) => state.rawMaterials.loading);
+
+  useEffect(() => {
+    Alert.alert(
+      "Sign Up Feature Not Available",
+      "The Signup feature is not enabled for this version. Please try again later."
+    );
+    Alert.alert(
+      "Sign Up Feature Not Available",
+      "The Signup feature is not enabled for this version. Please try again later."
+    );
+    Alert.alert(
+      "Sign Up Feature Not Available",
+      "The Signup feature is not enabled for this app version. Please try again later."
+    );
+  }, []);
 
   // Upload images
   const uploadImage = async (mode = "camera") => {
