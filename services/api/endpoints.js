@@ -12,5 +12,4 @@ export const API_ENDPOINTS = {
   ZYOD_USER_WAREHOUSE_ID_API: "https://dev-api.zyod.com/v1/warehouse/",
   ADJUST_STOCK_INVENTORY_FOR_ITEMS_API:
     "https://dev-api.zyod.com/v1/rawMaterial/adjustInventoryForItems",
-  // Add other endpoints as needed
 };

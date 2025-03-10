@@ -16,11 +16,7 @@ import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 import MaterialCard from "./MaterialCard";
 import { useAuth } from "../../../context/AuthContext";
 import { useDispatch, useSelector } from "react-redux";
-import {
-  setLoading,
-  setSyncing,
-  updateOfflineMaterials,
-} from "../../../store/rawMaterialsSlice";
+import { setLoading } from "../../../store/rawMaterialsSlice";
 import { offlineTabStyles } from "../../../styles/OfflineTab.styles";
 import { loadPendingMaterials } from "../../../services/functions/loadPendingMaterials";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
@@ -81,15 +77,7 @@ const OfflineMaterialsTab = () => {
   return (
     <View style={offlineTabStyles.container}>
       <View style={offlineTabStyles.actionButtons}>
-        <TouchableOpacity
-          style={offlineTabStyles.loadButton}
-          onPress={() => loadPendingMaterials(dispatch)}
-        >
-          <Text style={offlineTabStyles.loadButtonText}>
-            Load Saved Actions
-          </Text>
-        </TouchableOpacity>
-        {isOnline && (
+        {isOnline && offlineItems.length > 0 && (
           <TouchableOpacity
             style={offlineTabStyles.loadButton}
             onPress={async () => {
@@ -107,7 +95,8 @@ const OfflineMaterialsTab = () => {
             <Text style={offlineTabStyles.loadButtonText}>Process All</Text>
           </TouchableOpacity>
         )}
-        <TouchableOpacity
+        {/* Delete all pending actions */}
+        {/* <TouchableOpacity
           style={offlineTabStyles.loadButton}
           onPress={async () => {
             await clearPendingActions();
@@ -115,7 +104,7 @@ const OfflineMaterialsTab = () => {
           }}
         >
           <Text style={offlineTabStyles.loadButtonText}>Delete all</Text>
-        </TouchableOpacity>
+        </TouchableOpacity> */}
       </View>
       <>
         <Text style={offlineTabStyles.header}>

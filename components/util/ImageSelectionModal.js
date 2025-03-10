@@ -4,12 +4,10 @@ import { Ionicons } from "@expo/vector-icons";
 import { rmStyles } from "../../styles/AddRM.styles";
 
 function ImageSelectionModal({
-  mainImage,
   showImageModal,
   setShowImageModal,
   uploadImage,
   removeImage,
-  openImageModal
 }) {
   return (
     <>

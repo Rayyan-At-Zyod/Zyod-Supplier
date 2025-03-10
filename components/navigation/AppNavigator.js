@@ -11,6 +11,7 @@ import AddRMScreen from "../screens/raw-material/AddRM";
 import SignInScreen from "../screens/auth/SignInScreen";
 import HomeNavigatorScreen from "./HomeNavigator";
 import LoadingModal from "../util/LoadingModal";
+import SignUpScreen from "../screens/auth/SignUpScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -75,11 +76,18 @@ const AppNavigator = () => {
             />
           </>
         ) : (
-          <Stack.Screen
-            name="SignIn"
-            component={SignInScreen}
-            options={{ headerShown: false }}
-          />
+          <>
+            <Stack.Screen
+              name="SignIn"
+              component={SignInScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="SignUp"
+              component={SignUpScreen}
+              options={{ headerShown: false }}
+            />
+          </>
         )}
       </Stack.Navigator>
     </>

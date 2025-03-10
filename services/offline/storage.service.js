@@ -76,31 +76,17 @@ export const processCurrentAction = async (id, token) => {
 
     if (actionToProcess.type === "ADD") {
       // Use the existing addRawMaterial service
-      const response = await addRawMaterial(actionToProcess.payload, token);
+      const response = await addRawMaterial(actionToProcess.payload, id, token);
 
       if (response) {
-        // Remove the processed action from pending actions
-        const updatedPendingActions = pendingActions.filter(
-          (action) => action.id !== id
-        );
-        await saveToCache("pendingActions", updatedPendingActions);
-
-        // Reload the materials to update the UI
-        await loadRawMaterials(token, true, store.dispatch);
+        doIfSuccess(pendingActions, token);
       }
     } else if (actionToProcess.type === "UPDATE") {
       // Use the existing addRawMaterial service
       const response = await updateRM(actionToProcess.payload, token);
 
       if (response) {
-        // Remove the processed action from pending actions
-        const updatedPendingActions = pendingActions.filter(
-          (action) => action.id !== id
-        );
-        await saveToCache("pendingActions", updatedPendingActions);
-
-        // Reload the materials to update the UI
-        await loadRawMaterials(token, true, store.dispatch);
+        doIfSuccess(pendingActions, id, token);
       }
     }
   } catch (error) {
@@ -108,6 +94,20 @@ export const processCurrentAction = async (id, token) => {
     throw error;
   } finally {
     store.dispatch(setSyncing(false));
+  }
+};
+
+const doIfSuccess = async (pendingActions, id, token) => {
+  try {
+    const updatedPendingActions = pendingActions.filter(
+      (action) => action.id !== id
+    );
+    await saveToCache("pendingActions", updatedPendingActions);
+
+    // Reload the materials to update the UI
+    await loadRawMaterials(token, true, store.dispatch);
+  } catch (err) {
+    throw err;
   }
 };
 

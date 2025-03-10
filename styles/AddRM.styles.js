@@ -6,6 +6,7 @@ export const rmStyles = StyleSheet.create({
     backgroundColor: "#fff",
   },
   scrollContainer: {
+    flexGrow: 1,
     padding: 16,
   },
   heading: {

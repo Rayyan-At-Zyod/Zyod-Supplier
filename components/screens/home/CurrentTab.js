@@ -60,7 +60,7 @@ function CurrentTab() {
 
   return (
     <View style={currentTabStyles.container}>
-      <View style={{ flexDirection: "row", justifyContent: "space-evenly" }}>
+      {/* <View style={{ flexDirection: "row", justifyContent: "space-evenly" }}>
         <Text style={currentTabStyles.title}>
           App is{" "}
           <Text style={{ fontWeight: 600 }}>
@@ -80,7 +80,7 @@ function CurrentTab() {
         >
           <Text>{isOnline ? "Pull to refresh" : "Load offline data"}</Text>
         </TouchableOpacity>
-      </View>
+      </View> */}
       <FlatList
         data={rawMaterials}
         renderItem={renderItem}

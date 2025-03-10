@@ -5,11 +5,14 @@ import {
   View,
   Text,
   ScrollView,
+  SafeAreaView,
   TouchableOpacity,
   Alert,
   Image,
   KeyboardAvoidingView,
   Platform,
+  Keyboard,
+  TouchableWithoutFeedback,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
@@ -273,187 +276,111 @@ function AddRMScreen() {
   return (
     <KeyboardAvoidingView
       style={rmStyles.container}
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      behavior={ "padding"}
+      keyboardVerticalOffset={Platform.OS === "ios" ? 128 : 100}
     >
-      <ScrollView
-        contentContainerStyle={rmStyles.scrollContainer}
-        // keyboardShouldPersistTaps="handled"
-      >
-        <Text style={rmStyles.heading}>Create Raw Material</Text>
-
-        {/* Main Product Image */}
-        <TouchableOpacity
-          style={rmStyles.imagePlaceholder}
-          onPress={() => openImageModal(null)}
+      <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
+        <ScrollView
+          contentContainerStyle={rmStyles.scrollContainer}
+          keyboardShouldPersistTaps="handled"
         >
-          {mainImage ? (
-            <Image source={{ uri: mainImage }} style={rmStyles.mainImage} />
-          ) : (
-            <Text style={rmStyles.imagePlaceholderText}>
-              Click To Upload Product Image
-            </Text>
-          )}
-        </TouchableOpacity>
+          <SafeAreaView>
+            <Text style={rmStyles.heading}>Create Raw Material</Text>
 
-        {/* Name */}
-        <TextInput
-          style={rmStyles.input}
-          label="Name"
-          mode="outlined"
-          value={name}
-          returnKeyType="next"
-          onSubmitEditing={() => gsmRef.current && gsmRef.current.focus()}
-          onChangeText={setName}
-        />
-
-        {/* GSM & Width */}
-        <View style={rmStyles.row}>
-          <View style={rmStyles.rowItem}>
-            <TextInput
-              style={rmStyles.input}
-              ref={gsmRef}
-              label="GSM"
-              mode="outlined"
-              value={gsm}
-              returnKeyType="next"
-              onSubmitEditing={() =>
-                widthRef.current && widthRef.current.focus()
-              }
-              onChangeText={setGSM}
-              keyboardType="number-pad"
-            />
-          </View>
-          <View style={rmStyles.rowItem}>
-            <TextInput
-              style={rmStyles.input}
-              ref={widthRef}
-              label="Width"
-              mode="outlined"
-              value={width}
-              returnKeyType="next"
-              onSubmitEditing={() =>
-                priceRef.current && priceRef.current.focus()
-              }
-              onChangeText={setWidth}
-              keyboardType="number-pad"
-            />
-          </View>
-        </View>
-
-        {/* Price & Quantity (Top-Level) */}
-        <View style={rmStyles.row}>
-          <View style={rmStyles.rowItem}>
-            <TextInput
-              style={rmStyles.input}
-              ref={priceRef}
-              label="Price (Rs.)"
-              mode="outlined"
-              value={price}
-              returnKeyType="next"
-              onSubmitEditing={() =>
-                quantityRef.current && quantityRef.current.focus()
-              }
-              onChangeText={setPrice}
-              keyboardType="number-pad"
-            />
-          </View>
-          <View style={rmStyles.rowItem}>
-            <TextInput
-              label="Quantity"
-              ref={quantityRef}
-              value={quantity}
-              returnKeyType="next"
-              onSubmitEditing={() =>
-                descriptionRef.current && descriptionRef.current.focus()
-              }
-              onChangeText={setQuantity}
-              mode="outlined"
-              style={rmStyles.input}
-              keyboardType="number-pad"
-            />
-          </View>
-        </View>
-
-        {/* Select Type Dropdown (Solids / Prints) */}
-        <View style={rmStyles.typeContainer}>
-          <Text style={rmStyles.label}>Select Type:</Text>
-          <View style={rmStyles.radioContainer}>
-            {["Solids", "Prints"].map((option) => (
-              <TouchableOpacity
-                key={option}
-                style={rmStyles.radioButton}
-                onPress={() => setType(option)}
-              >
-                <View style={rmStyles.outerCircle}>
-                  {type === option && <View style={rmStyles.innerCircle} />}
-                </View>
-                <Text style={rmStyles.radioText}>{option}</Text>
-              </TouchableOpacity>
-            ))}
-          </View>
-        </View>
-
-        {/* Construction / Print / Count */}
-        <Text style={rmStyles.subHeading}>Additional Info</Text>
-        <TextInput
-          key={`descriptionSendButtonChange-${variants.length}`}
-          style={rmStyles.input}
-          ref={descriptionRef}
-          label="Count / Construction / Print"
-          mode="outlined"
-          value={constructionOrPrint}
-          returnKeyType={variants.length > 0 ? "send" : "done"}
-          onSubmitEditing={() => {
-            if (variants.length > 0) {
-              variantRefs[0]?.nameRef.current?.focus();
-            } else {
-              handleSave();
-            }
-          }}
-          onChangeText={setConstructionOrPrint}
-        />
-
-        {/* Variants Section */}
-        <Text style={rmStyles.subHeading}>Add Variants</Text>
-        {variants.map((variant, index) => (
-          <View key={index} style={rmStyles.variantContainer}>
+            {/* Main Product Image */}
             <TouchableOpacity
-              style={rmStyles.removeIcon}
-              onPress={() => handleRemoveVariant(index)}
+              style={rmStyles.imagePlaceholder}
+              onPress={() => openImageModal(null)}
             >
-              <Ionicons name="close-circle" size={24} color="red" />
+              {mainImage ? (
+                <Image source={{ uri: mainImage }} style={rmStyles.mainImage} />
+              ) : (
+                <Text style={rmStyles.imagePlaceholderText}>
+                  Click To Upload Product Image
+                </Text>
+              )}
             </TouchableOpacity>
 
+            {/* Name */}
             <TextInput
-              ref={variantRefs[index]?.nameRef}
               style={rmStyles.input}
-              label="Variant Name"
+              label="Name"
               mode="outlined"
-              value={variant.name}
+              value={name}
               returnKeyType="next"
-              onSubmitEditing={() =>
-                variantRefs[index]?.descriptionRef.current?.focus()
-              }
-              onChangeText={(text) => handleVariantChange(index, "name", text)}
+              onSubmitEditing={() => gsmRef.current && gsmRef.current.focus()}
+              onChangeText={setName}
             />
 
-            <TextInput
-              ref={variantRefs[index]?.descriptionRef}
-              style={rmStyles.input}
-              label="Variant Description"
-              mode="outlined"
-              value={variant.description}
-              returnKeyType="next"
-              onSubmitEditing={() =>
-                variantRefs[index]?.priceRef.current?.focus()
-              }
-              onChangeText={(text) =>
-                handleVariantChange(index, "description", text)
-              }
-            />
+            {/* GSM & Width */}
+            <View style={rmStyles.row}>
+              <View style={rmStyles.rowItem}>
+                <TextInput
+                  style={rmStyles.input}
+                  ref={gsmRef}
+                  label="GSM"
+                  mode="outlined"
+                  value={gsm}
+                  returnKeyType="next"
+                  onSubmitEditing={() =>
+                    widthRef.current && widthRef.current.focus()
+                  }
+                  onChangeText={setGSM}
+                  keyboardType="number-pad"
+                />
+              </View>
+              <View style={rmStyles.rowItem}>
+                <TextInput
+                  style={rmStyles.input}
+                  ref={widthRef}
+                  label="Width"
+                  mode="outlined"
+                  value={width}
+                  returnKeyType="next"
+                  onSubmitEditing={() =>
+                    priceRef.current && priceRef.current.focus()
+                  }
+                  onChangeText={setWidth}
+                  keyboardType="number-pad"
+                />
+              </View>
+            </View>
 
-            {/* Select Type Toggle for Variants */}
+            {/* Price & Quantity (Top-Level) */}
+            <View style={rmStyles.row}>
+              <View style={rmStyles.rowItem}>
+                <TextInput
+                  style={rmStyles.input}
+                  ref={priceRef}
+                  label="Price (Rs.)"
+                  mode="outlined"
+                  value={price}
+                  returnKeyType="next"
+                  onSubmitEditing={() =>
+                    quantityRef.current && quantityRef.current.focus()
+                  }
+                  onChangeText={setPrice}
+                  keyboardType="number-pad"
+                />
+              </View>
+              <View style={rmStyles.rowItem}>
+                <TextInput
+                  label="Quantity"
+                  ref={quantityRef}
+                  value={quantity}
+                  returnKeyType="next"
+                  onSubmitEditing={() =>
+                    descriptionRef.current && descriptionRef.current.focus()
+                  }
+                  onChangeText={setQuantity}
+                  mode="outlined"
+                  style={rmStyles.input}
+                  keyboardType="number-pad"
+                />
+              </View>
+            </View>
+
+            {/* Select Type Dropdown (Solids / Prints) */}
             <View style={rmStyles.typeContainer}>
               <Text style={rmStyles.label}>Select Type:</Text>
               <View style={rmStyles.radioContainer}>
@@ -461,12 +388,10 @@ function AddRMScreen() {
                   <TouchableOpacity
                     key={option}
                     style={rmStyles.radioButton}
-                    onPress={() => handleVariantChange(index, "type", option)}
+                    onPress={() => setType(option)}
                   >
                     <View style={rmStyles.outerCircle}>
-                      {variant.type === option && (
-                        <View style={rmStyles.innerCircle} />
-                      )}
+                      {type === option && <View style={rmStyles.innerCircle} />}
                     </View>
                     <Text style={rmStyles.radioText}>{option}</Text>
                   </TouchableOpacity>
@@ -474,100 +399,187 @@ function AddRMScreen() {
               </View>
             </View>
 
-            {/* Price & Quantity */}
-            <View style={rmStyles.row}>
-              <View style={rmStyles.rowItem}>
-                <TextInput
-                  ref={variantRefs[index]?.priceRef}
-                  style={rmStyles.input}
-                  label="Variant Price"
-                  mode="outlined"
-                  value={variant.price}
-                  returnKeyType="next"
-                  onSubmitEditing={() =>
-                    variantRefs[index]?.quantityRef.current?.focus()
-                  }
-                  onChangeText={(text) =>
-                    handleVariantChange(index, "price", text)
-                  }
-                  keyboardType="number-pad"
-                />
-              </View>
-              <View style={rmStyles.rowItem}>
-                <TextInput
-                  ref={variantRefs[index]?.quantityRef}
-                  style={rmStyles.input}
-                  label="Variant Quantity"
-                  mode="outlined"
-                  value={variant.quantity}
-                  returnKeyType="next"
-                  onSubmitEditing={() =>
-                    variantRefs[index]?.widthRef.current?.focus()
-                  }
-                  onChangeText={(text) =>
-                    handleVariantChange(index, "quantity", text)
-                  }
-                  keyboardType="number-pad"
-                />
-              </View>
-            </View>
-
-            {/* Width */}
+            {/* Construction / Print / Count */}
+            <Text style={rmStyles.subHeading}>Additional Info</Text>
             <TextInput
-              ref={variantRefs[index]?.widthRef}
+              key={`descriptionSendButtonChange-${variants.length}`}
               style={rmStyles.input}
-              label="Variant Width"
+              ref={descriptionRef}
+              label="Count / Construction / Print"
               mode="outlined"
-              value={variant.width}
-              // returnKeyType="send"
-              returnKeyType="send"
-              onSubmitEditing={() => openImageModal(index)}
-              onChangeText={(text) => handleVariantChange(index, "width", text)}
-              keyboardType="number-pad"
+              value={constructionOrPrint}
+              returnKeyType={variants.length > 0 ? "send" : "done"}
+              onSubmitEditing={() => {
+                if (variants.length > 0) {
+                  variantRefs[0]?.nameRef.current?.focus();
+                } else {
+                  handleSave();
+                }
+              }}
+              onChangeText={setConstructionOrPrint}
             />
 
-            {/* Variant Image */}
+            {/* Variants Section */}
+            <Text style={rmStyles.subHeading}>Add Variants</Text>
+            {variants.map((variant, index) => (
+              <View key={index} style={rmStyles.variantContainer}>
+                <TouchableOpacity
+                  style={rmStyles.removeIcon}
+                  onPress={() => handleRemoveVariant(index)}
+                >
+                  <Ionicons name="close-circle" size={24} color="red" />
+                </TouchableOpacity>
+
+                <TextInput
+                  ref={variantRefs[index]?.nameRef}
+                  style={rmStyles.input}
+                  label="Variant Name"
+                  mode="outlined"
+                  value={variant.name}
+                  returnKeyType="next"
+                  onSubmitEditing={() =>
+                    variantRefs[index]?.descriptionRef.current?.focus()
+                  }
+                  onChangeText={(text) =>
+                    handleVariantChange(index, "name", text)
+                  }
+                />
+
+                <TextInput
+                  ref={variantRefs[index]?.descriptionRef}
+                  style={rmStyles.input}
+                  label="Variant Description"
+                  mode="outlined"
+                  value={variant.description}
+                  returnKeyType="next"
+                  onSubmitEditing={() =>
+                    variantRefs[index]?.priceRef.current?.focus()
+                  }
+                  onChangeText={(text) =>
+                    handleVariantChange(index, "description", text)
+                  }
+                />
+
+                {/* Select Type Toggle for Variants */}
+                <View style={rmStyles.typeContainer}>
+                  <Text style={rmStyles.label}>Select Type:</Text>
+                  <View style={rmStyles.radioContainer}>
+                    {["Solids", "Prints"].map((option) => (
+                      <TouchableOpacity
+                        key={option}
+                        style={rmStyles.radioButton}
+                        onPress={() =>
+                          handleVariantChange(index, "type", option)
+                        }
+                      >
+                        <View style={rmStyles.outerCircle}>
+                          {variant.type === option && (
+                            <View style={rmStyles.innerCircle} />
+                          )}
+                        </View>
+                        <Text style={rmStyles.radioText}>{option}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </View>
+                </View>
+
+                {/* Price & Quantity */}
+                <View style={rmStyles.row}>
+                  <View style={rmStyles.rowItem}>
+                    <TextInput
+                      ref={variantRefs[index]?.priceRef}
+                      style={rmStyles.input}
+                      label="Variant Price"
+                      mode="outlined"
+                      value={variant.price}
+                      returnKeyType="next"
+                      onSubmitEditing={() =>
+                        variantRefs[index]?.quantityRef.current?.focus()
+                      }
+                      onChangeText={(text) =>
+                        handleVariantChange(index, "price", text)
+                      }
+                      keyboardType="number-pad"
+                    />
+                  </View>
+                  <View style={rmStyles.rowItem}>
+                    <TextInput
+                      ref={variantRefs[index]?.quantityRef}
+                      style={rmStyles.input}
+                      label="Variant Quantity"
+                      mode="outlined"
+                      value={variant.quantity}
+                      returnKeyType="next"
+                      onSubmitEditing={() =>
+                        variantRefs[index]?.widthRef.current?.focus()
+                      }
+                      onChangeText={(text) =>
+                        handleVariantChange(index, "quantity", text)
+                      }
+                      keyboardType="number-pad"
+                    />
+                  </View>
+                </View>
+
+                {/* Width */}
+                <TextInput
+                  ref={variantRefs[index]?.widthRef}
+                  style={rmStyles.input}
+                  label="Variant Width"
+                  mode="outlined"
+                  value={variant.width}
+                  // returnKeyType="send"
+                  returnKeyType="send"
+                  onSubmitEditing={() => openImageModal(index)}
+                  onChangeText={(text) =>
+                    handleVariantChange(index, "width", text)
+                  }
+                  keyboardType="number-pad"
+                />
+
+                {/* Variant Image */}
+                <TouchableOpacity
+                  style={rmStyles.uploadButton}
+                  onPress={() => openImageModal(index)}
+                >
+                  <Text style={{ color: "#fff" }}>
+                    {variant.image ? "Change Picture" : "Click Picture*"}
+                  </Text>
+                </TouchableOpacity>
+
+                {variant.image && (
+                  <Image
+                    source={{ uri: variant.image }}
+                    style={rmStyles.variantImage}
+                  />
+                )}
+              </View>
+            ))}
+
             <TouchableOpacity
-              style={rmStyles.uploadButton}
-              onPress={() => openImageModal(index)}
+              style={rmStyles.addVariantButton}
+              onPress={handleAddVariant}
             >
-              <Text style={{ color: "#fff" }}>
-                {variant.image ? "Change Picture" : "Click Picture*"}
-              </Text>
+              <Text style={rmStyles.addVariantText}>+ Add Variant</Text>
             </TouchableOpacity>
 
-            {variant.image && (
-              <Image
-                source={{ uri: variant.image }}
-                style={rmStyles.variantImage}
-              />
-            )}
-          </View>
-        ))}
-
-        <TouchableOpacity
-          style={rmStyles.addVariantButton}
-          onPress={handleAddVariant}
-        >
-          <Text style={rmStyles.addVariantText}>+ Add Variant</Text>
-        </TouchableOpacity>
-
-        <TouchableOpacity
-          ref={saveButtonRef}
-          style={rmStyles.saveButton}
-          onPress={handleSave}
-        >
-          <Text style={rmStyles.saveButtonText}>Save Raw Material</Text>
-        </TouchableOpacity>
-      </ScrollView>
-
+            <TouchableOpacity
+              ref={saveButtonRef}
+              style={rmStyles.saveButton}
+              onPress={handleSave}
+            >
+              <Text style={rmStyles.saveButtonText}>Save Raw Material</Text>
+            </TouchableOpacity>
+          </SafeAreaView>
+        </ScrollView>
+      </TouchableWithoutFeedback>
       <ImageSelectionModal
-        mainImage={mainImage}
+        // mainImage={mainImage}
         showImageModal={showImageModal}
         setShowImageModal={setShowImageModal}
         uploadImage={uploadImage}
         removeImage={removeImage}
-        openImageModal={openImageModal}
+        // openImageModal={openImageModal}
       />
     </KeyboardAvoidingView>
   );
