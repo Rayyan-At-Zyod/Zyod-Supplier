@@ -7,6 +7,7 @@ const rawMaterialsSlice = createSlice({
     offlineItems: [],
     loading: false,
     syncing: false,
+    hasMoreItems: true,
   },
   reducers: {
     setLoading: (state, action) => {
@@ -25,6 +26,45 @@ const rawMaterialsSlice = createSlice({
       );
       state.items = action.payload;
     },
+    appendMaterials: (state, action) => {
+      console.log(
+        "📢 appendMaterials called with:",
+        action.payload.length,
+        "items"
+      );
+      if (action.payload === 0) {
+        state.hasMoreItems = false;
+      } else {
+        const existingIds = new Set(state.items.map((item) => item.greigeId));
+        const newItems = action.payload.filter(
+          (item) => !existingIds.has(item.greigeId)
+        );
+        state.items = [...state.items, ...newItems];
+      }
+    },
+    // appendMaterials2: (state, action) => {
+    //   console.log(
+    //     "📢 appendMaterials called with:",
+    //     action.payload.length,
+    //     "items"
+    //   );
+    //   if (action.payload.length === 0) {
+    //     state.hasMoreItems = false;
+    //   } else {
+    //     const existingIds = new Set(state.items.map((item) => item.greigeId));
+    //     const newItems = action.payload.filter(
+    //       (item) => !existingIds.has(item.greigeId)
+    //     );
+
+    //     state.items = [...state.items, ...newItems];
+    //   }
+    // },
+    setHasMoreItems: (state, action) => {
+      state.hasMoreItems = action.payload;
+    },
+    // setHasMoreItems2: (state, action) => {
+    //   state.hasMoreItems = action.payload;
+    // },
     addMaterial: (state, action) => {
       console.log("📢 addMaterial called:", action.payload);
       state.items = [action.payload, ...state.items]; // Ensure a new reference
@@ -112,6 +152,8 @@ const rawMaterialsSlice = createSlice({
 export const {
   addMaterial,
   setMaterials,
+  appendMaterials,
+  setHasMoreItems,
   addOfflineMaterial,
   setOfflineMaterials,
   updateOfflineMaterials,

@@ -6,11 +6,12 @@ import {
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
-import { setLoading } from "../../../store/rawMaterialsSlice";
+import { setLoading, setHasMoreItems } from "../../../store/rawMaterialsSlice";
 
 // internal imports
 import { useAuth } from "../../../context/AuthContext";
@@ -26,7 +27,11 @@ function CurrentTab() {
   const dispatch = useDispatch();
   const rawMaterials = useSelector((state) => state.rawMaterials.items);
   const isLoading = useSelector((state) => state.rawMaterials.loading);
+  const hasMoreItems = useSelector((state) => state.rawMaterials.hasMoreItems);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
 
   // states for image display.
   const [selectedImage, setSelectedImage] = useState(null);
@@ -37,7 +42,13 @@ function CurrentTab() {
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await fetchData();
+    // Reset pagination when refreshing
+    setCurrentPage(1);
+    dispatch(setHasMoreItems(true));
+    await fetchData(1);
+    setCurrentPage(1);
+    dispatch(setHasMoreItems(true));
+    await fetchData(1);
     setRefreshing(false);
   };
 
@@ -46,8 +57,44 @@ function CurrentTab() {
     setIsImageModalVisible(true);
   };
 
-  const fetchData = async () => {
-    await loadRawMaterials(token, isOnline, dispatch);
+  const fetchData = async (page = 1) => {
+    await loadRawMaterials(
+      token,
+      isOnline,
+      dispatch,
+      page,
+      PAGE_SIZE,
+      page > 1
+    );
+  };
+
+  const loadMoreData = async () => {
+    // Don't load more if already loading, refreshing, or no more items are available...
+    if (isLoading || refreshing || loadingMore || !hasMoreItems || !isOnline)
+      return;
+    setLoadingMore(true);
+    const nextPage = currentPage + 1;
+
+    try {
+      const result = await loadRawMaterials(
+        token,
+        isOnline,
+        dispatch,
+        nextPage,
+        PAGE_SIZE,
+        true
+      );
+      // check for new items exist or not...
+      if (result && result.data && result.data.length > 0) {
+        setCurrentPage(nextPage);
+      } else {
+        dispatch(setHasMoreItems(false));
+      }
+    } catch (error) {
+      console.error("Error loading more data:", error);
+    } finally {
+      setLoadingMore(false);
+    }
   };
 
   useEffect(() => {
@@ -56,6 +103,18 @@ function CurrentTab() {
 
   const renderItem = ({ item }) => {
     return <MaterialCard item={item} handleImagePress={handleImagePress} />;
+  };
+
+  const renderFooter = () => {
+    if (!loadingMore) return null;
+    return (
+      <View style={currentTabStyles.footerLoader}>
+        <ActivityIndicator size="large" color="black" />
+        <Text style={currentTabStyles.loadingMoreText}>
+          Loading More Items...
+        </Text>
+      </View>
+    );
   };
 
   return (
@@ -96,6 +155,9 @@ function CurrentTab() {
             progressBackgroundColor="white"
           />
         }
+        onEndReached={loadMoreData}
+        onEndReachedThreshold={0.3}
+        ListFooterComponent={renderFooter}
       />
 
       <TouchableOpacity

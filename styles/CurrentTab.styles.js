@@ -206,4 +206,15 @@ export const currentTabStyles = StyleSheet.create({
     fontSize: 16,
     fontWeight: "600",
   },
+  footerLoader: {
+    paddingVertical: 20,
+    alignItems: 'center',
+    justifyContent: 'center',
+    flexDirection: 'row',
+  },
+  loadingMoreText: {
+    marginLeft: 10,
+    fontSize: 16,
+    color: '#333',
+  },
 });

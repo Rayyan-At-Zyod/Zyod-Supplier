@@ -1,7 +1,9 @@
 import { API_ENDPOINTS } from "./endpoints";
 
-export const fetchRawMaterials = async (token) => {
-  const response = await fetch(API_ENDPOINTS.FETCH_RAW_MATERIALS, {
+export const fetchRawMaterials = async (token, page = 1, size = 10) => {
+  const url = `${API_ENDPOINTS.FETCH_RAW_MATERIALS}?page=${page}&size=${size}`;
+
+  const response = await fetch(url, {
     method: "GET",
     headers: {
       "Content-Type": "application/json",
