@@ -11,7 +11,6 @@ export const AuthProvider = ({ children }) => {
   const [warehouseId, setWarehouseId] = useState(null);
 
   useEffect(() => {
-    console.log("🔄 Auth context use effect.");
     loadStoredData();
   }, []);
 

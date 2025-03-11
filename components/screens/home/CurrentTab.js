@@ -120,7 +120,7 @@ function CurrentTab() {
 
   const filteredMaterials = rawMaterials.filter((item) =>
     item.rmVariations.some((variation) =>
-      variation.name.toLowerCase().includes(search.toLowerCase())
+      variation?.name?.toLowerCase().includes(search.toLowerCase())
     )
   );
 
