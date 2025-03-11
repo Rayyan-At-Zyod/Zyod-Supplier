@@ -35,7 +35,7 @@ export const registerBackgroundSyncTask = async () => {
   try {
     await BackgroundFetch.registerTaskAsync("background-sync", {
       //   minimumInterval: 15 * 60, // 15 minutes (minimum interval, actual timing is OS-managed)
-      minimumInterval: 10, // 30 seconds (for testing, minimum interval, OS-managed)
+      minimumInterval: 10, // 10 seconds (for testing, minimum interval, OS-managed)
       stopOnTerminate: false, // Continue running after app termination
       startOnBoot: true, // Start on device boot
     });
