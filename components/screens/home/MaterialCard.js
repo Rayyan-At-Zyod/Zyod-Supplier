@@ -38,19 +38,20 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
   const [selectedVariationIndex, setSelectedVariationIndex] = useState(0);
   const selectedVariation = item.rmVariations[selectedVariationIndex];
 
-  const handleStockUpdate = async () => {
-    if (!stockQuantity || stockQuantity.trim() === "") {
+  const handleStockUpdate = async (makeEmpty = false) => {
+    if (!makeEmpty && (!stockQuantity || stockQuantity.trim() === "")) {
       Alert.alert("Error", "Please enter a valid quantity");
       return;
     }
     const quantity = parseInt(stockQuantity);
-    if (isNaN(quantity) || quantity <= 0) {
+    if (!makeEmpty && (isNaN(quantity) || quantity <= 0)) {
       Alert.alert("Error", "Please enter a valid positive number");
       return;
     }
 
     try {
       dispatch(setLoading(true));
+
       // Calculate new quantity based on operation type
       const currentQuantity =
         Number.parseInt(selectedVariation.availableQuantity) || 0;
@@ -58,6 +59,11 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
         operationType === "STOCK IN"
           ? currentQuantity + quantity
           : currentQuantity - quantity;
+
+      if (makeEmpty) {
+        setOperationType("STOCK OUT");
+        setStockQuantity(currentQuantity);
+      }
       if (currentQuantity < quantity && operationType === "STOCK OUT") {
         Alert.alert("Error", "You can't decrease stock to negative values.");
         return;
@@ -121,6 +127,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
             },
           ],
         };
+
         await updateRM(payload, token);
         await loadRawMaterials(token, isOnline, dispatch);
       }
@@ -131,7 +138,27 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
       Alert.alert("Error", error.message || "Failed to update stock");
     } finally {
       dispatch(setLoading(false));
+      console.log("Here");
     }
+  };
+
+  const handleStockEmpty = async () => {
+    // const response = Alert.alert(
+    //   "Confirm",
+    //   "Are you sure you want to empty stock?",
+    //   [
+    //     {
+    //       text: "No",
+    //       onPress: () => {},
+    //       style: "cancel",
+    //     },
+    //     { text: "Yes", onPress: () => handleStockUpdate(true) },
+    //   ]
+    // );
+    Alert.alert(
+      "Hey",
+      "Empty stock feature is not ready - Please do it using the manual changes."
+    );
   };
 
   return (
@@ -204,7 +231,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           </TouchableOpacity>
           <TouchableOpacity
             style={currentTabStyles.stockOutButton}
-            onPress={() => setIsEditing(false)}
+            onPress={handleStockEmpty}
           >
             <Text>Empty Stock!</Text>
             <Ionicons name="trail-sign" size={20} color="black" />
