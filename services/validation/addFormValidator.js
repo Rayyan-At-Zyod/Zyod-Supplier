@@ -5,6 +5,7 @@ export const validateAddRMForm = ({
   gsm,
   width,
   quantity,
+  description,
 }) => {
   console.log("item:", name, mainImage, price, gsm, width, quantity);
   if (!name || name.trim() === "") {
@@ -24,6 +25,9 @@ export const validateAddRMForm = ({
   }
   if (!quantity) {
     return "Quantity is required";
+  }
+  if (!description) {
+    return "Details are required";
   }
   return null; // No errors
 };

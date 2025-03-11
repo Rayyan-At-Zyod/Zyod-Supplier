@@ -180,6 +180,7 @@ function AddRMScreen() {
         gsm,
         width,
         quantity,
+        description: constructionOrPrint,
       });
       if (validationError) {
         throw new Error(validationError);
@@ -192,6 +193,7 @@ function AddRMScreen() {
           gsm,
           width: v.width,
           quantity: v.quantity,
+          description: v.description,
         });
         if (variantError) {
           throw new Error(variantError);

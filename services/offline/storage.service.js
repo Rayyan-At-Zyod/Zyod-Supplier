@@ -10,6 +10,7 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { store } from "../../store/store";
 import { updateRM } from "../api/updateRmStock.service";
+import { Alert } from "react-native";
 
 export const saveToCache = async (key, data) => {
   try {
@@ -79,7 +80,7 @@ export const processCurrentAction = async (id, token) => {
       const response = await addRawMaterial(actionToProcess.payload, token);
 
       if (response) {
-        doIfSuccess(pendingActions,id, token);
+        doIfSuccess(pendingActions, id, token);
       }
     } else if (actionToProcess.type === "UPDATE") {
       // Use the existing addRawMaterial service
@@ -91,6 +92,7 @@ export const processCurrentAction = async (id, token) => {
     }
   } catch (error) {
     console.error("Error processing single action:", error);
+    Alert.alert("Error processing single action", error.message);
     throw error;
   } finally {
     store.dispatch(setSyncing(false));

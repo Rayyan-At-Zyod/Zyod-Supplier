@@ -5,6 +5,7 @@ import { processPendingActions } from "./storage.service";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loadPendingMaterials } from "../functions/loadPendingMaterials";
 import { store } from "../../store/store";
+import { Alert } from "react-native";
 
 // Define the background task
 TaskManager.defineTask("background-sync", async () => {
@@ -12,12 +13,12 @@ TaskManager.defineTask("background-sync", async () => {
     const state = await NetInfo.fetch();
     const token = await AsyncStorage.getItem("userToken");
     if (state.isConnected) {
-      console.log("Hi RAYYN - Our background task is running.");
+      Alert.alert("Hi RAYYN", "- Our background task is running.");
       // Replace `YOUR_TOKEN` with the appropriate token if needed
       await processPendingActions(token);
-      console.log("Hi RAYYAN - all pending processes done.");
+      Alert.alert("Hi RAYYN", "- All pending tasks done.");
       await loadPendingMaterials(store.dispatch);
-      console.log("Hi RAYYAN - all pending actions cleared in UI.");
+      Alert.alert("Hi RAYYN", "- all pending actions cleared in UI.");
       return BackgroundFetch.BackgroundFetchResult.NewData;
     } else {
       console.log("Device is offline, skipping background sync.");
@@ -34,7 +35,7 @@ export const registerBackgroundSyncTask = async () => {
   try {
     await BackgroundFetch.registerTaskAsync("background-sync", {
       //   minimumInterval: 15 * 60, // 15 minutes (minimum interval, actual timing is OS-managed)
-      minimumInterval: 30, // 30 seconds (for testing, minimum interval, OS-managed)
+      minimumInterval: 10, // 30 seconds (for testing, minimum interval, OS-managed)
       stopOnTerminate: false, // Continue running after app termination
       startOnBoot: true, // Start on device boot
     });
