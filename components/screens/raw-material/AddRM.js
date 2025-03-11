@@ -266,8 +266,7 @@ function AddRMScreen() {
       }
       navigation.goBack();
     } catch (error) {
-      console.error("Error submitting form:", error);
-      Alert.alert("Error", "Failed to submit form. Please try again.");
+      Alert.alert("Error", error.message.toString());
     } finally {
       dispatch(setLoading(false));
     }
@@ -276,7 +275,7 @@ function AddRMScreen() {
   return (
     <KeyboardAvoidingView
       style={rmStyles.container}
-      behavior={ "padding"}
+      behavior={"padding"}
       keyboardVerticalOffset={Platform.OS === "ios" ? 128 : 100}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -365,7 +364,7 @@ function AddRMScreen() {
               </View>
               <View style={rmStyles.rowItem}>
                 <TextInput
-                  label="Quantity"
+                  label="Quantity (in meters)"
                   ref={quantityRef}
                   value={quantity}
                   returnKeyType="next"
@@ -384,7 +383,7 @@ function AddRMScreen() {
             <View style={rmStyles.typeContainer}>
               <Text style={rmStyles.label}>Select Type:</Text>
               <View style={rmStyles.radioContainer}>
-                {["Solids", "Prints"].map((option) => (
+                {["Solid", "Prints"].map((option) => (
                   <TouchableOpacity
                     key={option}
                     style={rmStyles.radioButton}
@@ -400,7 +399,7 @@ function AddRMScreen() {
             </View>
 
             {/* Construction / Print / Count */}
-            <Text style={rmStyles.subHeading}>Additional Info</Text>
+            <Text style={rmStyles.subHeading}>Additional Information</Text>
             <TextInput
               key={`descriptionSendButtonChange-${variants.length}`}
               style={rmStyles.input}
@@ -464,7 +463,7 @@ function AddRMScreen() {
                 <View style={rmStyles.typeContainer}>
                   <Text style={rmStyles.label}>Select Type:</Text>
                   <View style={rmStyles.radioContainer}>
-                    {["Solids", "Prints"].map((option) => (
+                    {["Solid", "Prints"].map((option) => (
                       <TouchableOpacity
                         key={option}
                         style={rmStyles.radioButton}

@@ -2,7 +2,7 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   View,
   Text,
-  Alert,
+  TextInput,
   FlatList,
   TouchableOpacity,
   RefreshControl,
@@ -36,6 +36,7 @@ function CurrentTab() {
   // states for image display.
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  const [search, setSearch] = useState("");
 
   //offline syncing.
   const { isOnline } = useNetworkStatus();
@@ -117,31 +118,33 @@ function CurrentTab() {
     );
   };
 
+  const filteredMaterials = rawMaterials.filter((item) =>
+    item.rmVariations.some((variation) =>
+      variation.name.toLowerCase().includes(search.toLowerCase())
+    )
+  );
+
   return (
     <View style={currentTabStyles.container}>
-      {/* <View style={{ flexDirection: "row", justifyContent: "space-evenly" }}>
-        <Text style={currentTabStyles.title}>
-          App is{" "}
-          <Text style={{ fontWeight: 600 }}>
-            {isOnline ? "Online" : "Offline"}
-          </Text>
-        </Text>
-        <TouchableOpacity
-          style={currentTabStyles.title}
-          onPress={() => {
-            if (isOnline) onRefresh();
-            else
-              Alert.alert(
-                "No internet connection",
-                "Fetching last saved offline data from the app cache."
-              );
-          }}
-        >
-          <Text>{isOnline ? "Pull to refresh" : "Load offline data"}</Text>
-        </TouchableOpacity>
-      </View> */}
+      <View style={currentTabStyles.searchContainer}>
+        <Ionicons
+          name="search"
+          size={20}
+          color="gray"
+          style={currentTabStyles.searchIcon}
+        />
+        <TextInput
+          placeholder="Search..."
+          value={search}
+          onChangeText={(text) => setSearch(text)}
+          returnKeyType="search"
+          style={currentTabStyles.searchInput}
+          allowFontScaling={false}
+        />
+      </View>
       <FlatList
-        data={rawMaterials}
+        // data={rawMaterials}
+        data={filteredMaterials}
         renderItem={renderItem}
         keyExtractor={(item) => item.greigeId.toString()}
         contentContainerStyle={currentTabStyles.listContainer}

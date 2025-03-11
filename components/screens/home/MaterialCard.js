@@ -152,7 +152,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
             })
           }
         >
-          <Ionicons name="eye-outline" size={20} color="black" />
+          <Ionicons name="eye" size={20} color="black" />
         </TouchableOpacity>
       )}
 
@@ -170,11 +170,22 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           </TouchableOpacity>
 
           <TouchableOpacity
-            style={currentTabStyles.showVariationsButton}
+            style={
+              showVariants
+                ? [
+                    currentTabStyles.showVariationsButton,
+                    currentTabStyles.varBottomVariantOpened,
+                  ]
+                : [
+                    currentTabStyles.showVariationsButton,
+                    currentTabStyles.varBottom,
+                  ]
+            }
             onPress={() => setShowVariants(!showVariants)}
           >
             <Ionicons
-              name={showVariants ? "arrow-up-sharp" : `arrow-down`}
+              // name={showVariants ? "arrow-up-sharp" : `arrow-down`}
+              name={showVariants ? "apps-outline" : "apps-sharp"}
               size={22}
               color="black"
             />
@@ -184,12 +195,21 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
 
       {/* Cancel Edit Button */}
       {isEditing && (
-        <TouchableOpacity
-          style={currentTabStyles.editButton}
-          onPress={() => setIsEditing(false)}
-        >
-          <Ionicons name="close" size={20} color="black" />
-        </TouchableOpacity>
+        <>
+          <TouchableOpacity
+            style={currentTabStyles.editButton}
+            onPress={() => setIsEditing(false)}
+          >
+            <Ionicons name="close" size={20} color="black" />
+          </TouchableOpacity>
+          <TouchableOpacity
+            style={currentTabStyles.stockOutButton}
+            onPress={() => setIsEditing(false)}
+          >
+            <Text>Empty Stock!</Text>
+            <Ionicons name="trail-sign" size={20} color="black" />
+          </TouchableOpacity>
+        </>
       )}
 
       <View style={currentTabStyles.topContainer}>
@@ -221,7 +241,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
               <Text style={currentTabStyles.description}>
                 Stock:{" "}
                 {selectedVariation.availableQuantity
-                  ? `${selectedVariation.availableQuantity}`
+                  ? `${selectedVariation.availableQuantity} m`
                   : "Out of Stock"}
               </Text>
               <View style={currentTabStyles.detailsContainer}>
@@ -230,11 +250,11 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
                   {selectedVariation.unitCode}
                 </Text>
                 <Text style={currentTabStyles.description}>
-                  Width: {selectedVariation?.width || "N/A"} m
+                  Width: {selectedVariation?.width || "N/A"}
                 </Text>
               </View>
               <Text style={currentTabStyles.variationsTitle}>
-                Variations Available: {item.rmVariations.length}
+                Variants: {item.rmVariations.length}
               </Text>
             </>
           ) : (
@@ -249,6 +269,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
                 value={stockQuantity}
                 onChangeText={setStockQuantity}
                 keyboardType="number-pad"
+                allowFontScaling={false}
               />
               <View style={currentTabStyles.stockButtonsContainer}>
                 <TouchableOpacity
@@ -295,6 +316,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
                 <Text style={currentTabStyles.updateButtonText}>
                   Update Stock
                 </Text>
+                <Ionicons name="trail-sign" size={20} color="black" />
               </TouchableOpacity>
             </View>
           )}
