@@ -268,13 +268,12 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
               <Text style={currentTabStyles.description}>
                 Stock:{" "}
                 {selectedVariation.availableQuantity
-                  ? `${selectedVariation.availableQuantity} m`
+                  ? `${selectedVariation.availableQuantity} meters`
                   : "Out of Stock"}
               </Text>
               <View style={currentTabStyles.detailsContainer}>
                 <Text style={currentTabStyles.description}>
-                  Price: ₹{selectedVariation?.generalPrice || "N/A"}/
-                  {selectedVariation.unitCode}
+                  Price: ₹{selectedVariation?.generalPrice || "N/A"}/m
                 </Text>
                 <Text style={currentTabStyles.description}>
                   Width: {selectedVariation?.width || "N/A"}

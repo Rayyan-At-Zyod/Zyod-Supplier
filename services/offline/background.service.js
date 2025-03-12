@@ -5,23 +5,22 @@ import { processPendingActions } from "./storage.service";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loadPendingMaterials } from "../functions/loadPendingMaterials";
 import { store } from "../../store/store";
-import { Alert } from "react-native";
+
+const BACKGROUND_SYNC_TASK = "background-sync";
+let networkStateUnsubscribe = null;
 
 // Define the background task
-TaskManager.defineTask("background-sync", async () => {
+TaskManager.defineTask(BACKGROUND_SYNC_TASK, async () => {
   try {
     const state = await NetInfo.fetch();
     const token = await AsyncStorage.getItem("userToken");
     if (state.isConnected) {
-      Alert.alert("Hi RAYYN", "- Our background task is running.");
-      // Replace `YOUR_TOKEN` with the appropriate token if needed
+      console.error(">1. Background sync starts: Network available.");
       await processPendingActions(token);
-      Alert.alert("Hi RAYYN", "- All pending tasks done.");
       await loadPendingMaterials(store.dispatch);
-      Alert.alert("Hi RAYYN", "- all pending actions cleared in UI.");
       return BackgroundFetch.BackgroundFetchResult.NewData;
     } else {
-      console.log("Device is offline, skipping background sync.");
+      console.error(">2. Background sync: Device is offline, skipping sync");
       return BackgroundFetch.BackgroundFetchResult.NoData;
     }
   } catch (error) {
@@ -33,14 +32,45 @@ TaskManager.defineTask("background-sync", async () => {
 // Function to register the background fetch task
 export const registerBackgroundSyncTask = async () => {
   try {
-    await BackgroundFetch.registerTaskAsync("background-sync", {
-      //   minimumInterval: 15 * 60, // 15 minutes (minimum interval, actual timing is OS-managed)
-      minimumInterval: 10, // 10 seconds (for testing, minimum interval, OS-managed)
-      stopOnTerminate: false, // Continue running after app termination
-      startOnBoot: true, // Start on device boot
+    // Register network state change listener with instant sync-er.
+    if (!networkStateUnsubscribe) {
+      networkStateUnsubscribe = NetInfo.addEventListener(
+        handleNetworkStateChange
+      );
+    }
+
+    // Register background fetch task.
+    await BackgroundFetch.registerTaskAsync(BACKGROUND_SYNC_TASK, {
+      minimumInterval: 2 * 60, // 2 minutes
+      stopOnTerminate: false,
+      startOnBoot: true,
     });
-    console.log("Background sync task registered");
-  } catch (error) {
-    console.error("Error registering background sync task:", error);
+
+    // Initial network check...
+    const netState = await NetInfo.fetch();
+    handleNetworkStateChange(netState);
+    console.error(">3. Background sync task & net listeners registered.");
+  } catch (err) {
+    console.error("Error registering background sync task:", err);
+  }
+};
+
+// Function to clean up background sync resources
+export const cleanupBackgroundSync = () => {
+  if (networkStateUnsubscribe) {
+    networkStateUnsubscribe();
+    networkStateUnsubscribe = null;
+  }
+};
+
+// Function to sync instantly to remove time gap between network change and task schedule...
+const handleNetworkStateChange = async (state) => {
+  if (state.isConnected) {
+    console.error(">4. Net connected - triggering sync.");
+    const token = await AsyncStorage.getItem("userToken");
+    if (token) {
+      await processPendingActions(token);
+      await loadPendingMaterials(store.dispatch);
+    }
   }
 };
