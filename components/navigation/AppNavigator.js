@@ -35,7 +35,7 @@ const AppNavigator = () => {
               component={ViewRMScreen}
               options={{
                 headerShown: true,
-                headerTitle: "Edit Material",
+                headerTitle: "View Material",
                 headerTintColor: "black",
                 headerTitleAlign: "center",
                 headerStyle: {
@@ -43,7 +43,7 @@ const AppNavigator = () => {
                 },
                 headerLeft: () => (
                   <TouchableOpacity
-                    onPress={() => navigation.goBack()}
+                    onPress={() => navigation.navigate("MainApp")}
                     style={{ marginLeft: 8 }}
                   >
                     <Ionicons name="arrow-back" size={24} color="black" />
@@ -65,7 +65,7 @@ const AppNavigator = () => {
                 },
                 headerLeft: () => (
                   <TouchableOpacity
-                    onPress={() => navigation.goBack()}
+                    onPress={() => navigation.navigate("MainApp")}
                     style={{ marginLeft: 8 }}
                   >
                     <Ionicons name="arrow-back" size={24} color="black" />

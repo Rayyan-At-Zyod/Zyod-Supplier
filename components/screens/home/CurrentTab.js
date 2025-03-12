@@ -47,9 +47,6 @@ function CurrentTab() {
     setCurrentPage(1);
     dispatch(setHasMoreItems(true));
     await fetchData(1);
-    setCurrentPage(1);
-    dispatch(setHasMoreItems(true));
-    await fetchData(1);
     setRefreshing(false);
   };
 

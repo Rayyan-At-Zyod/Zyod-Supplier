@@ -92,7 +92,10 @@ export const processCurrentAction = async (id, token) => {
     }
   } catch (error) {
     console.error("Error processing single action:", error);
-    Alert.alert("Error processing single action", error.message);
+    Alert.alert(
+      "An error occurred while syncing your offline action",
+      error.message
+    );
     throw error;
   } finally {
     store.dispatch(setSyncing(false));
@@ -207,11 +210,6 @@ export const updateAnOnlineMaterialAction = async (
     };
 
     // Add the pending action to the queue
-    console.error("1. hey rayyan");
-    console.error(
-      "New in pendingAction.payload.itemDetailsArray",
-      JSON.stringify(pendingAction.payload.itemDetailsArray, null, 2)
-    );
     await queuePendingAction(pendingAction);
 
     // Update cached data
