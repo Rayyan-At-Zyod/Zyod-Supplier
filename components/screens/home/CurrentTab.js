@@ -7,6 +7,7 @@ import {
   TouchableOpacity,
   RefreshControl,
   ActivityIndicator,
+  Button,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
@@ -20,6 +21,7 @@ import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 import { currentTabStyles } from "../../../styles/CurrentTab.styles";
 import { loadRawMaterials } from "../../../services/functions/loadRMs";
 import MaterialCard from "./MaterialCard";
+import * as Sentry from "@sentry/react-native";
 
 function CurrentTab() {
   const { token } = useAuth();
@@ -123,6 +125,12 @@ function CurrentTab() {
 
   return (
     <View style={currentTabStyles.container}>
+      <Button
+        title="Try!"
+        onPress={() => {
+          Sentry.captureException(new Error("First error"));
+        }}
+      />
       <View style={currentTabStyles.searchContainer}>
         <Ionicons
           name="search"

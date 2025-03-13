@@ -6,7 +6,19 @@ import AppNavigator from "./components/navigation/AppNavigator";
 import { Provider as PaperProvider, configureFonts } from "react-native-paper";
 import { Provider as StoreProvider } from "react-redux";
 import { store } from "./store/store";
-import { registerBackgroundSyncTask, cleanupBackgroundSync } from "./services/offline/background.service";
+import {
+  registerBackgroundSyncTask,
+  cleanupBackgroundSync,
+} from "./services/offline/background.service";
+// import { saveToCache } from "./services/offline/storage.service";
+import * as Sentry from "@sentry/react-native";
+
+Sentry.init({
+  dsn: "https://b964b86e7db7bf5d4f1fed35e7194041@o4508969385852928.ingest.de.sentry.io/4508969386377296", // Replace with your DSN
+  tracesSampleRate: 1.0,
+  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
+  // spotlight: __DEV__,
+});
 
 export default function App() {
   useEffect(() => {

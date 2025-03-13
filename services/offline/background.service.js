@@ -6,6 +6,7 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loadPendingMaterials } from "../functions/loadPendingMaterials";
 import { store } from "../../store/store";
 import { loadRawMaterials } from "../functions/loadRMs";
+import { setLoading, setSyncing } from "../../store/rawMaterialsSlice";
 
 const BACKGROUND_SYNC_TASK = "background-sync";
 const SYNC_LOCK_KEY = "sync_in_progress";
@@ -40,9 +41,22 @@ const performSync = async (token) => {
   }
 
   try {
+    store.dispatch(setSyncing(true));
+    store.dispatch(setLoading(true));
+
+    Sentry.addBreadcrumb({
+      category: 'sync',
+      message: 'Starting background sync',
+      level: Sentry.Severity.Info,
+    });
+    
+
     await processPendingActions(token);
     await loadPendingMaterials(store.dispatch);
     console.log("Sync completed successfully");
+
+    store.dispatch(setSyncing(false));
+    store.dispatch(setLoading(false));
   } catch (error) {
     console.error("Sync failed:", error);
   } finally {

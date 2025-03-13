@@ -36,6 +36,16 @@
       "eas": {
         "projectId": "bccf2b3c-8604-4eff-8272-8b77f2d3bf4f"
       }
-    }
+    },
+    "plugins": [
+      [
+        "@sentry/react-native/expo",
+        {
+          "url": "https://sentry.io/",
+          "project": "react-native",
+          "organization": "zyod-jx"
+        }
+      ]
+    ]
   }
 }
