@@ -6,10 +6,7 @@ import AppNavigator from "./components/navigation/AppNavigator";
 import { Provider as PaperProvider, configureFonts } from "react-native-paper";
 import { Provider as StoreProvider } from "react-redux";
 import { store } from "./store/store";
-import {
-  registerBackgroundSyncTask,
-  cleanupBackgroundSync,
-} from "./services/offline/background.service";
+import { registerBackgroundSyncTask, cleanupBackgroundSync } from "./services/offline/background.service";
 
 export default function App() {
   useEffect(() => {
@@ -17,7 +14,9 @@ export default function App() {
     registerBackgroundSyncTask();
 
     // Cleanup when the app is unmounted
-    return () => cleanupBackgroundSync();
+    return () => {
+      cleanupBackgroundSync();
+    };
   }, []);
 
   return (
@@ -33,19 +32,6 @@ export default function App() {
   );
 }
 
-// // Disable font scaling globally for all Text components
-// if (Text.defaultProps == null) {
-//   Text.defaultProps = {};
-// }
-// Text.defaultProps.allowFontScaling = false;
-
-// // Disable font scaling for TextInput components
-// if (TextInput.defaultProps == null) {
-//   TextInput.defaultProps = {};
-// }
-// TextInput.defaultProps.allowFontScaling = false;
-
-// Configure react-native-paper theme to disable font scaling
 const theme = {
   fonts: configureFonts({
     config: {

@@ -5,6 +5,7 @@ import { processPendingActions } from "./storage.service";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { loadPendingMaterials } from "../functions/loadPendingMaterials";
 import { store } from "../../store/store";
+import { loadRawMaterials } from "../functions/loadRMs";
 
 const BACKGROUND_SYNC_TASK = "background-sync";
 const SYNC_LOCK_KEY = "sync_in_progress";
@@ -14,7 +15,7 @@ let networkStateUnsubscribe = null;
 const acquireSyncLock = async () => {
   const lastLock = await AsyncStorage.getItem(SYNC_LOCK_KEY);
   if (lastLock) {
-    const lockTime = await AsyncStorage.getItem(SYNC_LOCK_KEY);
+    const lockTime = parseInt(lastLock);
     // If lock is older than 2 minutes, its old.
     if (Date.now() - lockTime < 120000) {
       //  Less than 2 mins
@@ -35,12 +36,10 @@ const performSync = async (token) => {
 
   const lockAcquired = await acquireSyncLock();
   if (!lockAcquired) {
-    // console.log("Sync already in progress, skipping...");
     return;
   }
 
   try {
-    // console.log("Starting sync process...");
     await processPendingActions(token);
     await loadPendingMaterials(store.dispatch);
     console.log("Sync completed successfully");
@@ -59,14 +58,14 @@ TaskManager.defineTask(BACKGROUND_SYNC_TASK, async () => {
 
     if (state.isConnected) {
       await performSync(token);
-      return BackgroundFetch.BackgroundFetchResult.NewData;
+      return BackgroundFetch.Result.NewData;
     } else {
       console.log("Background sync: Device is offline, skipping sync");
-      return BackgroundFetch.BackgroundFetchResult.NoData;
+      return BackgroundFetch.Result.NoData;
     }
   } catch (error) {
     console.error("Background sync failed:", error);
-    return BackgroundFetch.BackgroundFetchResult.Failed;
+    return BackgroundFetch.Result.Failed;
   }
 });
 
@@ -78,38 +77,57 @@ const handleNetworkStateChange = async (state) => {
   }
 };
 
-// Main task registry function
+// Register background task and network listener
 export const registerBackgroundSyncTask = async () => {
   try {
-    // Register network state change listener
+    // if networkState listener is null, start the listener
     if (!networkStateUnsubscribe) {
       networkStateUnsubscribe = NetInfo.addEventListener(
         handleNetworkStateChange
       );
     }
 
-    // Register the task
-    await BackgroundFetch.registerTaskAsync(BACKGROUND_SYNC_TASK, {
-      minimumInterval: 2 * 60, // 2 minutes
-      stopOnTerminate: false,
-      startOnBoot: true,
-    });
+    // Check if task is already registered
+    const isRegistered = await TaskManager.isTaskRegisteredAsync(
+      BACKGROUND_SYNC_TASK
+    );
+    if (!isRegistered) {
+      // Register the background fetch task
+      await BackgroundFetch.registerTaskAsync(BACKGROUND_SYNC_TASK, {
+        minimumInterval: 2 * 60, // 2 minutes
+        stopOnTerminate: false,
+        startOnBoot: true,
+      });
+    }
 
-    // Initial network check - is yes perform sync.
+    // Initial network check
     const netState = await NetInfo.fetch();
     if (netState.isConnected) {
       const token = await AsyncStorage.getItem("userToken");
       await performSync(token);
     }
+
+    console.log("Background sync task and network listeners registered");
   } catch (err) {
     console.error("Error registering background sync task:", err);
   }
 };
 
-// Function to clean up background sync resources
-export const cleanupBackgroundSync = () => {
-  if (networkStateUnsubscribe) {
-    networkStateUnsubscribe();
-    networkStateUnsubscribe = null;
+// Cleanup function
+export const cleanupBackgroundSync = async () => {
+  try {
+    if (networkStateUnsubscribe) {
+      networkStateUnsubscribe();
+      networkStateUnsubscribe = null;
+    }
+
+    const isRegistered = await TaskManager.isTaskRegisteredAsync(
+      BACKGROUND_SYNC_TASK
+    );
+    if (isRegistered) {
+      await BackgroundFetch.unregisterTaskAsync(BACKGROUND_SYNC_TASK);
+    }
+  } catch (error) {
+    console.error("Error cleaning up background sync:", error);
   }
 };

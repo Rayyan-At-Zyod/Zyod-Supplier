@@ -12,6 +12,7 @@ import SignInScreen from "../screens/auth/SignInScreen";
 import HomeNavigatorScreen from "./HomeNavigator";
 import LoadingModal from "../util/LoadingModal";
 import SignUpScreen from "../screens/auth/SignUpScreen";
+import BackgroundTaskScreen from "./BackgroundTaskScreen";
 
 const Stack = createNativeStackNavigator();
 
@@ -25,6 +26,11 @@ const AppNavigator = () => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {token ? (
           <>
+            {/* <Stack.Screen
+              name="Test"
+              component={BackgroundTaskScreen}
+              options={{ headerShown: true }}
+            /> */}
             <Stack.Screen
               name="MainApp"
               component={HomeNavigatorScreen}
