@@ -1,6 +1,6 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { TouchableOpacity } from "react-native";
+import { TouchableOpacity, Text } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { useAuth } from "../../context/AuthContext";
@@ -30,7 +30,7 @@ const AppNavigator = () => {
             <Stack.Screen
               name="ViewRawMaterial"
               component={ViewRMScreen}
-              options={({ navigation }) => ({
+              options={{
                 headerShown: true,
                 headerTitle: "View Material",
                 headerTintColor: "black",
@@ -38,21 +38,14 @@ const AppNavigator = () => {
                 headerStyle: {
                   backgroundColor: "white",
                 },
-                headerLeft: () => (
-                  <TouchableOpacity
-                    onPress={() => navigation.navigate("MainApp")}
-                    style={{ marginLeft: 8, padding: 80, backgroundColor: "red" }}
-                  >
-                    <Ionicons name="arrow-back" size={24} color="black" />
-                  </TouchableOpacity>
-                ),
-                presentation: "modal",
-              })}
+                headerBackVisible: true,
+                headerBackTitle: "Back",
+              }}
             />
             <Stack.Screen
               name="AddRawMaterial"
               component={AddRMScreen}
-              options={({ navigation }) => ({
+              options={{
                 headerShown: true,
                 headerTitle: "Add Raw Material",
                 headerTintColor: "black",
@@ -60,16 +53,9 @@ const AppNavigator = () => {
                 headerStyle: {
                   backgroundColor: "white",
                 },
-                headerLeft: () => (
-                  <TouchableOpacity
-                    onPress={() => navigation.goBack()}
-                    style={{ marginLeft: 8, padding: 80, backgroundColor: "red" }}
-                  >
-                    <Ionicons name="arrow-back" size={24} color="black" />
-                  </TouchableOpacity>
-                ),
-                presentation: "modal",
-              })}
+                headerBackVisible: true,
+                headerBackTitle: "Back",
+              }}
             />
           </>
         ) : (

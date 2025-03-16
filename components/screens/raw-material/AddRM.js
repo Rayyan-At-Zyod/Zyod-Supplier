@@ -15,6 +15,7 @@ import {
   TouchableWithoutFeedback,
 } from "react-native";
 import { useNavigation } from "@react-navigation/native";
+import { CommonActions } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
 import { addMaterial, setLoading } from "../../../store/rawMaterialsSlice";
@@ -266,7 +267,9 @@ function AddRMScreen() {
           temporaryDisplay: temporaryItem,
         });
       }
-      navigation.goBack();
+      
+      // Navigate directly to MainApp
+      navigation.navigate("MainApp");
     } catch (error) {
       Alert.alert("Error", error.message.toString());
     } finally {
