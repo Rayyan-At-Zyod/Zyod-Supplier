@@ -12,11 +12,7 @@ import { Ionicons } from "@expo/vector-icons";
 import { currentTabStyles } from "../../../styles/CurrentTab.styles";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
-import {
-  setLoading,
-  updateMaterials,
-  updateOfflineMaterials,
-} from "../../../store/rawMaterialsSlice";
+import { setLoading } from "../../../store/rawMaterialsSlice";
 import { updateRM } from "../../../services/api/updateRmStock.service";
 import { useAuth } from "../../../context/AuthContext";
 import { useNetworkStatus } from "../../../hooks/useNetworkStatus";

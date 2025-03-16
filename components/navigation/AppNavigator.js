@@ -1,9 +1,7 @@
 import React from "react";
 import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { ActivityIndicator, View, TouchableOpacity } from "react-native";
+import { TouchableOpacity } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import { useSelector } from "react-redux";
 
 import { useAuth } from "../../context/AuthContext";
 import ViewRMScreen from "../screens/raw-material/ViewRM";
@@ -12,13 +10,11 @@ import SignInScreen from "../screens/auth/SignInScreen";
 import HomeNavigatorScreen from "./HomeNavigator";
 import LoadingModal from "../util/LoadingModal";
 import SignUpScreen from "../screens/auth/SignUpScreen";
-import BackgroundTaskScreen from "./BackgroundTaskScreen";
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
   const { token } = useAuth();
-  const navigation = useNavigation();
 
   return (
     <>
@@ -26,11 +22,6 @@ const AppNavigator = () => {
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {token ? (
           <>
-            {/* <Stack.Screen
-              name="Test"
-              component={BackgroundTaskScreen}
-              options={{ headerShown: true }}
-            /> */}
             <Stack.Screen
               name="MainApp"
               component={HomeNavigatorScreen}
@@ -39,7 +30,7 @@ const AppNavigator = () => {
             <Stack.Screen
               name="ViewRawMaterial"
               component={ViewRMScreen}
-              options={{
+              options={({ navigation }) => ({
                 headerShown: true,
                 headerTitle: "View Material",
                 headerTintColor: "black",
@@ -50,18 +41,18 @@ const AppNavigator = () => {
                 headerLeft: () => (
                   <TouchableOpacity
                     onPress={() => navigation.navigate("MainApp")}
-                    style={{ marginLeft: 8 }}
+                    style={{ marginLeft: 8, padding: 80, backgroundColor: "red" }}
                   >
                     <Ionicons name="arrow-back" size={24} color="black" />
                   </TouchableOpacity>
                 ),
                 presentation: "modal",
-              }}
+              })}
             />
             <Stack.Screen
               name="AddRawMaterial"
               component={AddRMScreen}
-              options={{
+              options={({ navigation }) => ({
                 headerShown: true,
                 headerTitle: "Add Raw Material",
                 headerTintColor: "black",
@@ -71,14 +62,14 @@ const AppNavigator = () => {
                 },
                 headerLeft: () => (
                   <TouchableOpacity
-                    onPress={() => navigation.navigate("MainApp")}
-                    style={{ marginLeft: 8 }}
+                    onPress={() => navigation.goBack()}
+                    style={{ marginLeft: 8, padding: 80, backgroundColor: "red" }}
                   >
                     <Ionicons name="arrow-back" size={24} color="black" />
                   </TouchableOpacity>
                 ),
                 presentation: "modal",
-              }}
+              })}
             />
           </>
         ) : (

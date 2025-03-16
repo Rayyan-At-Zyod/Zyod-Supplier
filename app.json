@@ -37,13 +37,23 @@
         "projectId": "bccf2b3c-8604-4eff-8272-8b77f2d3bf4f"
       }
     },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "zyod-jx",
+            "project": "zyod-supplier"
+          }
+        }
+      ]
+    },
     "plugins": [
       [
-        "@sentry/react-native/expo",
+        "sentry-expo",
         {
-          "url": "https://sentry.io/",
-          "project": "react-native",
-          "organization": "zyod-jx"
+          "organization": "zyod-jx",
+          "project": "zyod-supplier"
         }
       ]
     ]

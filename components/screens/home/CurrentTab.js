@@ -125,12 +125,6 @@ function CurrentTab() {
 
   return (
     <View style={currentTabStyles.container}>
-      <Button
-        title="Try!"
-        onPress={() => {
-          Sentry.captureException(new Error("First error"));
-        }}
-      />
       <View style={currentTabStyles.searchContainer}>
         <Ionicons
           name="search"

@@ -15,7 +15,6 @@ export const AuthProvider = ({ children }) => {
   }, []);
 
   const loadStoredData = async () => {
-    console.log("=== Loading Stored Auth Data ===");
     try {
       const [storedToken, storedUserData] = await Promise.all([
         AsyncStorage.getItem("userToken"),
@@ -26,12 +25,20 @@ export const AuthProvider = ({ children }) => {
         const parsedUserData = JSON.parse(storedUserData);
 
         setToken(storedToken);
+        console.log(
+          "parsedUserData before fetching WAREHOUSE ID:",
+          parsedUserData
+        );
+        console.log("Stored token before fetching WAREHOUSE ID:", storedToken);
+        console.log(
+          "parsedUserData.user_SupplierId before fetching WAREHOUSE ID:",
+          parsedUserData.user_SupplierId
+        );
         setUserData(parsedUserData);
         let newWarehouseId = await fetchPrimaryWarehouseIdOfThisUser(
           storedToken,
           parsedUserData.user_SupplierId
         );
-        console.log("🥺 Warehouse ID:", newWarehouseId);
         setWarehouseId(newWarehouseId);
         console.log("=== Auth data loaded successfully ===");
       } else {

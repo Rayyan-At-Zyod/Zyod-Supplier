@@ -20,7 +20,6 @@ import { setLoading } from "../../../store/rawMaterialsSlice";
 import { offlineTabStyles } from "../../../styles/OfflineTab.styles";
 import { loadPendingMaterials } from "../../../services/functions/loadPendingMaterials";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
-import TestSyncButton from "../../util/TestSyncButton";
 
 const OfflineMaterialsTab = () => {
   const dispatch = useDispatch();
@@ -105,7 +104,9 @@ const OfflineMaterialsTab = () => {
               await loadPendingMaterials(dispatch);
             }}
           >
-            <Text style={offlineTabStyles.loadButtonText}>Delete all</Text>
+            <Text style={offlineTabStyles.loadButtonText}>
+              Delete all actions
+            </Text>
           </TouchableOpacity>
         )}
       </View>
@@ -138,7 +139,6 @@ const OfflineMaterialsTab = () => {
             />
           }
         />
-        <TestSyncButton />
       </>
       <ImageDisplayModal
         visible={isImageModalVisible}

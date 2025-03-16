@@ -1,7 +1,6 @@
 import * as FileSystem from "expo-file-system";
 
 export const convertImageToBase64 = async (uri) => {
-  console.log("uri:", uri);
   try {
     if (!uri) return null;
     const base64 = await FileSystem.readAsStringAsync(uri, {
