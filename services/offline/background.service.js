@@ -43,8 +43,8 @@ const performSync = async (token) => {
   try {
     await processPendingActions(token);
     await loadPendingMaterials(store.dispatch);
-    console.log("Sync completed successfully");
-    Sentry.captureMessage("Sync completed successfully", "info");
+    console.log("Initial sync completed successfully");
+    Sentry.captureMessage("Initial sync completed successfully", "info");
   } catch (error) {
     Sentry.captureException(error);
     console.error("Sync failed:", error);

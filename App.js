@@ -21,15 +21,15 @@ Sentry.init({
 });
 
 export default function App() {
-  useEffect(() => {
-    // Register the background sync task when the app starts
-    registerBackgroundSyncTask();
+  // useEffect(() => {
+  //   // Register the background sync task when the app starts
+  //   registerBackgroundSyncTask();
 
-    // Cleanup when the app is unmounted
-    return () => {
-      cleanupBackgroundSync();
-    };
-  }, []);
+  //   // Cleanup when the app is unmounted
+  //   return () => {
+  //     cleanupBackgroundSync();
+  //   };
+  // }, []);
 
   return (
     <StoreProvider store={store}>
