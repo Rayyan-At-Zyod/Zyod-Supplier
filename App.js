@@ -12,6 +12,7 @@ import {
 } from "./services/offline/background.service";
 // import { saveToCache } from "./services/offline/storage.service";
 import * as Sentry from "@sentry/react-native";
+import { useAppStateSync } from "./hooks/useAppStateSync";
 
 Sentry.init({
   dsn: "https://b964b86e7db7bf5d4f1fed35e7194041@o4508969385852928.ingest.de.sentry.io/4508969386377296", // Replace with your DSN
@@ -20,7 +21,11 @@ Sentry.init({
   // spotlight: __DEV__,
 });
 
-export default function App() {
+// Inner component to use hooks within the providers
+function AppContent() {
+  // Use our custom hook to handle app state changes and trigger syncs
+  useAppStateSync();
+  
   useEffect(() => {
     // Register the background sync task when the app starts
     registerBackgroundSyncTask();
@@ -30,13 +35,17 @@ export default function App() {
       cleanupBackgroundSync();
     };
   }, []);
+  
+  return <AppNavigator />;
+}
 
+export default function App() {
   return (
     <StoreProvider store={store}>
       <AuthProvider>
         <NavigationContainer>
           <PaperProvider theme={theme}>
-            <AppNavigator />
+            <AppContent />
           </PaperProvider>
         </NavigationContainer>
       </AuthProvider>

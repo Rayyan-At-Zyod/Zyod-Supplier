@@ -12,6 +12,10 @@ import { v4 as uuidv4 } from "uuid";
 import { store } from "../../store/store";
 import { updateRM } from "../api/updateRmStock.service";
 import { Alert } from "react-native";
+import NetInfo from "@react-native-community/netinfo";
+
+// Key for tracking actions in progress
+const ACTIONS_IN_PROGRESS_KEY = "actionsInProgress";
 
 export const saveToCache = async (key, data) => {
   try {
@@ -32,6 +36,45 @@ export const loadFromCache = async (key) => {
     Sentry.captureException(error);
     console.error(`Failed to load from cache (${key}):`, error);
     return null;
+  }
+};
+
+// Mark an action as in progress to prevent duplicate processing
+const markActionInProgress = async (actionId) => {
+  try {
+    const inProgressActions = await loadFromCache(ACTIONS_IN_PROGRESS_KEY) || {};
+    inProgressActions[actionId] = Date.now();
+    await saveToCache(ACTIONS_IN_PROGRESS_KEY, inProgressActions);
+  } catch (error) {
+    Sentry.captureException(error);
+  }
+};
+
+// Check if an action is already in progress
+const isActionInProgress = async (actionId) => {
+  try {
+    const inProgressActions = await loadFromCache(ACTIONS_IN_PROGRESS_KEY) || {};
+    const timestamp = inProgressActions[actionId];
+    
+    // If no timestamp or it's older than 5 minutes, it's not in progress
+    if (!timestamp || (Date.now() - timestamp > 5 * 60 * 1000)) {
+      return false;
+    }
+    return true;
+  } catch (error) {
+    Sentry.captureException(error);
+    return false;
+  }
+};
+
+// Clear an action from the in-progress list
+const clearActionInProgress = async (actionId) => {
+  try {
+    const inProgressActions = await loadFromCache(ACTIONS_IN_PROGRESS_KEY) || {};
+    delete inProgressActions[actionId];
+    await saveToCache(ACTIONS_IN_PROGRESS_KEY, inProgressActions);
+  } catch (error) {
+    Sentry.captureException(error);
   }
 };
 
@@ -66,11 +109,29 @@ export const clearPendingActions = async () => {
 };
 
 /**
- * Process a single pending action by its id
+ * Process a single pending action by its id with improved error handling and duplicate prevention
  */
 export const processCurrentAction = async (id, token) => {
   Sentry.captureMessage(`Processing current action with id: ${id}`, "info");
+  
+  // Check if action is already being processed
+  const actionInProgress = await isActionInProgress(id);
+  if (actionInProgress) {
+    Sentry.captureMessage(`Action ${id} is already in progress, skipping`, "info");
+    return;
+  }
+  
+  // Check network connectivity first
+  const netState = await NetInfo.fetch();
+  if (!netState.isConnected) {
+    Sentry.captureMessage("Network unavailable, cannot process action", "info");
+    return;
+  }
+  
   try {
+    // Mark this action as in progress
+    await markActionInProgress(id);
+    
     store.dispatch(setSyncing(true));
     const pendingActions = (await loadFromCache("pendingActions")) || [];
     const actionToProcess = pendingActions.find((action) => action.id === id);
@@ -82,28 +143,33 @@ export const processCurrentAction = async (id, token) => {
       return;
     }
 
+    let response = null;
+    
     if (actionToProcess.type === "ADD") {
       Sentry.captureMessage("Processing ADD action", "info");
-      const response = await addRawMaterial(actionToProcess.payload, token);
-      if (response) {
-        doIfSuccess(pendingActions, id, token);
-      }
+      response = await addRawMaterial(actionToProcess.payload, token);
     } else if (actionToProcess.type === "UPDATE") {
       Sentry.captureMessage("Processing UPDATE action", "info");
-      const response = await updateRM(actionToProcess.payload, token);
-      if (response) {
-        doIfSuccess(pendingActions, id, token);
-      }
+      response = await updateRM(actionToProcess.payload, token);
+    }
+    
+    if (response) {
+      await doIfSuccess(pendingActions, id, token);
     }
   } catch (error) {
     Sentry.captureException(error);
     console.error("Error processing single action:", error);
-    Alert.alert(
-      "An error occurred while syncing your offline action",
-      error.message
-    );
-    throw error;
+    
+    // Only show alert if the error is not a network error or if we're in foreground
+    if (!error.message.includes("Network request failed")) {
+      Alert.alert(
+        "An error occurred while syncing your offline action",
+        error.message
+      );
+    }
   } finally {
+    // Clear the in-progress flag regardless of outcome
+    await clearActionInProgress(id);
     store.dispatch(setSyncing(false));
   }
 };
@@ -127,16 +193,45 @@ const doIfSuccess = async (pendingActions, id, token) => {
 };
 
 /**
- * Process all pending actions
+ * Process all pending actions with improved error handling
  */
 export const processPendingActions = async (token) => {
   Sentry.captureMessage("Processing all pending actions", "info");
+  
+  // Check network connectivity first
+  const netState = await NetInfo.fetch();
+  if (!netState.isConnected) {
+    Sentry.captureMessage("Network unavailable, cannot process actions", "info");
+    return;
+  }
+  
   try {
     store.dispatch(setSyncing(true));
     const pendingActions = (await loadFromCache("pendingActions")) || [];
-    for (const action of pendingActions) {
+    
+    // Sort actions by timestamp to process oldest first
+    const sortedActions = [...pendingActions].sort((a, b) => a.timestamp - b.timestamp);
+    
+    for (const action of sortedActions) {
       try {
+        // Check if we're still online before each action
+        const currentNetState = await NetInfo.fetch();
+        if (!currentNetState.isConnected) {
+          Sentry.captureMessage("Network connection lost during sync, stopping", "info");
+          break;
+        }
+        
+        // Check if this action is already being processed
+        const actionInProgress = await isActionInProgress(action.id);
+        if (actionInProgress) {
+          Sentry.captureMessage(`Action ${action.id} is already in progress, skipping`, "info");
+          continue;
+        }
+        
         await processCurrentAction(action.id, token);
+        
+        // Small delay between actions to prevent overwhelming the server
+        await new Promise(resolve => setTimeout(resolve, 500));
       } catch (error) {
         Sentry.captureException(error);
         console.error(`Failed to process action ${action.id}:`, error);
@@ -145,7 +240,6 @@ export const processPendingActions = async (token) => {
   } catch (error) {
     Sentry.captureException(error);
     console.error("Error processing pending actions:", error);
-    throw error;
   } finally {
     store.dispatch(setSyncing(false));
   }
