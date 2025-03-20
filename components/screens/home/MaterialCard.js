@@ -21,6 +21,7 @@ import {
   updateAnOnlineMaterialAction,
 } from "../../../services/offline/storage.service";
 import { loadRawMaterials } from "../../../services/functions/loadRMs";
+import * as Sentry from "@sentry/react-native";
 
 const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
   const navigation = useNavigation();

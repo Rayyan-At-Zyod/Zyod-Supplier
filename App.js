@@ -1,41 +1,104 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useRef } from "react";
 import { NavigationContainer } from "@react-navigation/native";
-import { Text, TextInput, Platform } from "react-native";
+import { Text, View } from "react-native";
 import { AuthProvider } from "./context/AuthContext";
 import AppNavigator from "./components/navigation/AppNavigator";
-import { Provider as PaperProvider, configureFonts } from "react-native-paper";
-import { Provider as StoreProvider } from "react-redux";
-import { store } from "./store/store";
+import { Provider as PaperProvider } from "react-native-paper";
 import {
-  registerBackgroundSyncTask,
-  cleanupBackgroundSync,
-} from "./services/offline/background.service";
-// import { saveToCache } from "./services/offline/storage.service";
+  Provider as StoreProvider,
+  useDispatch,
+  useSelector,
+} from "react-redux";
+import { store } from "./store/store";
 import * as Sentry from "@sentry/react-native";
+import { addTime, setTime } from "./store/rawMaterialsSlice";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { registerInternetAvailabilitySyncingTask } from "./services/offline/SERVICES/new-background-task.service";
 
 Sentry.init({
-  dsn: "https://b964b86e7db7bf5d4f1fed35e7194041@o4508969385852928.ingest.de.sentry.io/4508969386377296", // Replace with your DSN
+  dsn: "https://b964b86e7db7bf5d4f1fed35e7194041@o4508969385852928.ingest.de.sentry.io/4508969386377296",
   tracesSampleRate: 1.0,
-  // uncomment the line below to enable Spotlight (https://spotlightjs.com)
-  // spotlight: __DEV__,
 });
 
-export default function App() {
-  // useEffect(() => {
-  //   // Register the background sync task when the app starts
-  //   registerBackgroundSyncTask();
+function Timer() {
+  const dispatch = useDispatch();
+  const time = useSelector((state) => state.rawMaterials.time);
+  const [storedTime, setStoredTime] = React.useState(null);
 
-  //   // Cleanup when the app is unmounted
-  //   return () => {
-  //     cleanupBackgroundSync();
-  //   };
-  // }, []);
+  // On mount, load the persisted timer from AsyncStorage.
+  useEffect(() => {
+    const loadTimeFromDb = async () => {
+      try {
+        const dbTimer = await AsyncStorage.getItem("time");
+        console.log("the db timer form async store is", dbTimer);
+        const initialTime =
+          dbTimer !== null && !isNaN(dbTimer) ? parseInt(dbTimer) : 1;
+        if (isNaN(dbTimer)) await AsyncStorage.setItem("time", "1");
+        dispatch(setTime(initialTime));
+      } catch (err) {
+        console.error("Error while initialising time", err);
+      }
+    };
+    loadTimeFromDb();
+  }, [dispatch]);
+
+  // This timer updates every second when the app is in the foreground.
+  useEffect(() => {
+    const interval = setInterval(() => {
+      dispatch(addTime(1));
+    }, 1000);
+    return () => clearInterval(interval);
+  }, [dispatch]);
+
+  // Update AsyncStorage whenever 'time' changes.
+  useEffect(() => {
+    const setTimeInDb = async () => {
+      try {
+        await AsyncStorage.setItem("time", time.toString());
+      } catch (error) {
+        console.error("Error setting time in AsyncStorage", error);
+      }
+    };
+    setTimeInDb();
+  }, [time]);
+
+  // For display purposes, read the current AsyncStorage value.
+  useEffect(() => {
+    const getTimeFromDb = async () => {
+      try {
+        const value = await AsyncStorage.getItem("time");
+        setStoredTime(value);
+      } catch (error) {
+        console.error("Error getting time from AsyncStorage", error);
+      }
+    };
+    getTimeFromDb();
+  }, [time]);
+
+  return (
+    <View>
+      <Text style={{ textAlign: "center", padding: 5 }}>
+        Stored Time: {storedTime}
+      </Text>
+      <Text style={{ textAlign: "center", padding: 5 }}>
+        Redux Time: {time}
+      </Text>
+    </View>
+  );
+}
+
+export default function App() {
+  useEffect(() => {
+    registerInternetAvailabilitySyncingTask();
+  }, []);
 
   return (
     <StoreProvider store={store}>
       <AuthProvider>
         <NavigationContainer>
-          <PaperProvider theme={theme}>
+          <PaperProvider>
+            <Timer />
+            {/* <Todos /> */}
             <AppNavigator />
           </PaperProvider>
         </NavigationContainer>
@@ -43,54 +106,3 @@ export default function App() {
     </StoreProvider>
   );
 }
-
-const theme = {
-  fonts: configureFonts({
-    config: {
-      ios: {
-        regular: {
-          fontFamily: Platform.OS === "ios" ? "System" : "normal",
-          fontWeight: "400",
-          allowFontScaling: false,
-        },
-        medium: {
-          fontFamily: Platform.OS === "ios" ? "System" : "normal",
-          fontWeight: "500",
-          allowFontScaling: false,
-        },
-        light: {
-          fontFamily: Platform.OS === "ios" ? "System" : "normal",
-          fontWeight: "300",
-          allowFontScaling: false,
-        },
-        thin: {
-          fontFamily: Platform.OS === "ios" ? "System" : "normal",
-          fontWeight: "200",
-          allowFontScaling: false,
-        },
-      },
-      android: {
-        regular: {
-          fontFamily: "normal",
-          fontWeight: "400",
-          allowFontScaling: false,
-        },
-        medium: {
-          fontFamily: "normal",
-          fontWeight: "500",
-          allowFontScaling: false,
-        },
-        light: {
-          fontFamily: "normal",
-          fontWeight: "300",
-          allowFontScaling: false,
-        },
-        thin: {
-          fontFamily: "normal",
-          fontWeight: "200",
-          allowFontScaling: false,
-        },
-      },
-    },
-  }),
-};

@@ -6,6 +6,7 @@ import {
 } from "../../store/rawMaterialsSlice";
 import { fetchRawMaterials } from "../api/fetchRawMaterial.service";
 import { loadFromCache, saveToCache } from "../offline/storage.service";
+import * as Sentry from "@sentry/react-native";
 
 export const loadRawMaterials = async (
   token,

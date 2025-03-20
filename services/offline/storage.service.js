@@ -1,21 +1,19 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Sentry from "@sentry/react-native";
 import { addRawMaterial } from "../api/addRawMaterial.service";
-import { loadRawMaterials } from "../functions/loadRMs";
 import {
   addOfflineMaterial,
   setMaterials,
-  setSyncing,
   updateOfflineMaterials,
 } from "../../store/rawMaterialsSlice";
 import { v4 as uuidv4 } from "uuid";
 import { store } from "../../store/store";
 import { updateRM } from "../api/updateRmStock.service";
-import { Alert } from "react-native";
+import { loadPendingMaterials } from "../functions/loadPendingMaterials";
+import { loadRawMaterials } from "../functions/loadRMs";
 
 export const saveToCache = async (key, data) => {
   try {
-    Sentry.captureMessage(`Saving some data to cache for key: ${key}`, "info");
     await AsyncStorage.setItem(key, JSON.stringify(data));
   } catch (error) {
     Sentry.captureException(error);
@@ -25,7 +23,6 @@ export const saveToCache = async (key, data) => {
 
 export const loadFromCache = async (key) => {
   try {
-    Sentry.captureMessage(`Loading from cache for key: ${key}`, "info");
     const data = await AsyncStorage.getItem(key);
     return data ? JSON.parse(data) : null;
   } catch (error) {
@@ -37,7 +34,6 @@ export const loadFromCache = async (key) => {
 
 export const queuePendingAction = async (action) => {
   try {
-    Sentry.captureMessage("Queueing pending action", "info");
     const pendingActions = (await loadFromCache("pendingActions")) || [];
     const actionWithId = {
       ...action,
@@ -55,99 +51,12 @@ export const queuePendingAction = async (action) => {
 };
 
 export const clearPendingActions = async () => {
-  Sentry.captureMessage("Clearing pending actions from cache", "info");
   try {
     console.log("looks like ev worked.");
     await AsyncStorage.removeItem("pendingActions");
   } catch (error) {
     Sentry.captureException(error);
     console.error("Failed to clear pending actions:", error);
-  }
-};
-
-/**
- * Process a single pending action by its id
- */
-export const processCurrentAction = async (id, token) => {
-  Sentry.captureMessage(`Processing current action with id: ${id}`, "info");
-  try {
-    store.dispatch(setSyncing(true));
-    const pendingActions = (await loadFromCache("pendingActions")) || [];
-    const actionToProcess = pendingActions.find((action) => action.id === id);
-
-    if (!actionToProcess) {
-      const error = new Error(`No pending action found with id: ${id}`);
-      Sentry.captureException(error);
-      console.error(error);
-      return;
-    }
-
-    if (actionToProcess.type === "ADD") {
-      Sentry.captureMessage("Processing ADD action", "info");
-      const response = await addRawMaterial(actionToProcess.payload, token);
-      if (response) {
-        doIfSuccess(pendingActions, id, token);
-      }
-    } else if (actionToProcess.type === "UPDATE") {
-      Sentry.captureMessage("Processing UPDATE action", "info");
-      const response = await updateRM(actionToProcess.payload, token);
-      if (response) {
-        doIfSuccess(pendingActions, id, token);
-      }
-    }
-  } catch (error) {
-    Sentry.captureException(error);
-    console.error("Error processing single action:", error);
-    Alert.alert(
-      "An error occurred while syncing your offline action",
-      error.message
-    );
-    throw error;
-  } finally {
-    store.dispatch(setSyncing(false));
-  }
-};
-
-const doIfSuccess = async (pendingActions, id, token) => {
-  Sentry.captureMessage(
-    `Action ${id} succeeded, processing success flow`,
-    "info"
-  );
-  try {
-    const updatedPendingActions = pendingActions.filter(
-      (action) => action.id !== id
-    );
-    await saveToCache("pendingActions", updatedPendingActions);
-    // Reload the materials to update the UI
-    await loadRawMaterials(token, true, store.dispatch);
-  } catch (err) {
-    Sentry.captureException(err);
-    throw err;
-  }
-};
-
-/**
- * Process all pending actions
- */
-export const processPendingActions = async (token) => {
-  Sentry.captureMessage("Processing all pending actions", "info");
-  try {
-    store.dispatch(setSyncing(true));
-    const pendingActions = (await loadFromCache("pendingActions")) || [];
-    for (const action of pendingActions) {
-      try {
-        await processCurrentAction(action.id, token);
-      } catch (error) {
-        Sentry.captureException(error);
-        console.error(`Failed to process action ${action.id}:`, error);
-      }
-    }
-  } catch (error) {
-    Sentry.captureException(error);
-    console.error("Error processing pending actions:", error);
-    throw error;
-  } finally {
-    store.dispatch(setSyncing(false));
   }
 };
 
@@ -162,10 +71,6 @@ export const updateAnOnlineMaterialAction = async (
   nonSelectedRmVariationIds,
   nonSelectedRmVariationQuantities
 ) => {
-  Sentry.captureMessage(
-    `Updating online material action for greigeId: ${theGreigeId}`,
-    "info"
-  );
   try {
     const cachedData = (await loadFromCache("cachedData")) || [];
     const onlineItem = cachedData.find((item) => item.greigeId === theGreigeId);
@@ -231,10 +136,6 @@ export const updateAnOfflineMaterialAction = async (
   theRmVariationId,
   newQuantity
 ) => {
-  Sentry.captureMessage(
-    `Updating offline material action for variationId: ${theRmVariationId}`,
-    "info"
-  );
   try {
     const pendingActions = await loadFromCache("pendingActions");
     const updatedPendingActions = pendingActions.map((action) => {
@@ -328,6 +229,69 @@ export const updateAnOfflineMaterialAction = async (
   } catch (err) {
     Sentry.captureException(err);
     console.error("Error updating offline action:", err);
+    throw err;
+  }
+};
+
+/**
+ * Process all pending actions
+ */
+export const processPendingActions = async (token) => {
+  try {
+    const pendingActions = (await loadFromCache("pendingActions")) || [];
+    for (const action of pendingActions) {
+      await processCurrentAction(action.id, token);
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+/**
+ * Process a single pending action by its id
+ */
+export const processCurrentAction = async (id, token) => {
+  try {
+    // store.dispatch(setSyncing(true));
+    const pendingActions = (await loadFromCache("pendingActions")) || [];
+    const actionToProcess = pendingActions.find((action) => action.id === id);
+
+    if (!actionToProcess) {
+      const error = new Error(`No pending action found with id: ${id}`);
+      Sentry.captureException(error);
+      console.error(error);
+      return;
+    }
+
+    if (actionToProcess.type === "ADD") {
+      const response = await addRawMaterial(actionToProcess.payload, token);
+      if (response) {
+        doIfSuccess(pendingActions, id, token);
+      }
+    } else if (actionToProcess.type === "UPDATE") {
+      const response = await updateRM(actionToProcess.payload, token);
+      if (response) {
+        doIfSuccess(pendingActions, id, token);
+      }
+    }
+  } catch (error) {
+    throw error;
+  }
+};
+
+const doIfSuccess = async (pendingActions, id, token) => {
+  try {
+    const updatedPendingActions = pendingActions.filter(
+      (action) => action.id !== id
+    );
+    await saveToCache("pendingActions", updatedPendingActions);
+    // Reload the materials to update the UI
+    await loadRawMaterials(token, true, store.dispatch);
+    await loadPendingMaterials(store.dispatch);
+    Sentry.captureMessage(
+      "API hit success. Updated your pending actions. Loaded online materials. Loaded offline materials."
+    );
+  } catch (err) {
     throw err;
   }
 };

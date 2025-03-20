@@ -22,6 +22,7 @@ import { signupStyles } from "../../../styles/Signup.styles";
 import { useNavigation } from "@react-navigation/native";
 import { useImagePicker } from "../../../hooks/useImagePicker";
 import ImageSelectionModal from "../../util/ImageSelectionModal";
+import * as Sentry from "@sentry/react-native";
 
 const SignUpScreen = () => {
   const navigation = useNavigation();

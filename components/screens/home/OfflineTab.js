@@ -20,6 +20,7 @@ import { setLoading } from "../../../store/rawMaterialsSlice";
 import { offlineTabStyles } from "../../../styles/OfflineTab.styles";
 import { loadPendingMaterials } from "../../../services/functions/loadPendingMaterials";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
+import * as Sentry from "@sentry/react-native";
 
 const OfflineMaterialsTab = () => {
   const dispatch = useDispatch();
@@ -42,6 +43,7 @@ const OfflineMaterialsTab = () => {
 
   const onRefresh = async () => {
     setLoading(true);
+
     await loadPendingMaterials(dispatch);
     setLoading(false);
   };

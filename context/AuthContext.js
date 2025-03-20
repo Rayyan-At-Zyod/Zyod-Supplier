@@ -25,22 +25,13 @@ export const AuthProvider = ({ children }) => {
         const parsedUserData = JSON.parse(storedUserData);
 
         setToken(storedToken);
-        console.log(
-          "parsedUserData before fetching WAREHOUSE ID:",
-          parsedUserData
-        );
-        console.log("Stored token before fetching WAREHOUSE ID:", storedToken);
-        console.log(
-          "parsedUserData.user_SupplierId before fetching WAREHOUSE ID:",
-          parsedUserData.user_SupplierId
-        );
         setUserData(parsedUserData);
         let newWarehouseId = await fetchPrimaryWarehouseIdOfThisUser(
           storedToken,
           parsedUserData.user_SupplierId
         );
         setWarehouseId(newWarehouseId);
-        console.log("=== Auth data loaded successfully ===");
+        // console.log("=== Auth data loaded successfully ===");
       } else {
         console.log("No stored auth data found");
       }

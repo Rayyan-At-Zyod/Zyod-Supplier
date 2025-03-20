@@ -19,6 +19,7 @@ import { CommonActions } from "@react-navigation/native";
 import { Ionicons } from "@expo/vector-icons";
 import { useDispatch } from "react-redux";
 import { addMaterial, setLoading } from "../../../store/rawMaterialsSlice";
+import * as Sentry from "@sentry/react-native";
 
 // internal imports
 import { useAuth } from "../../../context/AuthContext";
@@ -261,18 +262,20 @@ function AddRMScreen() {
         const newCache = (await loadFromCache("cachedData")) || [];
         console.log("items in cache", newCache);
       } else {
+        console.error("Hello rayyan. queuing action coz we are offline.");
         await queuePendingAction({
           type: "ADD",
           payload,
           temporaryDisplay: temporaryItem,
         });
       }
-      
+
       // Navigate directly to MainApp
       navigation.navigate("MainApp");
     } catch (error) {
       Alert.alert("Error", error.message.toString());
     } finally {
+      console.error("loading being set to false.");
       dispatch(setLoading(false));
     }
   };
