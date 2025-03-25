@@ -2,10 +2,10 @@ import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
 import * as Sentry from "@sentry/react-native";
 import NetInfo from "@react-native-community/netinfo";
-import { processPendingActionsInBackground } from "../process-storage";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { store } from "../../../store/store";
 import { setLoading, setSyncing } from "../../../store/rawMaterialsSlice";
+import { processPendingActions } from "../process-storage";
 
 const INTERNET_AVAILABILITY_TASK = "internet-availability-task";
 const SYNC_LOCK_KEY = "sync_in_progress";
@@ -60,7 +60,7 @@ TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
 
       store.dispatch(setLoading(true));
       store.dispatch(setSyncing(true));
-      await processPendingActionsInBackground(token);
+      await processPendingActions(token);
       store.dispatch(setLoading(false));
       store.dispatch(setSyncing(false));
       return BackgroundFetch.BackgroundFetchResult.NewData;

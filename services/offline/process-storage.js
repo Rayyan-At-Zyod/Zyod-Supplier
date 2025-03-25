@@ -1,12 +1,18 @@
-import { setOfflineMaterials } from "../../store/rawMaterialsSlice";
+import {
+  setLoading,
+  setOfflineMaterials,
+  setSyncing,
+} from "../../store/rawMaterialsSlice";
 import { store } from "../../store/store";
 import { addRawMaterial } from "../api/addRawMaterial.service";
 import { updateRM } from "../api/updateRmStock.service";
 import { loadFromCache, saveToCache } from "./storage.service";
 import * as Sentry from "@sentry/react-native";
 
-export const processPendingAsctionsInBackground = async (token) => {
+export const processPendingActions = async (token) => {
   try {
+    store.dispatch(setLoading(true));
+    store.dispatch(setSyncing(true));
     const pendingActions = (await loadFromCache("pendingActions")) || [];
     for (let action of pendingActions) {
       Sentry.captureMessage(
@@ -22,7 +28,8 @@ export const processPendingAsctionsInBackground = async (token) => {
       }
       Sentry.captureMessage(`API hit.`);
       if (res) {
-        const updatedArray = pendingActions.filter(
+        const newPendingActions = (await loadFromCache("pendingActions")) || [];
+        const updatedArray = newPendingActions.filter(
           (act) => act.id !== action.id
         );
         // Sentry.captureMessage(`pendingactions aray updated.`);
@@ -49,5 +56,8 @@ export const processPendingAsctionsInBackground = async (token) => {
   } catch (err) {
     Sentry.captureException(`ERROR: ${err}`);
     throw err;
+  } finally {
+    store.dispatch(setLoading(false));
+    store.dispatch(setSyncing(false));
   }
 };
