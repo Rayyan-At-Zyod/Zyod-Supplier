@@ -11,8 +11,8 @@ import * as Sentry from "@sentry/react-native";
 
 export const processPendingActions = async (token) => {
   try {
-    store.dispatch(setLoading(true));
-    store.dispatch(setSyncing(true));
+    // store.dispatch(setLoading(true));
+    // store.dispatch(setSyncing(true));
     const pendingActions = (await loadFromCache("pendingActions")) || [];
     for (let action of pendingActions) {
       Sentry.captureMessage(
@@ -56,8 +56,8 @@ export const processPendingActions = async (token) => {
   } catch (err) {
     Sentry.captureException(`ERROR: ${err}`);
     throw err;
-  } finally {
-    store.dispatch(setLoading(false));
-    store.dispatch(setSyncing(false));
+  // } finally {
+  //   store.dispatch(setLoading(false));
+  //   store.dispatch(setSyncing(false));
   }
 };

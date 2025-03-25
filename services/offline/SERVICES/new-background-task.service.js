@@ -55,11 +55,11 @@ TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
     try {
       // Process pending actions
 
-      store.dispatch(setLoading(true));
-      store.dispatch(setSyncing(true));
+      // store.dispatch(setLoading(true));
+      // store.dispatch(setSyncing(true));
       await processPendingActions(token);
-      store.dispatch(setLoading(false));
-      store.dispatch(setSyncing(false));
+      // store.dispatch(setLoading(false));
+      // store.dispatch(setSyncing(false));
       return BackgroundFetch.BackgroundFetchResult.NewData;
     } finally {
       await clearSyncLock();

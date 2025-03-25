@@ -62,12 +62,12 @@ const AppNavigator = () => {
             ? JSON.parse(pendActsString)
             : [];
           if (pendingActions.length > 0) {
-            dispatch(setSyncing(true));
-            dispatch(setLoading(true));
+            // dispatch(setSyncing(true));
+            // dispatch(setLoading(true));
             await processPendingActions(token);
             await loadRawMaterials(token, true, dispatch);
-            dispatch(setLoading(false));
-            dispatch(setSyncing(false));
+            // dispatch(setLoading(false));
+            // dispatch(setSyncing(false));
           }
           await clearSyncLock();
         }
