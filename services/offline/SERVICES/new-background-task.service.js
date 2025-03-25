@@ -54,7 +54,7 @@ TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
 
     try {
       // Process pending actions
-
+      
       store.dispatch(setLoading(true));
       store.dispatch(setSyncing(true));
       await processPendingActions(token);
