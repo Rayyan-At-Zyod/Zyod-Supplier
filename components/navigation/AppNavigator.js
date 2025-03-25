@@ -1,30 +1,80 @@
-import React from 'react'
-import { Ionicons } from "@expo/vector-icons";
-import { useNavigation } from "@react-navigation/native";
-import { ActivityIndicator, View, TouchableOpacity } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Alert } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
-import { useAuth } from '../context/AuthContext';
-import UpdateRMScreen from '../screens/home/raw-material/UpdateRM';
-import AddRMScreen from '../screens/home/raw-material/AddRM';
-import SignInScreen from '../screens/auth/SignInScreen';
-import HomeNavigatorScreen from './HomeNavigator';
+import { useAuth } from "../../context/AuthContext";
+import ViewRMScreen from "../screens/raw-material/ViewRM";
+import AddRMScreen from "../screens/raw-material/AddRM";
+import SignInScreen from "../screens/auth/SignInScreen";
+import HomeNavigatorScreen from "./HomeNavigator";
+import LoadingModal from "../util/LoadingModal";
+import SignUpScreen from "../screens/auth/SignUpScreen";
+import { useNetworkStatus } from "../../hooks/useNetworkStatus";
+import { useDispatch } from "react-redux";
+import * as Sentry from "@sentry/react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { addTime, setLoading, setSyncing } from "../../store/rawMaterialsSlice";
+import { processPendingActions } from "../../services/offline/storage.service";
+import {
+  checkForSyncLockAvailibility,
+  clearSyncLock,
+} from "../../services/offline/SERVICES/new-background-task.service";
+import { sampleMapped } from "../../services/offline/sampleMapped";
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
-    const { token, loading } = useAuth();
-    const navigation = useNavigation();
-  
-    if (loading) {
-      return (
-        <View style={{ flex: 1, justifyContent: "center", alignItems: "center" }}>
-          <ActivityIndicator size="large" />
-        </View>
-      );
+  const { token } = useAuth();
+  const { isOnline } = useNetworkStatus();
+  const isOnlineRef = useRef(isOnline);
+  const dispatch = useDispatch();
+
+  // // This processPendingActions is for when app is in the foreground.
+  useEffect(() => {
+    isOnlineRef.current = isOnline;
+    if (isOnline) {
+      processActions();
     }
-  
-    return (
+  }, [isOnline]);
+
+  // Set up an interval that runs every 2 minutes.
+  useEffect(() => {
+    const syncInterval = setInterval(() => {
+      processActions();
+    }, 120 * 1000); // 2 minutes
+
+    return () => clearInterval(syncInterval);
+  }, []);
+
+  const processActions = async () => {
+    setTimeout(() => {}, 3000);
+    Alert.alert("Foreground syncing..", "Every minute, it will happen.");
+    if (isOnline) {
+      try {
+        const token = await AsyncStorage.getItem("userToken");
+        if (await checkForSyncLockAvailibility()) {
+          Sentry.addBreadcrumb({
+            category: "foreground-sync",
+            message: "Processing pending actions",
+            level: "info",
+          });
+          dispatch(setSyncing(true));
+          dispatch(setLoading(true));
+          await processPendingActions(token);
+          dispatch(setLoading(false));
+          dispatch(setSyncing(false));
+          await clearSyncLock();
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+        console.error("Foreground sync failed:", error);
+      }
+    }
+  };
+
+  return (
+    <>
+      <LoadingModal />
       <Stack.Navigator screenOptions={{ headerShown: false }}>
         {token ? (
           <>
@@ -34,25 +84,18 @@ const AppNavigator = () => {
               options={{ headerShown: false }}
             />
             <Stack.Screen
-              name="EditRawMaterial"
-              component={UpdateRMScreen}
+              name="ViewRawMaterial"
+              component={ViewRMScreen}
               options={{
                 headerShown: true,
-                headerTitle: "Edit Material",
+                headerTitle: "View Material",
                 headerTintColor: "black",
                 headerTitleAlign: "center",
                 headerStyle: {
                   backgroundColor: "white",
                 },
-                headerLeft: () => (
-                  <TouchableOpacity
-                    onPress={() => navigation.goBack()}
-                    style={{ marginLeft: 8 }}
-                  >
-                    <Ionicons name="arrow-back" size={24} color="black" />
-                  </TouchableOpacity>
-                ),
-                presentation: "modal",
+                headerBackVisible: true,
+                headerBackTitle: "Back",
               }}
             />
             <Stack.Screen
@@ -66,27 +109,28 @@ const AppNavigator = () => {
                 headerStyle: {
                   backgroundColor: "white",
                 },
-                headerLeft: () => (
-                  <TouchableOpacity
-                    onPress={() => navigation.goBack()}
-                    style={{ marginLeft: 8 }}
-                  >
-                    <Ionicons name="arrow-back" size={24} color="black" />
-                  </TouchableOpacity>
-                ),
-                presentation: "modal",
+                headerBackVisible: true,
+                headerBackTitle: "Back",
               }}
             />
           </>
         ) : (
-          <Stack.Screen
-            name="SignIn"
-            component={SignInScreen}
-            options={{ headerShown: false }}
-          />
+          <>
+            <Stack.Screen
+              name="SignIn"
+              component={SignInScreen}
+              options={{ headerShown: false }}
+            />
+            <Stack.Screen
+              name="SignUp"
+              component={SignUpScreen}
+              options={{ headerShown: false }}
+            />
+          </>
         )}
       </Stack.Navigator>
-    );
-  }
+    </>
+  );
+};
 
-export default AppNavigator
+export default AppNavigator;

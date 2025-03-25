@@ -1,21 +1,22 @@
 import React, { useEffect } from "react";
-import { Modal, View, StyleSheet, Animated, Easing } from "react-native";
+import { Modal, View, StyleSheet, Animated, Easing, Text } from "react-native";
+import { useSelector } from "react-redux";
 
-const LoadingModal = ({ visible }) => {
+const LoadingModal = () => {
   const animatedValue = new Animated.Value(0);
+  const syncing = useSelector((state) => state.rawMaterials.syncing);
+  const loading = useSelector((state) => state.rawMaterials.loading);
 
   useEffect(() => {
-    if (visible) {
+    if (loading) {
       Animated.loop(
         Animated.sequence([
-          // Circle to Square
           Animated.timing(animatedValue, {
             toValue: 1,
             duration: 600,
             easing: Easing.inOut(Easing.ease),
             useNativeDriver: false,
           }),
-          // Square to Circle
           Animated.timing(animatedValue, {
             toValue: 0,
             duration: 600,
@@ -25,7 +26,7 @@ const LoadingModal = ({ visible }) => {
         ])
       ).start();
     }
-  }, [visible]);
+  }, [loading, syncing]);
 
   const size = animatedValue.interpolate({
     inputRange: [0, 1],
@@ -43,7 +44,7 @@ const LoadingModal = ({ visible }) => {
   });
 
   return (
-    <Modal transparent visible={visible}>
+    <Modal transparent visible={loading}>
       <View style={styles.container}>
         <View style={styles.modalContent}>
           <Animated.View
@@ -58,12 +59,24 @@ const LoadingModal = ({ visible }) => {
             ]}
           />
         </View>
+        {syncing && (
+          <Text style={styles.syncText}>
+            Syncing... {"\n"}✨ Relax, this may take a while... ✨
+          </Text>
+        )}
       </View>
     </Modal>
   );
 };
 
 const styles = StyleSheet.create({
+  syncText: {
+    color: "black",
+    backgroundColor: "white",
+    padding: 4,
+    marginVertical: 2,
+    borderRadius: 5,
+  },
   container: {
     flex: 1,
     backgroundColor: "rgba(0, 0, 0, 0.5)",

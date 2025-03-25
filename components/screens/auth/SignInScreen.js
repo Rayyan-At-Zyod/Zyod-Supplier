@@ -12,17 +12,22 @@ import {
   Keyboard,
 } from "react-native";
 import { SafeAreaView } from "react-native";
-import { useAuth } from "../../context/AuthContext";
-import LoadingModal from "../../util/LoadingModal";
+import { useDispatch, useSelector } from "react-redux";
+import { setLoading } from "../../../store/rawMaterialsSlice";
+import { useAuth } from "../../../context/AuthContext";
 import { API_ENDPOINTS } from "../../../services/api/endpoints";
+import { useNavigation } from "@react-navigation/native";
+import * as Sentry from "@sentry/react-native";
 
-const SignInScreen = ({ navigation }) => {
+const SignInScreen = () => {
+  const navigation = useNavigation();
   const { signIn } = useAuth();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const passwordRef = useRef();
+  const dispatch = useDispatch();
+  const loading = useSelector((state) => state.rawMaterials.loading);
 
   const handleSignIn = async () => {
     console.log("=== Sign In Attempt ===");
@@ -35,11 +40,10 @@ const SignInScreen = ({ navigation }) => {
       return;
     }
 
-    setLoading(true);
+    dispatch(setLoading(true));
     setError("");
 
     try {
-      console.log("Making API request to /users/login");
       const response = await fetch(API_ENDPOINTS.USER_LOGIN, {
         method: "POST",
         headers: {
@@ -51,12 +55,7 @@ const SignInScreen = ({ navigation }) => {
           PortalId: 3,
         }),
       });
-
-      console.log("Response status:", response.status);
-      console.log("Response OK:", response.ok);
-
       const data = await response.json();
-      console.log("Response data:", JSON.stringify(data, null, 2));
 
       if (!response.ok || !data.success) {
         console.log("API request failed:", data);
@@ -67,32 +66,18 @@ const SignInScreen = ({ navigation }) => {
         throw new Error("Invalid response format");
       }
 
-      console.log("Token received, length:", data.data.token.length);
-      console.log("User data received:", {
-        id: data.data.user.user_id,
-        name: data.data.user.user_FirstName,
-        email: data.data.user.user_email,
-        role: data.data.user.user_role,
-      });
-
       await signIn(data.data.token, data.data.user);
-      console.log("Sign in successful");
     } catch (err) {
-      console.error("=== Sign In Error ===");
-      console.error("Error type:", err.constructor.name);
-      console.error("Error message:", err.message);
-      console.error("Error stack:", err.stack);
       setError(err.message || "An error occurred during sign in");
     } finally {
-      console.log("Sign in attempt completed");
-      setLoading(false);
+      dispatch(setLoading(false));
     }
   };
 
   return (
     <KeyboardAvoidingView
-      behavior={Platform.OS === "ios" ? "padding" : "height"}
-      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 0}
+      behavior="padding"
+      keyboardVerticalOffset={Platform.OS === "ios" ? 64 : 64}
       style={styles.container}
     >
       <TouchableWithoutFeedback onPress={Keyboard.dismiss}>
@@ -107,14 +92,16 @@ const SignInScreen = ({ navigation }) => {
               placeholder="Username"
               value={username}
               onChangeText={setUsername}
-              blurOnSubmit={false}
               onSubmitEditing={() => passwordRef.current?.focus()}
               textContentType="username"
               autoComplete="username"
               autoCapitalize="none"
+              returnKeyType="next"
+              mode="outine"
             />
 
             <TextInput
+              mode="outine"
               ref={passwordRef}
               style={styles.input}
               placeholder="Password"
@@ -124,22 +111,29 @@ const SignInScreen = ({ navigation }) => {
               textContentType="password"
               autoComplete="password"
               autoCapitalize="none"
+              returnKeyType="send"
+              onSubmitEditing={handleSignIn}
             />
 
-            <TouchableOpacity
-              style={styles.button}
-              onPress={handleSignIn}
-              disabled={loading}
-            >
+            <TouchableOpacity style={styles.button} onPress={handleSignIn}>
               {loading ? (
                 <ActivityIndicator color="white" />
               ) : (
                 <Text style={styles.buttonText}>Sign In</Text>
               )}
             </TouchableOpacity>
-          </View>
 
-          <LoadingModal visible={loading} />
+            <TouchableOpacity
+              style={styles.signUpbutton}
+              onPress={() => navigation.navigate("SignUp")}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" />
+              ) : (
+                <Text style={styles.signUpButtonText}>New User? Sign Up.</Text>
+              )}
+            </TouchableOpacity>
+          </View>
         </SafeAreaView>
       </TouchableWithoutFeedback>
     </KeyboardAvoidingView>
@@ -147,6 +141,18 @@ const SignInScreen = ({ navigation }) => {
 };
 
 const styles = StyleSheet.create({
+  signUpbutton: {
+    backgroundColor: "white",
+    padding: 15,
+    borderRadius: 5,
+    alignItems: "center",
+    marginTop: 10,
+  },
+  signUpButtonText: {
+    color: "black",
+    fontSize: 16,
+    fontWeight: "bold",
+  },
   container: {
     flex: 1,
     backgroundColor: "#fff",

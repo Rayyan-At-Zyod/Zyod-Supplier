@@ -1,17 +1,9 @@
-import React, { useEffect, useState, useCallback } from "react";
-import {
-  View,
-  Text,
-  Image,
-  StyleSheet,
-  StatusBar,
-  SafeAreaView,
-  Platform,
-} from "react-native";
+import React, { useEffect } from "react";
+import { View, Image, StyleSheet, SafeAreaView, Platform } from "react-native";
 import { createMaterialTopTabNavigator } from "@react-navigation/material-top-tabs";
 import { StatusBar as ExpoStatusBar } from "expo-status-bar";
 
-import ArchivedTab from "./ArchivedTab";
+import OfflineMaterialsTab from "./OfflineTab";
 import CurrentTab from "./CurrentTab";
 import ZYOD from "../../../assets/ZYOD.jpg";
 
@@ -32,16 +24,19 @@ function HomeScreen() {
           initialRouteName="Current"
           screenOptions={{
             tabBarActiveTintColor: "black",
-            tabBarInactiveTintColor: "gray",
+            tabBarInactiveTintColor: Platform.OS === "ios" ? "gray" : "black",
             tabBarIndicatorStyle: { backgroundColor: "black" },
           }}
         >
           <TopTab.Screen
             name="Current"
-            options={{ title: "Current" }}
+            options={{ title: "Your Materials" }}
             component={CurrentTab}
           />
-          <TopTab.Screen name="Archived" component={ArchivedTab} />
+          <TopTab.Screen
+            name="Offline Materials"
+            component={OfflineMaterialsTab}
+          />
         </TopTab.Navigator>
       </View>
 

@@ -4,11 +4,11 @@
     "slug": "app",
     "version": "1.0.0",
     "orientation": "portrait",
-    "icon": "./assets/icon.png",
+    "icon": "./assets/zyod-thumbnail.png",
     "userInterfaceStyle": "light",
     "newArchEnabled": true,
     "splash": {
-      "image": "./assets/splash-icon.png",
+      "image": "./assets/zyod-thumbnail.png",
       "resizeMode": "contain",
       "backgroundColor": "#ffffff"
     },
@@ -22,8 +22,9 @@
       }
     },
     "android": {
+      "windowSoftInputMode": "adjustResize",
       "adaptiveIcon": {
-        "foregroundImage": "./assets/adaptive-icon.png",
+        "foregroundImage": "./assets/zyod-thumbnail.png",
         "backgroundColor": "#ffffff"
       },
       "package": "com.zyod.supplierapp"
@@ -35,6 +36,26 @@
       "eas": {
         "projectId": "bccf2b3c-8604-4eff-8272-8b77f2d3bf4f"
       }
-    }
+    },
+    "hooks": {
+      "postPublish": [
+        {
+          "file": "sentry-expo/upload-sourcemaps",
+          "config": {
+            "organization": "zyod-jx",
+            "project": "zyod-supplier"
+          }
+        }
+      ]
+    },
+    "plugins": [
+      [
+        "sentry-expo",
+        {
+          "organization": "zyod-jx",
+          "project": "zyod-supplier"
+        }
+      ]
+    ]
   }
 }

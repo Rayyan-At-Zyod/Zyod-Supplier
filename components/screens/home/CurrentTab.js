@@ -2,26 +2,25 @@ import { useSelector, useDispatch } from "react-redux";
 import {
   View,
   Text,
-  Image,
+  TextInput,
   FlatList,
   TouchableOpacity,
   RefreshControl,
+  ActivityIndicator,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import React, { useEffect, useState } from "react";
 import { useNavigation } from "@react-navigation/native";
+import { setLoading, setHasMoreItems } from "../../../store/rawMaterialsSlice";
 
 // internal imports
-import { fetchRawMaterials } from "../../../services/api/fetchRawMaterial.service";
-import {
-  setMaterials,
-  setLoading,
-  addMaterial,
-} from "../../../store/rawMaterialsSlice";
-import { useAuth } from "../../context/AuthContext";
+import { useAuth } from "../../../context/AuthContext";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
-import { currentTabStyles } from "../../styles/CurrentTab.styles";
-import LoadingModal from "../../util/LoadingModal";
+import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
+import { currentTabStyles } from "../../../styles/CurrentTab.styles";
+import { loadRawMaterials } from "../../../services/functions/loadRMs";
+import MaterialCard from "./MaterialCard";
+import * as Sentry from "@sentry/react-native";
 
 function CurrentTab() {
   const { token } = useAuth();
@@ -29,28 +28,26 @@ function CurrentTab() {
   const dispatch = useDispatch();
   const rawMaterials = useSelector((state) => state.rawMaterials.items);
   const isLoading = useSelector((state) => state.rawMaterials.loading);
+  const hasMoreItems = useSelector((state) => state.rawMaterials.hasMoreItems);
   const [refreshing, setRefreshing] = useState(false);
+  const [loadingMore, setLoadingMore] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const PAGE_SIZE = 10;
 
-  // states for image display
+  // states for image display.
   const [selectedImage, setSelectedImage] = useState(null);
   const [isImageModalVisible, setIsImageModalVisible] = useState(false);
+  const [search, setSearch] = useState("");
 
-  const loadRawMaterials = async () => {
-    dispatch(setLoading(true));
-    try {
-      const data = await fetchRawMaterials(token);
-      // console.log("✅ Fetched raw materials:", data.length);
-      dispatch(setMaterials(data.data));
-    } catch (error) {
-      // console.error("❌ Error fetching materials:", error);
-    } finally {
-      dispatch(setLoading(false));
-    }
-  };
+  //offline syncing.
+  const { isOnline } = useNetworkStatus();
 
   const onRefresh = async () => {
     setRefreshing(true);
-    await loadRawMaterials();
+    // Reset pagination when refreshing
+    setCurrentPage(1);
+    dispatch(setHasMoreItems(true));
+    await fetchData(1);
     setRefreshing(false);
   };
 
@@ -59,96 +56,93 @@ function CurrentTab() {
     setIsImageModalVisible(true);
   };
 
+  const fetchData = async (page = 1) => {
+    await loadRawMaterials(
+      token,
+      isOnline,
+      dispatch,
+      page,
+      PAGE_SIZE,
+      page > 1
+    );
+  };
+
+  const loadMoreData = async () => {
+    // Don't load more if already loading, refreshing, or no more items are available...
+    if (isLoading || refreshing || loadingMore || !hasMoreItems || !isOnline)
+      return;
+    setLoadingMore(true);
+    const nextPage = currentPage + 1;
+
+    try {
+      const result = await loadRawMaterials(
+        token,
+        isOnline,
+        dispatch,
+        nextPage,
+        PAGE_SIZE,
+        true
+      );
+      // check for new items exist or not...
+      if (result && result.data && result.data.length > 0) {
+        setCurrentPage(nextPage);
+      } else {
+        dispatch(setHasMoreItems(false));
+      }
+    } catch (error) {
+      console.error("Error loading more data:", error);
+    } finally {
+      setLoadingMore(false);
+    }
+  };
+
   useEffect(() => {
-    // if (__DEV__) return;
-    console.log("🔄 useEffect called: Fetching raw materials");
-    loadRawMaterials();
+    fetchData();
   }, []);
 
   const renderItem = ({ item }) => {
+    return <MaterialCard item={item} handleImagePress={handleImagePress} />;
+  };
+
+  const renderFooter = () => {
+    if (!loadingMore) return null;
     return (
-      <View style={currentTabStyles.card}>
-        {/* Edit button */}
-        <TouchableOpacity
-          style={currentTabStyles.editButton}
-          onPress={() =>
-            navigation.navigate("EditRawMaterial", {
-              material: item,
-            })
-          }
-        >
-          <Ionicons name="pencil" size={18} color="black" />
-        </TouchableOpacity>
-
-        <View style={currentTabStyles.topContainer}>
-          {/* Main image */}
-          {item.rmVariations?.[0]?.rmImage && (
-            <TouchableOpacity
-              onPress={() => handleImagePress(item.rmVariations[0].rmImage)}
-            >
-              <Image
-                source={{ uri: item.rmVariations[0].rmImage }}
-                style={currentTabStyles.materialImage}
-              />
-            </TouchableOpacity>
-          )}
-
-          {/* Main info container */}
-          <View style={currentTabStyles.mainInfoContainer}>
-            <View>
-              <Text style={currentTabStyles.materialName}>
-                {item.rmVariations[0]?.name || "No Name"}
-              </Text>
-              <Text style={currentTabStyles.description}>
-                Description:{" "}
-                {item.rmVariations ? item.rmVariations[0].description : "N/A"}
-              </Text>
-              <Text style={currentTabStyles.description}>
-                Available Quantity:{" "}
-                {item.rmVariations[0].availableQuantity
-                  ? item.rmVariations[0].availableQuantity
-                  : "N/A"}
-              </Text>
-            </View>
-            <Text style={currentTabStyles.variationsTitle}>Variations:-</Text>
-          </View>
-        </View>
-
-        {/* Variations section */}
-        <View style={currentTabStyles.variationsContainer}>
-          {item.rmVariations.map((variation) => (
-            <View
-              key={variation.rmVariationId}
-              style={currentTabStyles.variationItem}
-            >
-              <TouchableOpacity
-                onPress={() => handleImagePress(variation.rmImage)}
-              >
-                <Image
-                  source={{ uri: variation.rmImage }}
-                  style={currentTabStyles.variationImage}
-                />
-              </TouchableOpacity>
-              <Text style={currentTabStyles.variationText}>
-                Width: {variation.width} m{"\n"}
-                {variation.availableQuantity
-                  ? `Stock: ${variation.availableQuantity} ${variation.unitCode.toLowerCase()}`
-                  : "Out of Stock"}
-                {"\n"}
-                Price: ₹{variation.generalPrice}/{variation.unitCode}
-              </Text>
-            </View>
-          ))}
-        </View>
+      <View style={currentTabStyles.footerLoader}>
+        <ActivityIndicator size="large" color="black" />
+        <Text style={currentTabStyles.loadingMoreText}>
+          Loading More Items...
+        </Text>
       </View>
     );
   };
 
+  const filteredMaterials = rawMaterials.filter((item) =>
+    item.rmVariations.some((variation) =>
+      variation?.name?.toLowerCase().includes(search.toLowerCase())
+    )
+  );
+
   return (
     <View style={currentTabStyles.container}>
-      {isLoading && <LoadingModal />}
+      <View style={currentTabStyles.searchContainer}>
+        <Ionicons
+          name="search"
+          size={20}
+          color="gray"
+          style={currentTabStyles.searchIcon}
+        />
+        <TextInput
+          placeholder="Search..."
+          value={search}
+          onChangeText={(text) => setSearch(text)}
+          returnKeyType="search"
+          style={currentTabStyles.searchInput}
+          allowFontScaling={false}
+        />
+      </View>
       <FlatList
-        data={rawMaterials}
+        // data={rawMaterials}
+        data={filteredMaterials}
         renderItem={renderItem}
         keyExtractor={(item) => item.greigeId.toString()}
         contentContainerStyle={currentTabStyles.listContainer}
@@ -162,6 +156,9 @@ function CurrentTab() {
             progressBackgroundColor="white"
           />
         }
+        onEndReached={loadMoreData}
+        onEndReachedThreshold={0.3}
+        ListFooterComponent={renderFooter}
       />
 
       <TouchableOpacity
