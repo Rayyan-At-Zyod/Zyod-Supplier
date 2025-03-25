@@ -262,7 +262,6 @@ function AddRMScreen() {
         const newCache = (await loadFromCache("cachedData")) || [];
         console.log("items in cache", newCache);
       } else {
-        console.error("Hello rayyan. queuing action coz we are offline.");
         await queuePendingAction({
           type: "ADD",
           payload,
