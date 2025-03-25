@@ -25,7 +25,7 @@
       "windowSoftInputMode": "adjustResize",
       "adaptiveIcon": {
         "foregroundImage": "./assets/zyod-thumbnail.png",
-        "backgroundColor": "#ffffff"
+        "backgroundColor": "#FFFFFF"
       },
       "package": "com.zyod.supplierapp"
     },
