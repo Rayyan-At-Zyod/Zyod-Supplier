@@ -168,7 +168,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
       onPress={() => navigation.navigate("ViewRawMaterial", { material: item })}
     >
       {/* View button */}
-      {!isEditing && (
+      {/* {!isEditing && (
         <TouchableOpacity
           style={currentTabStyles.viewButton}
           onPress={() =>
@@ -179,13 +179,13 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
         >
           <Ionicons name="eye" size={20} color="black" />
         </TouchableOpacity>
-      )}
+      )} */}
 
       {/* Edit button & Variants Toggle */}
       {!isEditing && (
         <>
           <TouchableOpacity
-            style={currentTabStyles.editButton}
+            style={currentTabStyles.viewButton}
             onPress={() => {
               setIsEditing(true);
               setShowVariants(false);
@@ -295,7 +295,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
                 keyboardType="number-pad"
                 allowFontScaling={false}
               />
-              <View style={currentTabStyles.stockButtonsContainer}>
+              {/* <View style={currentTabStyles.stockButtonsContainer}>
                 <TouchableOpacity
                   style={[
                     currentTabStyles.stockButton,
@@ -332,7 +332,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
                     Remove
                   </Text>
                 </TouchableOpacity>
-              </View>
+              </View> */}
               <TouchableOpacity
                 style={currentTabStyles.updateButton}
                 onPress={handleStockUpdate}

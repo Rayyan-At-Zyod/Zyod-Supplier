@@ -10,17 +10,17 @@ import {
 import {
   clearPendingActions,
   processCurrentAction,
-  processPendingActions,
 } from "../../../services/offline/storage.service";
 import { useNetworkStatus } from "../../../hooks/useNetworkStatus";
 import MaterialCard from "./MaterialCard";
 import { useAuth } from "../../../context/AuthContext";
 import { useDispatch, useSelector } from "react-redux";
-import { setLoading } from "../../../store/rawMaterialsSlice";
+import { setLoading, setSyncing } from "../../../store/rawMaterialsSlice";
 import { offlineTabStyles } from "../../../styles/OfflineTab.styles";
 import { loadPendingMaterials } from "../../../services/functions/loadPendingMaterials";
 import ImageDisplayModal from "../../util/ImageDisplayModal";
 import * as Sentry from "@sentry/react-native";
+import { processPendingActions } from "../../../services/offline/process-storage";
 
 const OfflineMaterialsTab = () => {
   const dispatch = useDispatch();
@@ -85,11 +85,13 @@ const OfflineMaterialsTab = () => {
             onPress={async () => {
               try {
                 dispatch(setLoading(true));
+                dispatch(setSyncing(true));
                 await processPendingActions(token);
                 await loadPendingMaterials(dispatch);
               } catch (error) {
                 console.error("Failed to process all items:", error);
               } finally {
+                dispatch(setSyncing(false));
                 dispatch(setLoading(false));
               }
             }}

@@ -14,12 +14,13 @@ import { useDispatch } from "react-redux";
 import * as Sentry from "@sentry/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { addTime, setLoading, setSyncing } from "../../store/rawMaterialsSlice";
-import { processPendingActions } from "../../services/offline/storage.service";
 import {
   checkForSyncLockAvailibility,
   clearSyncLock,
 } from "../../services/offline/SERVICES/new-background-task.service";
 import { sampleMapped } from "../../services/offline/sampleMapped";
+import { processPendingActions } from "../../services/offline/process-storage";
+import { loadRawMaterials } from "../../services/functions/loadRMs";
 
 const Stack = createNativeStackNavigator();
 
@@ -47,8 +48,6 @@ const AppNavigator = () => {
   }, []);
 
   const processActions = async () => {
-    setTimeout(() => {}, 3000);
-    Alert.alert("Foreground syncing..", "Every minute, it will happen.");
     if (isOnline) {
       try {
         const token = await AsyncStorage.getItem("userToken");
@@ -58,11 +57,18 @@ const AppNavigator = () => {
             message: "Processing pending actions",
             level: "info",
           });
-          dispatch(setSyncing(true));
-          dispatch(setLoading(true));
-          await processPendingActions(token);
-          dispatch(setLoading(false));
-          dispatch(setSyncing(false));
+          const pendActsString = await AsyncStorage.getItem("pendingActions");
+          const pendingActions = pendActsString
+            ? JSON.parse(pendActsString)
+            : [];
+          if (pendingActions.length > 0) {
+            dispatch(setSyncing(true));
+            dispatch(setLoading(true));
+            await processPendingActions(token);
+            await loadRawMaterials(token, true, dispatch);
+            dispatch(setLoading(false));
+            dispatch(setSyncing(false));
+          }
           await clearSyncLock();
         }
       } catch (error) {
