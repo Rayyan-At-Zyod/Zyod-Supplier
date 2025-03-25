@@ -15,7 +15,6 @@ import { addTime, setTime } from "./store/rawMaterialsSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { registerInternetAvailabilitySyncingTask } from "./services/offline/SERVICES/new-background-task.service";
 import { useNetworkStatus } from "./hooks/useNetworkStatus";
-import { checkForSyncLockAvailibility } from "./services/offline/SERVICES/bg-outside-ram.service";
 
 Sentry.init({
   dsn: "https://b964b86e7db7bf5d4f1fed35e7194041@o4508969385852928.ingest.de.sentry.io/4508969386377296",
@@ -99,8 +98,7 @@ export default function App() {
       <AuthProvider>
         <NavigationContainer>
           <PaperProvider>
-            <Timer />
-            {/* <Todos /> */}
+            {/* <Timer /> */}
             <AppNavigator />
           </PaperProvider>
         </NavigationContainer>
