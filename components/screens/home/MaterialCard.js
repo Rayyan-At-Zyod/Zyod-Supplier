@@ -36,6 +36,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
   const selectedVariation = item.rmVariations[selectedVariationIndex];
 
   const handleStockUpdate = async (makeEmpty = false) => {
+    setOperationType("STOCK IN");
     if (!makeEmpty && (!stockQuantity || stockQuantity.trim() === "")) {
       Alert.alert("Error", "Please enter a valid quantity");
       return;
@@ -57,10 +58,10 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           ? currentQuantity + quantity
           : currentQuantity - quantity;
 
-      if (makeEmpty) {
-        setOperationType("STOCK OUT");
-        setStockQuantity(currentQuantity);
-      }
+      // if (makeEmpty) {
+      //   setOperationType("STOCK OUT");
+      //   setStockQuantity(currentQuantity);
+      // }
       if (currentQuantity < quantity && operationType === "STOCK OUT") {
         Alert.alert("Error", "You can't decrease stock to negative values.");
         return;
