@@ -55,9 +55,6 @@ TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
     try {
       // Process pending actions
 
-      let time = AsyncStorage.getItem("time");
-      await AsyncStorage.setItem("time", (parseInt(time) + 200).toString());
-
       store.dispatch(setLoading(true));
       store.dispatch(setSyncing(true));
       await processPendingActions(token);
