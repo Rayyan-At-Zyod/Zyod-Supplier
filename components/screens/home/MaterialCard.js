@@ -159,12 +159,13 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
   };
 
   return (
-    <View
+    <TouchableOpacity
       style={
         showVariants && !isEditing
           ? [currentTabStyles.card, currentTabStyles.cardWithVariations]
           : currentTabStyles.card
       }
+      onPress={() => navigation.navigate("ViewRawMaterial", { material: item })}
     >
       {/* View button */}
       {!isEditing && (
@@ -365,7 +366,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           </View>
         </View>
       )}
-    </View>
+    </TouchableOpacity>
   );
 };
 

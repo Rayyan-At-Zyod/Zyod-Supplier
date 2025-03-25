@@ -1,6 +1,5 @@
-import React from "react";
-import { Ionicons } from "@expo/vector-icons";
-import { TouchableOpacity, Text } from "react-native";
+import React, { useEffect, useRef } from "react";
+import { Alert } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { useAuth } from "../../context/AuthContext";
@@ -10,11 +9,68 @@ import SignInScreen from "../screens/auth/SignInScreen";
 import HomeNavigatorScreen from "./HomeNavigator";
 import LoadingModal from "../util/LoadingModal";
 import SignUpScreen from "../screens/auth/SignUpScreen";
+import { useNetworkStatus } from "../../hooks/useNetworkStatus";
+import { useDispatch } from "react-redux";
+import * as Sentry from "@sentry/react-native";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { addTime, setLoading, setSyncing } from "../../store/rawMaterialsSlice";
+import { processPendingActions } from "../../services/offline/storage.service";
+import {
+  checkForSyncLockAvailibility,
+  clearSyncLock,
+} from "../../services/offline/SERVICES/new-background-task.service";
+import { sampleMapped } from "../../services/offline/sampleMapped";
 
 const Stack = createNativeStackNavigator();
 
 const AppNavigator = () => {
   const { token } = useAuth();
+  const { isOnline } = useNetworkStatus();
+  const isOnlineRef = useRef(isOnline);
+  const dispatch = useDispatch();
+
+  // // This processPendingActions is for when app is in the foreground.
+  useEffect(() => {
+    isOnlineRef.current = isOnline;
+    if (isOnline) {
+      processActions();
+    }
+  }, [isOnline]);
+
+  // Set up an interval that runs every 2 minutes.
+  useEffect(() => {
+    const syncInterval = setInterval(() => {
+      processActions();
+    }, 120 * 1000); // 2 minutes
+
+    return () => clearInterval(syncInterval);
+  }, []);
+
+  const processActions = async () => {
+    setTimeout(() => {}, 3000);
+    Alert.alert("Foreground syncing..", "Every minute, it will happen.");
+    if (isOnline) {
+      try {
+        const token = await AsyncStorage.getItem("userToken");
+        if (await checkForSyncLockAvailibility()) {
+          Sentry.addBreadcrumb({
+            category: "foreground-sync",
+            message: "Processing pending actions",
+            level: "info",
+          });
+          dispatch(setSyncing(true));
+          dispatch(setLoading(true));
+          await processPendingActions(token);
+          dispatch(setLoading(false));
+          dispatch(setSyncing(false));
+          await clearSyncLock();
+        }
+      } catch (error) {
+        Sentry.captureException(error);
+        console.error("Foreground sync failed:", error);
+      }
+    }
+  };
 
   return (
     <>

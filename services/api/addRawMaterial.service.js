@@ -3,11 +3,6 @@ import { convertImageToBase64 } from "../utilities/imageBase64Converter";
 import { API_ENDPOINTS } from "./endpoints";
 
 export const addRawMaterial = async (payload, token) => {
-  Sentry.captureMessage(
-    "Hello Rayyan, we r online, hitting API to add item.",
-    "info"
-  );
-
   try {
     // Convert images in RMsData
     const newRMsData = await Promise.all(
@@ -53,8 +48,9 @@ export const addRawMaterial = async (payload, token) => {
     if (!response.ok) {
       const errorMessage = data.message || "Failed to add raw material";
       throw new Error(errorMessage);
+    } else {
+      Sentry.captureMessage("Error during API hit for add..");
     }
-
     return data;
   } catch (error) {
     throw error;

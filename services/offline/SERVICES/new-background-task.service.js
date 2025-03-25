@@ -1,16 +1,18 @@
 import * as BackgroundFetch from "expo-background-fetch";
 import * as TaskManager from "expo-task-manager";
-import NetInfo from "@react-native-community/netinfo";
-import AsyncStorage from "@react-native-async-storage/async-storage";
-import { processPendingActions } from "../storage.service";
 import * as Sentry from "@sentry/react-native";
+import NetInfo from "@react-native-community/netinfo";
+import { processPendingActionsInBackground } from "../process-storage";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { store } from "../../../store/store";
+import { setLoading, setSyncing } from "../../../store/rawMaterialsSlice";
 
 const INTERNET_AVAILABILITY_TASK = "internet-availability-task";
 const SYNC_LOCK_KEY = "sync_in_progress";
 const LOCK_DURATION = 240000; // 4 times the background task interval = 4 minutes. ...
 
 // Helper to manage sync lock
-const checkForSyncLockAvailibility = async () => {
+export const checkForSyncLockAvailibility = async () => {
   try {
     const lastLock = await AsyncStorage.getItem(SYNC_LOCK_KEY);
     if (lastLock && Date.now() - parseInt(lastLock) < LOCK_DURATION) {
@@ -24,7 +26,7 @@ const checkForSyncLockAvailibility = async () => {
   }
 };
 
-const clearSyncLock = async () => {
+export const clearSyncLock = async () => {
   try {
     await AsyncStorage.removeItem(SYNC_LOCK_KEY);
   } catch (error) {
@@ -34,12 +36,6 @@ const clearSyncLock = async () => {
 
 TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
   try {
-    Sentry.addBreadcrumb({
-      category: "internet-availability",
-      message: "Task triggered",
-      level: "info",
-    });
-
     const netInfo = await NetInfo.fetch();
     const isConnected = netInfo.isConnected;
 
@@ -58,28 +54,22 @@ TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
 
     try {
       // Process pending actions
-      Sentry.captureMessage("processing pending actions.");
-      await processPendingActions(token);
 
-      // Store the time update to be applied when app becomes active
-      const previousTime = await AsyncStorage.getItem("time");
-      const newTime = (parseInt(previousTime || "0") + 1500).toString();
-      await AsyncStorage.setItem("time", newTime);
-      await AsyncStorage.setItem("pending_time_update", "true");
+      let time = AsyncStorage.getItem("time");
+      await AsyncStorage.setItem("time", (parseInt(time) + 200).toString());
 
-      Sentry.addBreadcrumb({
-        category: "internet-availability",
-        message: "Successfully processed pending actions",
-        level: "info",
-      });
-
+      store.dispatch(setLoading(true));
+      store.dispatch(setSyncing(true));
+      await processPendingActionsInBackground(token);
+      store.dispatch(setLoading(false));
+      store.dispatch(setSyncing(false));
       return BackgroundFetch.BackgroundFetchResult.NewData;
     } finally {
       await clearSyncLock();
     }
   } catch (error) {
     await clearSyncLock();
-    Sentry.captureException(`Error in bg task: ${error.toString()}`);
+    Sentry.captureException(`1. - 11. Error in bg task: ${error.toString()}`);
     return BackgroundFetch.BackgroundFetchResult.Failed;
   }
 });

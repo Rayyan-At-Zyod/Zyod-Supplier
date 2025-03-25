@@ -12,54 +12,6 @@ import { updateRM } from "../api/updateRmStock.service";
 import { loadPendingMaterials } from "../functions/loadPendingMaterials";
 import { loadRawMaterials } from "../functions/loadRMs";
 
-export const saveToCache = async (key, data) => {
-  try {
-    await AsyncStorage.setItem(key, JSON.stringify(data));
-  } catch (error) {
-    Sentry.captureException(error);
-    console.error(`Failed to save to cache (${key}):`, error);
-  }
-};
-
-export const loadFromCache = async (key) => {
-  try {
-    const data = await AsyncStorage.getItem(key);
-    return data ? JSON.parse(data) : null;
-  } catch (error) {
-    Sentry.captureException(error);
-    console.error(`Failed to load from cache (${key}):`, error);
-    return null;
-  }
-};
-
-export const queuePendingAction = async (action) => {
-  try {
-    const pendingActions = (await loadFromCache("pendingActions")) || [];
-    const actionWithId = {
-      ...action,
-      id: uuidv4(), // Using 'id' instead of 'appDbId'
-      timestamp: Date.now(),
-    };
-    await saveToCache("pendingActions", [...pendingActions, actionWithId]);
-    store.dispatch(addOfflineMaterial(actionWithId));
-    return actionWithId.id;
-  } catch (error) {
-    Sentry.captureException(error);
-    console.error("Error queuing pending action:", error);
-    throw error;
-  }
-};
-
-export const clearPendingActions = async () => {
-  try {
-    console.log("looks like ev worked.");
-    await AsyncStorage.removeItem("pendingActions");
-  } catch (error) {
-    Sentry.captureException(error);
-    console.error("Failed to clear pending actions:", error);
-  }
-};
-
 export const updateAnOnlineMaterialAction = async (
   theGreigeId,
   theRmVariationId,
@@ -233,6 +185,54 @@ export const updateAnOfflineMaterialAction = async (
   }
 };
 
+export const saveToCache = async (key, data) => {
+  try {
+    await AsyncStorage.setItem(key, JSON.stringify(data));
+  } catch (error) {
+    Sentry.captureException(error);
+    console.error(`Failed to save to cache (${key}):`, error);
+  }
+};
+
+export const loadFromCache = async (key) => {
+  try {
+    const data = await AsyncStorage.getItem(key);
+    return data ? JSON.parse(data) : null;
+  } catch (error) {
+    Sentry.captureException(error);
+    console.error(`Failed to load from cache (${key}):`, error);
+    return null;
+  }
+};
+
+export const queuePendingAction = async (action) => {
+  try {
+    const pendingActions = (await loadFromCache("pendingActions")) || [];
+    const actionWithId = {
+      ...action,
+      id: uuidv4(), // Using 'id' instead of 'appDbId'
+      timestamp: Date.now(),
+    };
+    await saveToCache("pendingActions", [...pendingActions, actionWithId]);
+    store.dispatch(addOfflineMaterial(actionWithId));
+    return actionWithId.id;
+  } catch (error) {
+    Sentry.captureException(error);
+    console.error("Error queuing pending action:", error);
+    throw error;
+  }
+};
+
+export const clearPendingActions = async () => {
+  try {
+    await AsyncStorage.removeItem("pendingActions");
+    console.log("looks like ev worked.");
+  } catch (error) {
+    Sentry.captureException(error);
+    console.error("Failed to clear pending actions:", error);
+  }
+};
+
 /**
  * Process all pending actions
  */
@@ -240,9 +240,11 @@ export const processPendingActions = async (token) => {
   try {
     const pendingActions = (await loadFromCache("pendingActions")) || [];
     for (const action of pendingActions) {
-      await processCurrentAction(action.id, token);
+      Sentry.captureMessage("2. we have an action.");
+      await processCurrentAction(pendingActions, action, token);
     }
   } catch (error) {
+    Sentry.captureMessage("2. - 10.? Error in processPendingActions.");
     throw error;
   }
 };
@@ -250,48 +252,46 @@ export const processPendingActions = async (token) => {
 /**
  * Process a single pending action by its id
  */
-export const processCurrentAction = async (id, token) => {
+export const processCurrentAction = async (
+  pendingActions,
+  actionToProcess,
+  token
+) => {
   try {
-    // store.dispatch(setSyncing(true));
-    const pendingActions = (await loadFromCache("pendingActions")) || [];
-    const actionToProcess = pendingActions.find((action) => action.id === id);
-
-    if (!actionToProcess) {
-      const error = new Error(`No pending action found with id: ${id}`);
-      Sentry.captureException(error);
-      console.error(error);
-      return;
-    }
-
+    Sentry.captureMessage("3. we are doing the action.");
     if (actionToProcess.type === "ADD") {
+      Sentry.captureMessage("4. we are going for hit Add.");
       const response = await addRawMaterial(actionToProcess.payload, token);
       if (response) {
-        doIfSuccess(pendingActions, id, token);
+        doIfSuccess(pendingActions, actionToProcess.id, token);
       }
     } else if (actionToProcess.type === "UPDATE") {
       const response = await updateRM(actionToProcess.payload, token);
       if (response) {
-        doIfSuccess(pendingActions, id, token);
+        doIfSuccess(pendingActions, actionToProcess.id, token);
       }
     }
   } catch (error) {
+    Sentry.captureMessage("3. - 10.? Error in processCurrentAction.");
     throw error;
   }
 };
 
 const doIfSuccess = async (pendingActions, id, token) => {
   try {
+    Sentry.captureMessage("7. we had success.");
     const updatedPendingActions = pendingActions.filter(
       (action) => action.id !== id
     );
     await saveToCache("pendingActions", updatedPendingActions);
+    Sentry.captureMessage("8. Updated your pedning actions.");
     // Reload the materials to update the UI
     await loadRawMaterials(token, true, store.dispatch);
+    Sentry.captureMessage("9. WILL NOT LOAD TO online materials.");
     await loadPendingMaterials(store.dispatch);
-    Sentry.captureMessage(
-      "API hit success. Updated your pending actions. Loaded online materials. Loaded offline materials."
-    );
+    Sentry.captureMessage("10. WILL LOAD offline materials.");
   } catch (err) {
+    Sentry.captureMessage("7. - 10.? Error in doIfSuccess.");
     throw err;
   }
 };

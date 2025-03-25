@@ -41,9 +41,10 @@ export const loadRawMaterials = async (
       // Return data for the caller to check if there are more items
       return data;
     } catch (error) {
-      console.error("❌ Online but error fetching materials:", error);
+      Sentry.captureException(
+        `❌ Online but error fetching materials: ${error}`
+      );
       const cachedData = await loadFromCache("cachedData");
-      console.log("Loaded from cache.\n", cachedData);
       if (cachedData) {
         dispatch(setMaterials(cachedData));
       }
@@ -52,7 +53,7 @@ export const loadRawMaterials = async (
       dispatch(setLoading(false));
     }
   } else {
-    console.error("❌✅ Offline. Loading from cache...");
+    Sentry.captureMessage("❌✅ Offline. Loading from cache...");
     const cachedData = await loadFromCache("cachedData");
     if (cachedData) {
       dispatch(setMaterials(cachedData));
