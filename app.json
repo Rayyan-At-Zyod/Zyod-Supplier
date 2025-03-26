@@ -1,7 +1,7 @@
 {
   "expo": {
     "name": "Zyod Supplier App",
-    "slug": "zyod-supplier-app",
+    "slug": "app",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/zyod-thumbnail.png",

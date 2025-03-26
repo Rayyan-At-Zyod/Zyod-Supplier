@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+gimport React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { Alert, Text, View } from "react-native";
 import { AuthProvider } from "./context/AuthContext";
