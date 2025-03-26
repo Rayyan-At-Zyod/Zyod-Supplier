@@ -1,4 +1,4 @@
-gimport React, { useEffect } from "react";
+import React, { useEffect } from "react";
 import { NavigationContainer } from "@react-navigation/native";
 import { Alert, Text, View } from "react-native";
 import { AuthProvider } from "./context/AuthContext";
@@ -14,7 +14,7 @@ import * as Sentry from "@sentry/react-native";
 import { addTime, setTime } from "./store/rawMaterialsSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { registerInternetAvailabilitySyncingTask } from "./services/offline/SERVICES/new-background-task.service";
-import { useNetworkStatus } from "./hooks/useNetworkStatus";
+import { AppState } from "react-native";
 
 Sentry.init({
   dsn: "https://b964b86e7db7bf5d4f1fed35e7194041@o4508969385852928.ingest.de.sentry.io/4508969386377296",
@@ -31,10 +31,9 @@ function Timer() {
     const loadTimeFromDb = async () => {
       try {
         const dbTimer = await AsyncStorage.getItem("time");
-        console.log("the db timer form async store is", dbTimer);
         const initialTime =
           dbTimer !== null && !isNaN(dbTimer) ? parseInt(dbTimer) : 1;
-        if (isNaN(dbTimer)) await AsyncStorage.setItem("time", "1");
+        if (isNaN(dbTimer)) await AsyncStorage.setItem("time", "1000");
         dispatch(setTime(initialTime));
       } catch (err) {
         console.error("Error while initialising time", err);
@@ -43,29 +42,8 @@ function Timer() {
     loadTimeFromDb();
   }, [dispatch]);
 
-  // This timer updates every second when the app is in the foreground.
   useEffect(() => {
-    const interval = setInterval(() => {
-      dispatch(addTime(1));
-    }, 1000);
-    return () => clearInterval(interval);
-  }, [dispatch]);
-
-  // Update AsyncStorage whenever 'time' changes.
-  useEffect(() => {
-    const setTimeInDb = async () => {
-      try {
-        await AsyncStorage.setItem("time", time.toString());
-      } catch (error) {
-        console.error("Error setting time in AsyncStorage", error);
-      }
-    };
-    setTimeInDb();
-  }, [time]);
-
-  // For display purposes, read the current AsyncStorage value.
-  useEffect(() => {
-    const getTimeFromDb = async () => {
+    const fetchTime = async () => {
       try {
         const value = await AsyncStorage.getItem("time");
         setStoredTime(value);
@@ -73,16 +51,25 @@ function Timer() {
         console.error("Error getting time from AsyncStorage", error);
       }
     };
-    getTimeFromDb();
-  }, [time]);
+
+    const handleAppStateChange = (nextAppState) => {
+      if (nextAppState === "active") {
+        fetchTime();
+      }
+    };
+
+    AppState.addEventListener("change", handleAppStateChange);
+    fetchTime(); // Initial fetch
+
+    return () => {
+      AppState.removeEventListener("change", handleAppStateChange);
+    };
+  }, []);
 
   return (
     <View>
       <Text style={{ textAlign: "center", padding: 5 }}>
         Stored Time: {storedTime}
-      </Text>
-      <Text style={{ textAlign: "center", padding: 5 }}>
-        Redux Time: {time}
       </Text>
     </View>
   );
@@ -98,7 +85,7 @@ export default function App() {
       <AuthProvider>
         <NavigationContainer>
           <PaperProvider>
-            {/* <Timer /> */}
+            <Timer />
             <AppNavigator />
           </PaperProvider>
         </NavigationContainer>

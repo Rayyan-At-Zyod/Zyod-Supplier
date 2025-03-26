@@ -42,8 +42,6 @@ export const processPendingActions = async (token) => {
         const newCache = [...oldCache, action.temporaryDisplay];
         // Sentry.captureMessage(`API hit.`);
         await saveToCache("cachedData", newCache);
-        Sentry.captureMessage(`saved new cache.`);
-
         // Sentry.captureMessage(`API hit.`);
         Sentry.captureMessage(
           `Done individual action. ${action?.temporaryDisplay?.rmVariations[0].name}`

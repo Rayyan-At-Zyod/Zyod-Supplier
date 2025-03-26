@@ -58,6 +58,10 @@ TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
       // store.dispatch(setLoading(true));
       // store.dispatch(setSyncing(true));
       await processPendingActions(token);
+      let time = await AsyncStorage.getItem("time");
+      time = time ? parseInt(time) + 1 : 0;
+      await AsyncStorage.setItem("time", time.toString());
+
       // store.dispatch(setLoading(false));
       // store.dispatch(setSyncing(false));
       return BackgroundFetch.BackgroundFetchResult.NewData;
@@ -74,7 +78,7 @@ TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
 export async function registerInternetAvailabilitySyncingTask() {
   try {
     await BackgroundFetch.registerTaskAsync(INTERNET_AVAILABILITY_TASK, {
-      minimumInterval: 60,
+      minimumInterval: 10,
       stopOnTerminate: false,
       startOnBoot: true,
     });
