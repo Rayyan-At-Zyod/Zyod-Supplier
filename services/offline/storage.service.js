@@ -141,8 +141,8 @@ export const updateAnOfflineMaterialAction = async (
               const oldStockQuantity = Number.parseInt(
                 action.payload.itemDetailsArray[variationIndex].oldStockQuantity
               );
-              // const newOperationType =
-              //   newQuantity - oldStockQuantity >= 0 ? "STOCK IN" : "STOCK OUT";
+              const newOperationType =
+                newQuantity - oldStockQuantity >= 0 ? "STOCK IN" : "STOCK OUT";
               const newQtyChange = newQuantity - oldStockQuantity;
               return {
                 ...variation,

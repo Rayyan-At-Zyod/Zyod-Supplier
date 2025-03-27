@@ -182,7 +182,7 @@ export const currentTabStyles = StyleSheet.create({
   },
   stockButtonsContainer: {
     flexDirection: "row",
-    justifyContent: "space-between",
+    justifyContent: "space-around",
     gap: 8,
   },
   stockButton: {
@@ -202,12 +202,12 @@ export const currentTabStyles = StyleSheet.create({
   activeStockButtonText: { color: "white" },
   stockOutButton: {
     position: "absolute",
-    bottom: 5,
-    left: 2,
+    bottom: 4,
+    left: 15,
     margin: 12,
     zIndex: 1,
     backgroundColor: "rgba(255, 255, 255, 0.9)",
-    padding: 10,
+    padding: 9,
     borderRadius: 18,
     flexDirection: "row",
     gap: 5,

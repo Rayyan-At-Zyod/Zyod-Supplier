@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/react-native";
 import { convertImageToBase64 } from "../utilities/imageBase64Converter";
 import { API_ENDPOINTS } from "./endpoints";
 
-export const addRawMaterial = async (payload, token) => {
+export async function addRawMaterial (payload, token) {
   try {
     // Convert images in RMsData
     const newRMsData = await Promise.all(
@@ -37,6 +37,21 @@ export const addRawMaterial = async (payload, token) => {
       },
     };
     Sentry.captureMessage("Hello rayyan -3");
+
+    const resp = await fetch(
+      "https://67e5334e18194932a5850708.mockapi.io/Notes",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          name: "Rayyan",
+          createdAt: Date.now().toString(),
+        }),
+      }
+    );
+    Sentry.captureMessage("Hello rayyan -3.5!!!");
 
     const response = await fetch(API_ENDPOINTS.ADD_RAW_MATERIAL, {
       method: "POST",

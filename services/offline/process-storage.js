@@ -9,7 +9,7 @@ import { updateRM } from "../api/updateRmStock.service";
 import { loadFromCache, saveToCache } from "./storage.service";
 import * as Sentry from "@sentry/react-native";
 
-export const processPendingActions = async (token) => {
+export async function processPendingActions(token) {
   try {
     // store.dispatch(setLoading(true));
     // store.dispatch(setSyncing(true));
@@ -80,4 +80,4 @@ export const processPendingActions = async (token) => {
     //   store.dispatch(setLoading(false));
     //   store.dispatch(setSyncing(false));
   }
-};
+}

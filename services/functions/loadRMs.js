@@ -18,7 +18,7 @@ export const loadRawMaterials = async (
 ) => {
   if (isOnline) {
     try {
-      if (!shouldAppend) dispatch(setLoading(true));
+      // if (!shouldAppend) dispatch(setLoading(true));
       const data = await fetchRawMaterials(token, page, size);
 
       // If this is the first page, save to cache
@@ -49,8 +49,8 @@ export const loadRawMaterials = async (
         dispatch(setMaterials(cachedData));
       }
       return null;
-    } finally {
-      dispatch(setLoading(false));
+    // } finally {
+    //   dispatch(setLoading(false));
     }
   } else {
     // Sentry.captureMessage("❌✅ Offline. Loading from cache...");

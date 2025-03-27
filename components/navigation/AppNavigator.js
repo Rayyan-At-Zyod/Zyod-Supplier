@@ -18,7 +18,6 @@ import {
   checkForSyncLockAvailibility,
   clearSyncLock,
 } from "../../services/offline/SERVICES/new-background-task.service";
-import { sampleMapped } from "../../services/offline/sampleMapped";
 import { processPendingActions } from "../../services/offline/process-storage";
 import { loadRawMaterials } from "../../services/functions/loadRMs";
 
@@ -31,12 +30,12 @@ const AppNavigator = () => {
   const dispatch = useDispatch();
 
   // // This processPendingActions is for when app is in the foreground.
-  useEffect(() => {
-    isOnlineRef.current = isOnline;
-    if (isOnline) {
-      processActions();
-    }
-  }, [isOnline]);
+  // useEffect(() => {
+  //   isOnlineRef.current = isOnline;
+  //   if (isOnline) {
+  //     processActions();
+  //   }
+  // }, [isOnline]);
 
   // Set up an interval that runs every 2 minutes.
   useEffect(() => {
@@ -44,8 +43,12 @@ const AppNavigator = () => {
       if (isOnline) processActions();
     }, 120 * 1000); // 2 minutes
 
+    if (isOnline) {
+      processActions();
+    }
+
     return () => clearInterval(syncInterval);
-  }, []);
+  }, [isOnline]);
 
   const processActions = async () => {
     if (isOnline) {
