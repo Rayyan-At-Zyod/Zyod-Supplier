@@ -53,7 +53,7 @@ export const loadRawMaterials = async (
       dispatch(setLoading(false));
     }
   } else {
-    Sentry.captureMessage("❌✅ Offline. Loading from cache...");
+    // Sentry.captureMessage("❌✅ Offline. Loading from cache...");
     const cachedData = await loadFromCache("cachedData");
     if (cachedData) {
       dispatch(setMaterials(cachedData));

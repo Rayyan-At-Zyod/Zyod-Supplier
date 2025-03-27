@@ -39,7 +39,8 @@
     "react-native-web": "~0.19.13",
     "react-redux": "^9.2.0",
     "sentry-expo": "~7.0.0",
-    "uuid": "^11.0.5"
+    "uuid": "^11.0.5",
+    "expo-notifications": "~0.29.14"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",

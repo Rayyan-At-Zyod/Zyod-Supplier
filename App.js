@@ -16,9 +16,12 @@ import AsyncStorage from "@react-native-async-storage/async-storage";
 import { registerInternetAvailabilitySyncingTask } from "./services/offline/SERVICES/new-background-task.service";
 import { AppState } from "react-native";
 
+import * as Notifications from "expo-notifications";
+
 Sentry.init({
-  dsn: "https://b964b86e7db7bf5d4f1fed35e7194041@o4508969385852928.ingest.de.sentry.io/4508969386377296",
+  dsn: "https://0948c8e8eb6e162346e86654eb054a21@o4509047927603200.ingest.de.sentry.io/4509047939203152",
   tracesSampleRate: 1.0,
+  sendDefaultPii: true,
 });
 
 function Timer() {
@@ -75,7 +78,25 @@ function Timer() {
   );
 }
 
-export default function App() {
+// Configure notification handling (for both foreground and background)
+Notifications.setNotificationHandler({
+  handleNotification: async () => ({
+    shouldShowAlert: true,
+    shouldPlaySound: false,
+    shouldSetBadge: false,
+  }),
+});
+
+function App() {
+  useEffect(() => {
+    (async () => {
+      const settings = await Notifications.getPermissionsAsync();
+      if (!settings.granted) {
+        await Notifications.requestPermissionsAsync();
+      }
+    })();
+  }, []);
+
   useEffect(() => {
     registerInternetAvailabilitySyncingTask();
   }, []);
@@ -85,7 +106,7 @@ export default function App() {
       <AuthProvider>
         <NavigationContainer>
           <PaperProvider>
-            <Timer />
+            {/* <Timer /> */}
             <AppNavigator />
           </PaperProvider>
         </NavigationContainer>
@@ -93,3 +114,5 @@ export default function App() {
     </StoreProvider>
   );
 }
+
+export default Sentry.wrap(App)

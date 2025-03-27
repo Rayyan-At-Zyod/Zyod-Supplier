@@ -20,11 +20,13 @@ export const addRawMaterial = async (payload, token) => {
         );
       })
     );
+    Sentry.captureMessage("Hello rayyan -1");
 
     // Convert the main payload image
     const base64ImagePayload = await convertImageToBase64(
       payload.skuDetails.image
     );
+    Sentry.captureMessage("Hello rayyan -2");
 
     const newPayload = {
       ...payload,
@@ -34,6 +36,7 @@ export const addRawMaterial = async (payload, token) => {
         RMsData: newRMsData,
       },
     };
+    Sentry.captureMessage("Hello rayyan -3");
 
     const response = await fetch(API_ENDPOINTS.ADD_RAW_MATERIAL, {
       method: "POST",
@@ -43,16 +46,21 @@ export const addRawMaterial = async (payload, token) => {
       },
       body: JSON.stringify(newPayload),
     });
+    Sentry.captureMessage("Hello rayyan -4");
 
     const data = await response.json();
     if (!response.ok) {
       const errorMessage = data.message || "Failed to add raw material";
+      Sentry.captureMessage(`2- Error during API hit for add.. ${response}`);
       throw new Error(errorMessage);
     } else {
-      Sentry.captureMessage("Error during API hit for add..");
+      Sentry.captureMessage(`2- API hit success for add.. ${response}`);
     }
     return data;
   } catch (error) {
+    Sentry.captureMessage(
+      `2' API hit failed for add.. ${payload?.skuDetails?.name}`
+    );
     throw error;
   }
 };

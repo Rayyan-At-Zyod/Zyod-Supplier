@@ -41,7 +41,7 @@ const AppNavigator = () => {
   // Set up an interval that runs every 2 minutes.
   useEffect(() => {
     const syncInterval = setInterval(() => {
-      processActions();
+      if (isOnline) processActions();
     }, 120 * 1000); // 2 minutes
 
     return () => clearInterval(syncInterval);
@@ -62,12 +62,12 @@ const AppNavigator = () => {
             ? JSON.parse(pendActsString)
             : [];
           if (pendingActions.length > 0) {
-            // dispatch(setSyncing(true));
-            // dispatch(setLoading(true));
+            dispatch(setSyncing(true));
+            dispatch(setLoading(true));
             await processPendingActions(token);
             await loadRawMaterials(token, true, dispatch);
-            // dispatch(setLoading(false));
-            // dispatch(setSyncing(false));
+            dispatch(setLoading(false));
+            dispatch(setSyncing(false));
           }
           await clearSyncLock();
         }
