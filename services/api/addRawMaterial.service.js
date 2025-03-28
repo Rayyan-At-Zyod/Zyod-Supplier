@@ -2,7 +2,7 @@ import * as Sentry from "@sentry/react-native";
 import { convertImageToBase64 } from "../utilities/imageBase64Converter";
 import { API_ENDPOINTS } from "./endpoints";
 
-export async function addRawMaterial (payload, token) {
+export async function addRawMaterial(payload, token) {
   try {
     // Convert images in RMsData
     const newRMsData = await Promise.all(
@@ -74,8 +74,8 @@ export async function addRawMaterial (payload, token) {
     return data;
   } catch (error) {
     Sentry.captureMessage(
-      `2' API hit failed for add.. ${payload?.skuDetails?.name}`
+      `2' API hit failed for add.. ${payload?.skuDetails?.name} due to reason ${error}.`
     );
     throw error;
   }
-};
+}
