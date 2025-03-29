@@ -4,7 +4,7 @@ import * as Sentry from "@sentry/react-native";
 import NetInfo from "@react-native-community/netinfo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import * as Notifications from "expo-notifications";
-import { processPendingActions } from "../process-storage";
+import { processPendingActions } from "./process-storage";
 
 const INTERNET_AVAILABILITY_TASK = "internet-availability-task";
 const SYNC_LOCK_KEY = "sync_in_progress";

@@ -28,7 +28,12 @@
         "foregroundImage": "./assets/zyod-thumbnail.png",
         "backgroundColor": "#FFFFFF"
       },
-      "package": "com.zyod.supplierapp"
+      "package": "com.zyod.supplierapp",
+      "permissions": [
+        "ACCESS_NETWORK_STATE",
+        "WAKE_LOCK",
+        "RECEIVE_BOOT_COMPLETED"
+      ]
     },
     "web": {
       "favicon": "./assets/favicon.png"
@@ -56,6 +61,15 @@
           "organization": "zyod-jx",
           "project": "zyod-supplier"
         }
+      ],
+      [
+        "expo-notifications"
+      ],
+      [
+        "expo-task-manager"
+      ],
+      [
+        "expo-background-fetch"
       ]
     ]
   }

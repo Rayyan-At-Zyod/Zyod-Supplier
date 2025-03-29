@@ -13,10 +13,10 @@ import { store } from "./store/store";
 import * as Sentry from "@sentry/react-native";
 import { addTime, setTime } from "./store/rawMaterialsSlice";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { registerInternetAvailabilitySyncingTask } from "./services/offline/SERVICES/new-background-task.service";
 import { AppState } from "react-native";
 
 import * as Notifications from "expo-notifications";
+import { registerBackgroundSync, unregisterBackgroundSync } from "./services/offline/expo-background-task";
 
 Sentry.init({
   dsn: "https://0948c8e8eb6e162346e86654eb054a21@o4509047927603200.ingest.de.sentry.io/4509047939203152",
@@ -98,7 +98,29 @@ function App() {
   }, []);
 
   useEffect(() => {
-    registerInternetAvailabilitySyncingTask();
+    // Set up our new background sync using expo-task-manager
+    const setupBackgroundSync = async () => {
+      try {
+        // Register background sync with a 15-minute interval
+        const registered = await registerBackgroundSync(15);
+        if (registered) {
+          Sentry.captureMessage("Background sync registered successfully");
+        } else {
+          Sentry.captureMessage("Failed to register background sync");
+        }
+      } catch (error) {
+        Sentry.captureException(`Error setting up background sync: ${error.toString()}`);
+      }
+    };
+    
+    setupBackgroundSync();
+    
+    // Cleanup function
+    return () => {
+      unregisterBackgroundSync().catch(error => {
+        Sentry.captureException(`Error cleaning up background sync: ${error.toString()}`);
+      });
+    };
   }, []);
 
   return (
@@ -115,4 +137,4 @@ function App() {
   );
 }
 
-export default Sentry.wrap(App)
+export default Sentry.wrap(App);

@@ -20,15 +20,17 @@
     "@react-navigation/stack": "^7.1.1",
     "@reduxjs/toolkit": "^2.5.1",
     "@sentry/react-native": "^6.9.1",
-    "expo": "~52.0.32",
+    "expo": "^52.0.41",
     "expo-background-fetch": "~13.0.5",
     "expo-file-system": "~18.0.10",
     "expo-image-picker": "~16.0.6",
+    "expo-notifications": "~0.29.14",
     "expo-status-bar": "~2.0.1",
     "expo-task-manager": "~12.0.5",
     "react": "18.3.1",
     "react-dom": "18.3.1",
     "react-native": "0.76.7",
+    "react-native-background-actions": "^4.0.1",
     "react-native-gesture-handler": "~2.20.2",
     "react-native-get-random-values": "~1.11.0",
     "react-native-pager-view": "6.5.1",
@@ -39,12 +41,12 @@
     "react-native-web": "~0.19.13",
     "react-redux": "^9.2.0",
     "sentry-expo": "~7.0.0",
-    "uuid": "^11.0.5",
-    "expo-notifications": "~0.29.14"
+    "uuid": "^11.0.5"
   },
   "devDependencies": {
     "@babel/core": "^7.20.0",
-    "@types/react": "^18.3.20"
+    "@types/react": "^18.3.20",
+    "@react-native-community/cli": "latest"
   },
   "private": true
 }

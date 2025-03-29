@@ -17,7 +17,7 @@ import { addTime, setLoading, setSyncing } from "../../store/rawMaterialsSlice";
 import {
   checkForSyncLockAvailibility,
   clearSyncLock,
-} from "../../services/offline/SERVICES/new-background-task.service";
+} from "../../services/offline/background-sync-task-manager.service";
 import { processPendingActions } from "../../services/offline/process-storage";
 import { loadRawMaterials } from "../../services/functions/loadRMs";
 
