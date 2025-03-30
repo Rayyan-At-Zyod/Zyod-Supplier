@@ -17,7 +17,6 @@ import { setLoading } from "../../../store/rawMaterialsSlice";
 import { useAuth } from "../../../context/AuthContext";
 import { API_ENDPOINTS } from "../../../services/api/endpoints";
 import { useNavigation } from "@react-navigation/native";
-import * as Sentry from "@sentry/react-native";
 
 const SignInScreen = () => {
   const navigation = useNavigation();

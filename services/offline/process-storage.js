@@ -11,8 +11,8 @@ import * as Sentry from "@sentry/react-native";
 
 export const processPendingActions = async (token) => {
   try {
-    // store.dispatch(setLoading(true));
-    // store.dispatch(setSyncing(true));
+    store.dispatch(setSyncing(true));
+    store.dispatch(setLoading(true));
     const pendingActions = (await loadFromCache("pendingActions")) || [];
     for (let action of pendingActions) {
       Sentry.captureMessage(
@@ -32,17 +32,13 @@ export const processPendingActions = async (token) => {
         const updatedArray = newPendingActions.filter(
           (act) => act.id !== action.id
         );
-        // Sentry.captureMessage(`pendingactions aray updated.`);
         await saveToCache("pendingActions", updatedArray);
         store.dispatch(setOfflineMaterials(updatedArray));
         Sentry.captureMessage(`saved new pending actions & ui changed.`);
 
         let oldCache = (await loadFromCache("cachedData")) || [];
-        // Sentry.captureMessage(`API hit.`);
         const newCache = [...oldCache, action.temporaryDisplay];
-        // Sentry.captureMessage(`API hit.`);
         await saveToCache("cachedData", newCache);
-        // Sentry.captureMessage(`API hit.`);
         Sentry.captureMessage(
           `Done individual action. ${action?.temporaryDisplay?.rmVariations[0].name}`
         );
@@ -54,8 +50,8 @@ export const processPendingActions = async (token) => {
   } catch (err) {
     Sentry.captureException(`ERROR: ${err}`);
     throw err;
-  // } finally {
-  //   store.dispatch(setLoading(false));
-  //   store.dispatch(setSyncing(false));
+  } finally {
+    store.dispatch(setLoading(false));
+    store.dispatch(setSyncing(false));
   }
 };

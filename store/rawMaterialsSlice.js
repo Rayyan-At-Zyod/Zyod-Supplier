@@ -12,21 +12,6 @@ const rawMaterialsSlice = createSlice({
     todos: [],
   },
   reducers: {
-    setTodos: (state, action) => {
-      state.todos = action.payload;
-    },
-    addTodos: (state, action) => {
-      state.todos = [...todos, action.payload];
-    },
-    deleteTodos: (state, action) => {
-      state.todos = state.todos.filter((todo) => todo.id !== action.payload);
-    },
-    setTime: (state, action) => {
-      state.time = action.payload;
-    },
-    addTime: (state, action) => {
-      state.time += action.payload;
-    },
     setLoading: (state, action) => {
       state.loading = action.payload;
     },
@@ -85,11 +70,6 @@ const rawMaterialsSlice = createSlice({
       });
     },
     setOfflineMaterials: (state, action) => {
-      // console.log(
-      //   "📢 setOfflineMaterials called with:",
-      //   JSON.stringify(action.payload, null, 2)
-      // );
-
       state.offlineItems = action.payload;
     },
     addOfflineMaterial: (state, action) => {
@@ -143,10 +123,5 @@ export const {
   setLoading,
   setSyncing,
   updateMaterials,
-  setTime,
-  addTime,
-  setTodos,
-  addTodos,
-  deleteTodos,
 } = rawMaterialsSlice.actions;
 export default rawMaterialsSlice.reducer;

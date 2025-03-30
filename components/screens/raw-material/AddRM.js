@@ -105,8 +105,25 @@ function AddRMScreen() {
 
   //Removes a variant at a specific index.
   const handleRemoveVariant = (index) => {
-    setVariants((prev) => prev.filter((_, i) => i !== index));
-    setVariantRefs((prev) => prev.filter((_, i) => i !== index));
+    Alert.alert(
+      "Confirm Delete", // New: Alert title
+      "Are you sure you want to delete this variant?", // New: Alert message
+      [
+        {
+          text: "Cancel",
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () => {
+            // Old: Deletion logic moved here (only executed after confirmation)
+            setVariants((prev) => prev.filter((_, i) => i !== index));
+            setVariantRefs((prev) => prev.filter((_, i) => i !== index));
+          },
+        },
+      ],
+      { cancelable: true }
+    );
   };
 
   // Updates a single field in a given variant.

@@ -1,5 +1,4 @@
 import React, { useEffect, useRef } from "react";
-import { Alert } from "react-native";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
 
 import { useAuth } from "../../context/AuthContext";
@@ -13,12 +12,10 @@ import { useNetworkStatus } from "../../hooks/useNetworkStatus";
 import { useDispatch } from "react-redux";
 import * as Sentry from "@sentry/react-native";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { addTime, setLoading, setSyncing } from "../../store/rawMaterialsSlice";
 import {
   checkForSyncLockAvailibility,
   clearSyncLock,
-} from "../../services/offline/SERVICES/new-background-task.service";
-import { sampleMapped } from "../../services/offline/sampleMapped";
+} from "../../services/offline/background-task-manager.service";
 import { processPendingActions } from "../../services/offline/process-storage";
 import { loadRawMaterials } from "../../services/functions/loadRMs";
 
@@ -62,18 +59,13 @@ const AppNavigator = () => {
             ? JSON.parse(pendActsString)
             : [];
           if (pendingActions.length > 0) {
-            // dispatch(setSyncing(true));
-            // dispatch(setLoading(true));
             await processPendingActions(token);
             await loadRawMaterials(token, true, dispatch);
-            // dispatch(setLoading(false));
-            // dispatch(setSyncing(false));
           }
           await clearSyncLock();
         }
       } catch (error) {
-        Sentry.captureException(error);
-        console.error("Foreground sync failed:", error);
+        Sentry.captureException("Foreground sync failed:", error);
       }
     }
   };

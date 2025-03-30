@@ -61,7 +61,8 @@ const LoadingModal = () => {
         </View>
         {syncing && (
           <Text style={styles.syncText}>
-            Syncing... {"\n"}✨ Relax, this may take a while... ✨
+            Syncing... {"\n"}Please keep app on the screen. {"\n"}✨ This may
+            take a while... ✨
           </Text>
         )}
       </View>
