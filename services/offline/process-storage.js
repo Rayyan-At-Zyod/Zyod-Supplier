@@ -16,31 +16,43 @@ export const processPendingActions = async (token) => {
     const pendingActions = (await loadFromCache("pendingActions")) || [];
     for (let action of pendingActions) {
       Sentry.captureMessage(
-        `Started individual action. ${action?.temporaryDisplay?.rmVariations[0].name}`
+        `1.1: Started individual action. ${action?.temporaryDisplay?.rmVariations[0].name}`
       );
       let res = null;
       if (action?.type === "ADD") {
+        Sentry.captureException(`1.2: Trying add`);
         res = await addRawMaterial(action.payload, token);
       } else if (action?.type === "UPDATE") {
         res = await updateRM(action.payload, token);
       } else {
-        throw new Error("Invalid pending action type - neither ADD nor UPDATE");
+        throw new Error(
+          "1.2: Invalid pending action type - neither ADD nor UPDATE"
+        );
       }
-      Sentry.captureMessage(`API hit.`);
+      Sentry.captureMessage(`1.3: API hit.`);
       if (res) {
+        Sentry.captureException(`1.4: Trying to delete from cache.`);
         const newPendingActions = (await loadFromCache("pendingActions")) || [];
         const updatedArray = newPendingActions.filter(
           (act) => act.id !== action.id
         );
+        Sentry.captureException(`1.5: Deleted action from cache`);
         await saveToCache("pendingActions", updatedArray);
+        Sentry.captureException(
+          `1.6: Updated the cache for deleted action from cache for:  ${action?.temporaryDisplay?.rmVariations[0].name}`
+        );
         store.dispatch(setOfflineMaterials(updatedArray));
-        Sentry.captureMessage(`saved new pending actions & ui changed.`);
+        Sentry.captureMessage(
+          `1.7: Updated the store with new pending actions.`
+        );
 
+        Sentry.captureMessage(`1.8: Loading cache data.`);
         let oldCache = (await loadFromCache("cachedData")) || [];
         const newCache = [...oldCache, action.temporaryDisplay];
+        Sentry.captureMessage(`1.9: Created cached data.`);
         await saveToCache("cachedData", newCache);
         Sentry.captureMessage(
-          `Done individual action. ${action?.temporaryDisplay?.rmVariations[0].name}`
+          `1.10: Updated cached data for: ${action?.temporaryDisplay?.rmVariations[0].name}.`
         );
       } else {
         Sentry.captureMessage(`API hit failed.`);

@@ -9,6 +9,53 @@ import {
 import { v4 as uuidv4 } from "uuid";
 import { store } from "../../store/store";
 
+export const processCurrentAction = async (actionToProcess, token) => {
+  try {
+    store.dispatch(setSyncing(true));
+
+    if (actionToProcess.type === "ADD") {
+      // Use the existing addRawMaterial service
+      console.error("1")
+      const response = await addRawMaterial(actionToProcess.payload, token);
+
+      if (response) {
+        console.error("2")
+        doIfSuccess(pendingActions, id, token);
+        console.error("5")
+      }
+    } else if (actionToProcess.type === "UPDATE") {
+      // Use the existing addRawMaterial service
+      const response = await updateRM(actionToProcess.payload, token);
+
+      if (response) {
+        doIfSuccess(pendingActions, id, token);
+      }
+    }
+  } catch (error) {
+    console.error("Error processing single action:", error);
+    throw error;
+  } finally {
+    store.dispatch(setSyncing(false));
+  }
+};
+
+const doIfSuccess = async (pendingActions, id, token) => {
+  try {
+    console.error("3")
+    const updatedPendingActions = pendingActions.filter(
+      (action) => action.id !== id
+    );
+    console.error("4")
+    await saveToCache("pendingActions", updatedPendingActions);
+
+    // Reload the materials to update the UI
+    // await loadRawMaterials(token, true, store.dispatch);
+  } catch (err) {
+    throw err;
+  }
+};
+
+
 export const updateAnOnlineMaterialAction = async (
   theGreigeId,
   theRmVariationId,
