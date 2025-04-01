@@ -51,10 +51,13 @@ TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
     }
 
     try {
+      Sentry.captureException(`1: Started BG task`);
       await processPendingActions(token);
+      Sentry.captureException(`2: Processed all pending actions`);
       return BackgroundFetch.BackgroundFetchResult.NewData;
     } finally {
       await clearSyncLock();
+      Sentry.captureException(`3: Cleared sync lock`);
     }
   } catch (error) {
     await clearSyncLock();

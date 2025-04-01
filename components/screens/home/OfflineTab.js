@@ -61,7 +61,7 @@ const OfflineMaterialsTab = () => {
           onPress={async () => {
             try {
               dispatch(setLoading(true));
-              await processCurrentAction(item.id, token);
+              await processCurrentAction(item, token);
               await loadPendingMaterials(dispatch);
             } catch (error) {
               console.error("Failed to process item:", error);
