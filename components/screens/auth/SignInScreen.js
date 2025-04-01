@@ -43,6 +43,7 @@ const SignInScreen = () => {
     setError("");
 
     try {
+      console.log("Making API request to:", API_ENDPOINTS.USER_LOGIN);
       const response = await fetch(API_ENDPOINTS.USER_LOGIN, {
         method: "POST",
         headers: {
@@ -54,7 +55,9 @@ const SignInScreen = () => {
           PortalId: 3,
         }),
       });
+      console.log("Response status:", response.status);
       const data = await response.json();
+      console.log("Response data:", data);
 
       if (!response.ok || !data.success) {
         console.log("API request failed:", data);
@@ -67,7 +70,12 @@ const SignInScreen = () => {
 
       await signIn(data.data.token, data.data.user);
     } catch (err) {
-      setError(err.message || "An error occurred during sign in");
+      console.error("Detailed error:", err);
+      if (err.message === "Network request failed") {
+        setError("Unable to connect to the server. Please check your internet connection and try again.");
+      } else {
+        setError(err.message || "An error occurred during sign in");
+      }
     } finally {
       dispatch(setLoading(false));
     }

@@ -291,7 +291,7 @@ function AddRMScreen() {
     } catch (error) {
       Alert.alert("Error", error.message.toString());
     } finally {
-      console.error("loading being set to false.");
+      console.log("loading being set to false.");
       dispatch(setLoading(false));
     }
   };
