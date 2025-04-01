@@ -58,7 +58,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
       // Calculate new quantity based on operation type
       const currentQuantity =
         Number.parseInt(selectedVariation.availableQuantity) || 0;
-      const newQuantity =
+      let newQuantity =
         operationType === "STOCK IN"
           ? currentQuantity + quantity
           : currentQuantity - quantity;
@@ -72,19 +72,12 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
         Alert.alert("Error", "You can't decrease stock to negative values.");
         return;
       }
-      console.log("quantity:", quantity);
 
-      // offline
+      // offline @TODO:
       if (!isOnline) {
         if (isNaN(newQuantity)) newQuantity = 0;
         if (isOfflineItem) {
           // For offline materials
-          console.error(
-            "selectedVariation.rmVariationId:",
-            selectedVariation.rmVariationId,
-            "newQuantity:",
-            newQuantity
-          );
           await updateAnOfflineMaterialAction(
             selectedVariation.rmVariationId,
             newQuantity
@@ -119,16 +112,11 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
         if (isOfflineItem) {
           Alert.alert(
             "=== Feature under construction ===",
-            "Update of offline items can be done only when app is offline also. Please sync this item once online."
+            "Update of offline items can be done only when app is offline also. Please let this item reach server first."
           );
           return;
         }
         // online ka online me kardia.
-        console.log("what");
-        console.log("// curr qty:", currentQuantity);
-        console.log("// stockQuantity:", stockQuantity);
-        console.log("operationType", operationType);
-        console.log("quantity", quantity);
         const payload = {
           warehouseId,
           reason: "Stock adjustment",
@@ -315,7 +303,8 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
                 <TouchableOpacity
                   style={currentTabStyles.updateButton}
                   onPress={() => {
-                    handleStockUpdate();
+                    setOperationType("STOCK IN");
+                    handleStockUpdate(false, "STOCK OUT");
                   }}
                 >
                   <Text style={currentTabStyles.updateButtonText}>Reduce</Text>
