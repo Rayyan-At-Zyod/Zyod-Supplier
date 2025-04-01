@@ -3,9 +3,7 @@ import * as TaskManager from "expo-task-manager";
 import * as Sentry from "@sentry/react-native";
 import NetInfo from "@react-native-community/netinfo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { store } from "../../../store/store";
-import { setLoading, setSyncing } from "../../../store/rawMaterialsSlice";
-import { processPendingActions } from "../process-storage";
+import { processPendingActions } from "./process-storage";
 
 const INTERNET_AVAILABILITY_TASK = "internet-availability-task";
 const SYNC_LOCK_KEY = "sync_in_progress";
@@ -53,17 +51,7 @@ TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
     }
 
     try {
-      // Process pending actions
-
-      // store.dispatch(setLoading(true));
-      // store.dispatch(setSyncing(true));
       await processPendingActions(token);
-      let time = await AsyncStorage.getItem("time");
-      time = time ? parseInt(time) + 1 : 0;
-      await AsyncStorage.setItem("time", time.toString());
-
-      // store.dispatch(setLoading(false));
-      // store.dispatch(setSyncing(false));
       return BackgroundFetch.BackgroundFetchResult.NewData;
     } finally {
       await clearSyncLock();

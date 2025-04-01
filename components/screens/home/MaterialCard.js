@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { currentTabStyles } from "../../../styles/CurrentTab.styles";
+import { materialCardStyles } from "../../../styles/materialCard.styles";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
 import { setLoading } from "../../../store/rawMaterialsSlice";
@@ -35,39 +35,43 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
   const [selectedVariationIndex, setSelectedVariationIndex] = useState(0);
   const selectedVariation = item.rmVariations[selectedVariationIndex];
 
-  const handleStockUpdate = async (makeEmpty = false) => {
-    setOperationType("STOCK IN");
+  const handleStockUpdate = async (
+    makeEmpty = false,
+    operationType = "STOCK OUT"
+  ) => {
     if (!makeEmpty && (!stockQuantity || stockQuantity.trim() === "")) {
       Alert.alert("Error", "Please enter a valid quantity");
       return;
     }
     const quantity = parseInt(stockQuantity);
+
     if (!makeEmpty && (isNaN(quantity) || quantity <= 0)) {
       Alert.alert("Error", "Please enter a valid positive number");
       return;
     }
-
     try {
       dispatch(setLoading(true));
-
       // Calculate new quantity based on operation type
       const currentQuantity =
         Number.parseInt(selectedVariation.availableQuantity) || 0;
-      const newQuantity =
+      let newQuantity =
         operationType === "STOCK IN"
           ? currentQuantity + quantity
           : currentQuantity - quantity;
+      console.log("new qty:", newQuantity);
 
-      // if (makeEmpty) {
-      //   setOperationType("STOCK OUT");
-      //   setStockQuantity(currentQuantity);
-      // }
+      if (makeEmpty) {
+        setOperationType("STOCK OUT");
+        setStockQuantity(currentQuantity);
+      }
       if (currentQuantity < quantity && operationType === "STOCK OUT") {
         Alert.alert("Error", "You can't decrease stock to negative values.");
         return;
       }
-      // offline
+
+      // offline @TODO:
       if (!isOnline) {
+        if (isNaN(newQuantity)) newQuantity = 0;
         if (isOfflineItem) {
           // For offline materials
           await updateAnOfflineMaterialAction(
@@ -79,7 +83,6 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           const nonSelectedRmVariationIds = item.rmVariations
             .map((rmv) => rmv.rmVariationId)
             .filter((rmvId) => rmvId !== selectedVariation.rmVariationId);
-
           const nonSelectedRmVariationQuantities = item.rmVariations
             .map((rmv) => {
               return rmv.rmVariationId === selectedVariation.rmVariationId
@@ -87,7 +90,6 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
                 : rmv.availableQuantity;
             })
             .filter((quantity) => quantity !== null);
-
           await updateAnOnlineMaterialAction(
             item.greigeId,
             selectedVariation.rmVariationId,
@@ -106,7 +108,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
         if (isOfflineItem) {
           Alert.alert(
             "=== Feature under construction ===",
-            "Update of offline items can be done only when app is offline also. Please sync this item once online."
+            "Update of offline items can be done only when app is offline also. Please let this item reach server first."
           );
           return;
         }
@@ -120,12 +122,11 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
               itemCode: selectedVariation.newCode,
               itemType: "Fabric",
               itemUnit: selectedVariation.unitCode,
-              operationType,
-              quantityChange: quantity,
+              operationType: makeEmpty ? "STOCK OUT" : operationType,
+              quantityChange: makeEmpty ? currentQuantity : quantity,
             },
           ],
         };
-
         await updateRM(payload, token);
         await loadRawMaterials(token, isOnline, dispatch);
       }
@@ -141,21 +142,20 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
   };
 
   const handleStockEmpty = async () => {
-    // const response = Alert.alert(
-    //   "Confirm",
-    //   "Are you sure you want to empty stock?",
-    //   [
-    //     {
-    //       text: "No",
-    //       onPress: () => {},
-    //       style: "cancel",
-    //     },
-    //     { text: "Yes", onPress: () => handleStockUpdate(true) },
-    //   ]
-    // );
     Alert.alert(
-      "Hey",
-      "Empty stock feature is not ready - Please do it using the manual changes."
+      "Empty stock?", // New: Alert title
+      "Are you sure you want to empty stock for this variant?", // New: Alert message
+      [
+        {
+          text: "No",
+          style: "cancel",
+        },
+        {
+          text: "OK",
+          onPress: () => handleStockUpdate(true),
+        },
+      ],
+      { cancelable: true }
     );
   };
 
@@ -163,48 +163,34 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
     <TouchableOpacity
       style={
         showVariants && !isEditing
-          ? [currentTabStyles.card, currentTabStyles.cardWithVariations]
-          : currentTabStyles.card
+          ? [materialCardStyles.card, materialCardStyles.cardWithVariations]
+          : materialCardStyles.card
       }
       onPress={() => navigation.navigate("ViewRawMaterial", { material: item })}
     >
-      {/* View button */}
-      {/* {!isEditing && (
-        <TouchableOpacity
-          style={currentTabStyles.viewButton}
-          onPress={() =>
-            navigation.navigate("ViewRawMaterial", {
-              material: item,
-            })
-          }
-        >
-          <Ionicons name="eye" size={20} color="black" />
-        </TouchableOpacity>
-      )} */}
-
       {/* Edit button & Variants Toggle */}
       {!isEditing && (
         <>
           <TouchableOpacity
-            style={currentTabStyles.viewButton}
+            style={materialCardStyles.viewButton}
             onPress={() => {
               setIsEditing(true);
               setShowVariants(false);
             }}
           >
-            <Ionicons name="trail-sign-outline" size={20} color="black" />
+            <Ionicons name="trail-sign" size={20} color="black" />
           </TouchableOpacity>
 
           <TouchableOpacity
             style={
               showVariants
                 ? [
-                    currentTabStyles.showVariationsButton,
-                    currentTabStyles.varBottomVariantOpened,
+                    materialCardStyles.showVariationsButton,
+                    materialCardStyles.varBottomVariantOpened,
                   ]
                 : [
-                    currentTabStyles.showVariationsButton,
-                    currentTabStyles.varBottom,
+                    materialCardStyles.showVariationsButton,
+                    materialCardStyles.varBottom,
                   ]
             }
             onPress={() => setShowVariants(!showVariants)}
@@ -218,27 +204,30 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           </TouchableOpacity>
         </>
       )}
-
       {/* Cancel Edit Button */}
       {isEditing && (
         <>
           <TouchableOpacity
-            style={currentTabStyles.editButton}
+            style={materialCardStyles.editButton}
             onPress={() => setIsEditing(false)}
           >
             <Ionicons name="close" size={20} color="black" />
           </TouchableOpacity>
           <TouchableOpacity
-            style={currentTabStyles.stockOutButton}
+            style={materialCardStyles.stockOutButton}
             onPress={handleStockEmpty}
           >
-            <Text>Empty Stock!</Text>
-            <Ionicons name="trail-sign" size={20} color="black" />
+            <Text style={{ fontWeight: "bold" }}>Empty!</Text>
+            <Ionicons
+              name="trail-sign-outline"
+              size={20}
+              style={{ fontWeight: "bold" }}
+              color="black"
+            />
           </TouchableOpacity>
         </>
       )}
-
-      <View style={currentTabStyles.topContainer}>
+      <View style={materialCardStyles.topContainer}>
         {/* Main image from the selected variation */}
         {selectedVariation?.rmImage && (
           <TouchableOpacity
@@ -248,119 +237,95 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           >
             <Image
               source={{ uri: selectedVariation.rmImage }}
-              style={currentTabStyles.materialImage}
+              style={materialCardStyles.materialImage}
             />
           </TouchableOpacity>
         )}
 
         {/* Main info container */}
-        <View style={currentTabStyles.mainInfoContainer}>
-          <Text style={currentTabStyles.materialName}>
+        <View style={materialCardStyles.mainInfoContainer}>
+          <Text style={materialCardStyles.materialName}>
             {selectedVariation?.name || "No Name"}
           </Text>
-          <Text style={currentTabStyles.description}>
+          <Text style={materialCardStyles.description}>
             Description: {selectedVariation?.description || "N/A"}
           </Text>
 
           {!isEditing ? (
             <>
-              <Text style={currentTabStyles.description}>
+              <Text style={materialCardStyles.description}>
                 Stock:{" "}
                 {selectedVariation.availableQuantity
                   ? `${selectedVariation.availableQuantity} meters`
                   : "Out of Stock"}
               </Text>
-              <View style={currentTabStyles.detailsContainer}>
-                <Text style={currentTabStyles.description}>
+              <View style={materialCardStyles.detailsContainer}>
+                <Text style={materialCardStyles.description}>
                   Price: ₹{selectedVariation?.generalPrice || "N/A"}/m
                 </Text>
-                <Text style={currentTabStyles.description}>
+                <Text style={materialCardStyles.description}>
                   Width: {selectedVariation?.width || "N/A"}
                 </Text>
               </View>
-              <Text style={currentTabStyles.variationsTitle}>
+              <Text style={materialCardStyles.variationsTitle}>
                 Variants: {item.rmVariations.length}
               </Text>
             </>
           ) : (
-            <View style={currentTabStyles.stockAdjustContainer}>
-              <Text style={currentTabStyles.description}>
+            <View style={materialCardStyles.stockAdjustContainer}>
+              <Text style={materialCardStyles.description}>
                 Current Available Stock:{" "}
                 {selectedVariation.availableQuantity || 0}
               </Text>
               <TextInput
-                style={currentTabStyles.stockInput}
+                style={materialCardStyles.stockInput}
                 placeholder="Enter quantity"
                 value={stockQuantity}
                 onChangeText={setStockQuantity}
                 keyboardType="number-pad"
                 allowFontScaling={false}
               />
-              {/* <View style={currentTabStyles.stockButtonsContainer}>
+              <View style={materialCardStyles.stockButtonsContainer}>
                 <TouchableOpacity
-                  style={[
-                    currentTabStyles.stockButton,
-                    operationType === "STOCK IN" &&
-                      currentTabStyles.activeStockButton,
-                  ]}
-                  onPress={() => setOperationType("STOCK IN")}
+                  style={materialCardStyles.updateButton}
+                  onPress={() => {
+                    setOperationType("STOCK IN");
+                    handleStockUpdate(false, "STOCK IN");
+                  }}
                 >
-                  <Text
-                    style={[
-                      currentTabStyles.stockButtonText,
-                      operationType === "STOCK IN" &&
-                        currentTabStyles.activeStockButtonText,
-                    ]}
-                  >
-                    Add
-                  </Text>
+                  <Text style={materialCardStyles.updateButtonText}>Add</Text>
+                  <Ionicons name="trail-sign-outline" size={20} color="black" />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={[
-                    currentTabStyles.stockButton,
-                    operationType === "STOCK OUT" &&
-                      currentTabStyles.activeStockButton,
-                  ]}
-                  onPress={() => setOperationType("STOCK OUT")}
+                  style={materialCardStyles.updateButton}
+                  onPress={() => {
+                    setOperationType("STOCK IN");
+                    handleStockUpdate(false, "STOCK OUT");
+                  }}
                 >
-                  <Text
-                    style={[
-                      currentTabStyles.stockButtonText,
-                      operationType === "STOCK OUT" &&
-                        currentTabStyles.activeStockButtonText,
-                    ]}
-                  >
-                    Remove
+                  <Text style={materialCardStyles.updateButtonText}>
+                    Reduce
                   </Text>
+                  <Ionicons name="trail-sign-outline" size={20} color="black" />
                 </TouchableOpacity>
-              </View> */}
-              <TouchableOpacity
-                style={currentTabStyles.updateButton}
-                onPress={handleStockUpdate}
-              >
-                <Text style={currentTabStyles.updateButtonText}>
-                  Update Stock
-                </Text>
-                <Ionicons name="trail-sign" size={20} color="black" />
-              </TouchableOpacity>
+              </View>
             </View>
           )}
         </View>
       </View>
-
       {/* Variations section */}
       {showVariants && !isEditing && (
-        <View style={currentTabStyles.variationsContainer}>
-          <View style={currentTabStyles.variationsContentContainer}>
+        <View style={materialCardStyles.variationsContainer}>
+          <View style={materialCardStyles.variationsContentContainer}>
             {item.rmVariations.map((variation, index) => (
               <TouchableOpacity
                 key={variation.rmVariationId.toString()}
-                style={currentTabStyles.variationItem}
+                style={materialCardStyles.variationItem}
                 onPress={() => setSelectedVariationIndex(index)}
               >
                 <Image
                   source={{ uri: variation.rmImage }}
-                  style={currentTabStyles.variationImage}
+                  style={materialCardStyles.variationImage}
                 />
               </TouchableOpacity>
             ))}
