@@ -8,9 +8,6 @@ import {
 } from "../../store/rawMaterialsSlice";
 import { v4 as uuidv4 } from "uuid";
 import { store } from "../../store/store";
-import { updateRM } from "../api/updateRmStock.service";
-import { loadPendingMaterials } from "../functions/loadPendingMaterials";
-import { loadRawMaterials } from "../functions/loadRMs";
 
 export const updateAnOnlineMaterialAction = async (
   theGreigeId,

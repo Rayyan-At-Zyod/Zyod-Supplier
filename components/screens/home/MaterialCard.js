@@ -9,7 +9,7 @@ import {
   Alert,
 } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
-import { currentTabStyles } from "../../../styles/CurrentTab.styles";
+import { materialCardStyles } from "../../../styles/materialCard.styles";
 import { useNavigation } from "@react-navigation/native";
 import { useDispatch } from "react-redux";
 import { setLoading } from "../../../store/rawMaterialsSlice";
@@ -43,11 +43,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
       Alert.alert("Error", "Please enter a valid quantity");
       return;
     }
-    console.log("stockqty:", stockQuantity);
     const quantity = parseInt(stockQuantity);
-    console.log("qunatity:", quantity);
-    console.log("make empty:", makeEmpty);
-    console.log("op type:", operationType);
 
     if (!makeEmpty && (isNaN(quantity) || quantity <= 0)) {
       Alert.alert("Error", "Please enter a valid positive number");
@@ -167,8 +163,8 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
     <TouchableOpacity
       style={
         showVariants && !isEditing
-          ? [currentTabStyles.card, currentTabStyles.cardWithVariations]
-          : currentTabStyles.card
+          ? [materialCardStyles.card, materialCardStyles.cardWithVariations]
+          : materialCardStyles.card
       }
       onPress={() => navigation.navigate("ViewRawMaterial", { material: item })}
     >
@@ -176,7 +172,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
       {!isEditing && (
         <>
           <TouchableOpacity
-            style={currentTabStyles.viewButton}
+            style={materialCardStyles.viewButton}
             onPress={() => {
               setIsEditing(true);
               setShowVariants(false);
@@ -189,12 +185,12 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
             style={
               showVariants
                 ? [
-                    currentTabStyles.showVariationsButton,
-                    currentTabStyles.varBottomVariantOpened,
+                    materialCardStyles.showVariationsButton,
+                    materialCardStyles.varBottomVariantOpened,
                   ]
                 : [
-                    currentTabStyles.showVariationsButton,
-                    currentTabStyles.varBottom,
+                    materialCardStyles.showVariationsButton,
+                    materialCardStyles.varBottom,
                   ]
             }
             onPress={() => setShowVariants(!showVariants)}
@@ -212,13 +208,13 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
       {isEditing && (
         <>
           <TouchableOpacity
-            style={currentTabStyles.editButton}
+            style={materialCardStyles.editButton}
             onPress={() => setIsEditing(false)}
           >
             <Ionicons name="close" size={20} color="black" />
           </TouchableOpacity>
           <TouchableOpacity
-            style={currentTabStyles.stockOutButton}
+            style={materialCardStyles.stockOutButton}
             onPress={handleStockEmpty}
           >
             <Text style={{ fontWeight: "bold" }}>Empty!</Text>
@@ -231,7 +227,7 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           </TouchableOpacity>
         </>
       )}
-      <View style={currentTabStyles.topContainer}>
+      <View style={materialCardStyles.topContainer}>
         {/* Main image from the selected variation */}
         {selectedVariation?.rmImage && (
           <TouchableOpacity
@@ -241,73 +237,75 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
           >
             <Image
               source={{ uri: selectedVariation.rmImage }}
-              style={currentTabStyles.materialImage}
+              style={materialCardStyles.materialImage}
             />
           </TouchableOpacity>
         )}
 
         {/* Main info container */}
-        <View style={currentTabStyles.mainInfoContainer}>
-          <Text style={currentTabStyles.materialName}>
+        <View style={materialCardStyles.mainInfoContainer}>
+          <Text style={materialCardStyles.materialName}>
             {selectedVariation?.name || "No Name"}
           </Text>
-          <Text style={currentTabStyles.description}>
+          <Text style={materialCardStyles.description}>
             Description: {selectedVariation?.description || "N/A"}
           </Text>
 
           {!isEditing ? (
             <>
-              <Text style={currentTabStyles.description}>
+              <Text style={materialCardStyles.description}>
                 Stock:{" "}
                 {selectedVariation.availableQuantity
                   ? `${selectedVariation.availableQuantity} meters`
                   : "Out of Stock"}
               </Text>
-              <View style={currentTabStyles.detailsContainer}>
-                <Text style={currentTabStyles.description}>
+              <View style={materialCardStyles.detailsContainer}>
+                <Text style={materialCardStyles.description}>
                   Price: ₹{selectedVariation?.generalPrice || "N/A"}/m
                 </Text>
-                <Text style={currentTabStyles.description}>
+                <Text style={materialCardStyles.description}>
                   Width: {selectedVariation?.width || "N/A"}
                 </Text>
               </View>
-              <Text style={currentTabStyles.variationsTitle}>
+              <Text style={materialCardStyles.variationsTitle}>
                 Variants: {item.rmVariations.length}
               </Text>
             </>
           ) : (
-            <View style={currentTabStyles.stockAdjustContainer}>
-              <Text style={currentTabStyles.description}>
+            <View style={materialCardStyles.stockAdjustContainer}>
+              <Text style={materialCardStyles.description}>
                 Current Available Stock:{" "}
                 {selectedVariation.availableQuantity || 0}
               </Text>
               <TextInput
-                style={currentTabStyles.stockInput}
+                style={materialCardStyles.stockInput}
                 placeholder="Enter quantity"
                 value={stockQuantity}
                 onChangeText={setStockQuantity}
                 keyboardType="number-pad"
                 allowFontScaling={false}
               />
-              <View style={currentTabStyles.stockButtonsContainer}>
+              <View style={materialCardStyles.stockButtonsContainer}>
                 <TouchableOpacity
-                  style={currentTabStyles.updateButton}
+                  style={materialCardStyles.updateButton}
                   onPress={() => {
                     setOperationType("STOCK IN");
                     handleStockUpdate(false, "STOCK IN");
                   }}
                 >
-                  <Text style={currentTabStyles.updateButtonText}>Add</Text>
+                  <Text style={materialCardStyles.updateButtonText}>Add</Text>
                   <Ionicons name="trail-sign-outline" size={20} color="black" />
                 </TouchableOpacity>
                 <TouchableOpacity
-                  style={currentTabStyles.updateButton}
+                  style={materialCardStyles.updateButton}
                   onPress={() => {
                     setOperationType("STOCK IN");
                     handleStockUpdate(false, "STOCK OUT");
                   }}
                 >
-                  <Text style={currentTabStyles.updateButtonText}>Reduce</Text>
+                  <Text style={materialCardStyles.updateButtonText}>
+                    Reduce
+                  </Text>
                   <Ionicons name="trail-sign-outline" size={20} color="black" />
                 </TouchableOpacity>
               </View>
@@ -317,17 +315,17 @@ const MaterialCard = ({ item, handleImagePress, isOfflineItem = false }) => {
       </View>
       {/* Variations section */}
       {showVariants && !isEditing && (
-        <View style={currentTabStyles.variationsContainer}>
-          <View style={currentTabStyles.variationsContentContainer}>
+        <View style={materialCardStyles.variationsContainer}>
+          <View style={materialCardStyles.variationsContentContainer}>
             {item.rmVariations.map((variation, index) => (
               <TouchableOpacity
                 key={variation.rmVariationId.toString()}
-                style={currentTabStyles.variationItem}
+                style={materialCardStyles.variationItem}
                 onPress={() => setSelectedVariationIndex(index)}
               >
                 <Image
                   source={{ uri: variation.rmImage }}
-                  style={currentTabStyles.variationImage}
+                  style={materialCardStyles.variationImage}
                 />
               </TouchableOpacity>
             ))}
