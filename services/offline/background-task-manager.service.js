@@ -4,6 +4,7 @@ import * as Sentry from "@sentry/react-native";
 import NetInfo from "@react-native-community/netinfo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { processPendingActions } from "./process-storage";
+import * as Notifications from "expo-notifications";
 
 const INTERNET_AVAILABILITY_TASK = "internet-availability-task";
 const SYNC_LOCK_KEY = "sync_in_progress";
@@ -51,6 +52,13 @@ TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
     }
 
     try {
+      await Notifications.scheduleNotificationAsync({
+        content: {
+          title: "Background Task Triggered",
+          body: "Sync process is now running.",
+        },
+        trigger: null,
+      });
       Sentry.captureException(`1: Started BG task`);
       await processPendingActions(token);
       Sentry.captureException(`2: Processed all pending actions`);

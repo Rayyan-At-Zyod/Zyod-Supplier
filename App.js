@@ -7,7 +7,7 @@ import { Provider as StoreProvider } from "react-redux";
 import { store } from "./store/store";
 import * as Sentry from "@sentry/react-native";
 import * as Notifications from "expo-notifications";
-import { registerInternetAvailabilitySyncingTask } from "./services/offline/background-task-manager.service";
+// import { registerInternetAvailabilitySyncingTask } from "./services/offline/background-task-manager.service";
 
 Sentry.init({
   dsn: "https://0948c8e8eb6e162346e86654eb054a21@o4509047927603200.ingest.de.sentry.io/4509047939203152",
@@ -34,9 +34,9 @@ function App() {
     })();
   }, []);
 
-  useEffect(() => {
-    registerInternetAvailabilitySyncingTask();
-  }, []);
+  // useEffect(() => {
+  //   registerInternetAvailabilitySyncingTask();
+  // }, []);
 
   return (
     <StoreProvider store={store}>
