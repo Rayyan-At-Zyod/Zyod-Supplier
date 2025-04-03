@@ -5,10 +5,12 @@ import NetInfo from "@react-native-community/netinfo";
 import AsyncStorage from "@react-native-async-storage/async-storage";
 import { processPendingActions } from "./process-storage";
 import * as Notifications from "expo-notifications";
+import { Platform } from 'react-native';
+import { foregroundService } from './foreground.service';
 
 const INTERNET_AVAILABILITY_TASK = "internet-availability-task";
 const SYNC_LOCK_KEY = "sync_in_progress";
-const LOCK_DURATION = 240000; // 4 times the background task interval = 4 minutes. ...
+const LOCK_DURATION = 240000; // 4 minutes
 
 // Helper to manage sync lock
 export const checkForSyncLockAvailibility = async () => {
@@ -33,12 +35,11 @@ export const clearSyncLock = async () => {
   }
 };
 
+// Define the background task
 TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
   try {
     const netInfo = await NetInfo.fetch();
-    const isConnected = netInfo.isConnected;
-
-    if (!isConnected) {
+    if (!netInfo.isConnected) {
       return BackgroundFetch.BackgroundFetchResult.NoData;
     }
 
@@ -52,32 +53,63 @@ TaskManager.defineTask(INTERNET_AVAILABILITY_TASK, async () => {
     }
 
     try {
-      await Notifications.scheduleNotificationAsync({
-        content: {
-          title: "Background Task Triggered",
-          body: "Sync process is now running.",
-        },
-        trigger: null,
-      });
-      Sentry.captureException(`1: Started BG task`);
-      await processPendingActions(token);
-      Sentry.captureException(`2: Processed all pending actions`);
+      // Start foreground service for Android
+      if (Platform.OS === 'android') {
+        await foregroundService.startService();
+      }
+
+      // Get pending actions
+      const pendingActions = await AsyncStorage.getItem("pendingActions");
+      const actions = pendingActions ? JSON.parse(pendingActions) : [];
+      
+      if (actions.length === 0) {
+        await foregroundService.stopService();
+        return BackgroundFetch.BackgroundFetchResult.NoData;
+      }
+
+      // Process actions with progress updates
+      let processed = 0;
+      for (const action of actions) {
+        await processPendingActions(token);
+        processed++;
+        
+        // Update progress
+        const progress = Math.round((processed / actions.length) * 100);
+        await foregroundService.updateNotification(progress);
+      }
+
       return BackgroundFetch.BackgroundFetchResult.NewData;
     } finally {
       await clearSyncLock();
-      Sentry.captureException(`3: Cleared sync lock`);
+      if (Platform.OS === 'android') {
+        await foregroundService.stopService();
+      }
     }
   } catch (error) {
     await clearSyncLock();
-    Sentry.captureException(`1. - 11. Error in bg task: ${error.toString()}`);
+    if (Platform.OS === 'android') {
+      await foregroundService.stopService();
+    }
+    Sentry.captureException(`Error in background task: ${error.toString()}`);
     return BackgroundFetch.BackgroundFetchResult.Failed;
   }
 });
 
 export async function registerInternetAvailabilitySyncingTask() {
   try {
+    // Unregister any existing task first
+    try {
+      const isRegistered = await TaskManager.isTaskRegisteredAsync(INTERNET_AVAILABILITY_TASK);
+      if (isRegistered) {
+        await BackgroundFetch.unregisterTaskAsync(INTERNET_AVAILABILITY_TASK);
+      }
+    } catch (e) {
+      Sentry.captureException(`Error checking task registration: ${e}`);
+    }
+
+    // Register the task with more aggressive settings
     await BackgroundFetch.registerTaskAsync(INTERNET_AVAILABILITY_TASK, {
-      minimumInterval: 10,
+      minimumInterval: 120, // 2 minutes in seconds
       stopOnTerminate: false,
       startOnBoot: true,
     });
@@ -87,8 +119,16 @@ export async function registerInternetAvailabilitySyncingTask() {
       message: "Task registered successfully",
       level: "info",
     });
+
+    // Trigger an initial check
+    await BackgroundFetch.scheduleTaskAsync(INTERNET_AVAILABILITY_TASK, {
+      minimumInterval: 1,
+      stopOnTerminate: false,
+      startOnBoot: true,
+    });
   } catch (error) {
     Sentry.captureException(error);
     console.error("Failed to register internet availability task:", error);
+    throw error;
   }
 }

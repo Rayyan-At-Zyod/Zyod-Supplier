@@ -7,6 +7,7 @@
   <uses-permission android:name="android.permission.VIBRATE"/>
   <uses-permission android:name="android.permission.WAKE_LOCK"/>
   <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  <uses-permission android:name="android.permission.FOREGROUND_SERVICE"/>
   <queries>
     <intent>
       <action android:name="android.intent.action.VIEW"/>
@@ -30,5 +31,10 @@
         <data android:scheme="com.zyod.supplierapp"/>
       </intent-filter>
     </activity>
+    <service
+      android:name=".ForegroundService"
+      android:enabled="true"
+      android:exported="false"
+      android:foregroundServiceType="location" />
   </application>
 </manifest>

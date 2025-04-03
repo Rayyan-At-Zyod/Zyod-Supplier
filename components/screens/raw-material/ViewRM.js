@@ -100,6 +100,11 @@ function ViewRMScreen() {
               {variation.availableQuantity || "N/A"}
             </Text>
 
+            <Text style={rmStyles.label}>Variant Code:</Text>
+            <Text style={rmStyles.input}>
+              {variation.newCode || "N/A"}
+            </Text>
+
             {variation.rmImage && (
               <Image
                 source={{ uri: variation.rmImage }}

@@ -54,6 +54,7 @@
     <string>Allow $(PRODUCT_NAME) to access your photos</string>
     <key>UIBackgroundModes</key>
     <array>
+      <string>remote-notification</string>
       <string>fetch</string>
     </array>
     <key>UILaunchStoryboardName</key>

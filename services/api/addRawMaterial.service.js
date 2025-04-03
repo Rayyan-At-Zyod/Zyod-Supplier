@@ -49,7 +49,7 @@ export const addRawMaterial = async (payload, token) => {
       const errorMessage = data.message || "Failed to add raw material";
       throw new Error(errorMessage);
     } else {
-      Sentry.captureMessage("Error during API hit for add..");
+      Sentry.captureMessage(`Response was OK for ADD.`);
     }
     return data;
   } catch (error) {
