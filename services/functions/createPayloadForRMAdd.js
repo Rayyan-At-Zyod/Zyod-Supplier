@@ -13,6 +13,7 @@ export const createPayload = async ({
   RMsData,
   quantity,
   warehouseId,
+  color,
 }) => {
   // Generate UUID for the request
   const requestUUID = uuidv4();

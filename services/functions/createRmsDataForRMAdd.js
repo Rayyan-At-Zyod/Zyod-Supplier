@@ -11,11 +11,13 @@ export const createRMsData = async ({
   variants = [],
   userData,
   warehouseId,
+  color,
 }) => {
   try {
     // const mainImageBase64 = await convertImageToBase64(mainImage);
     const printTypeCode = type === "Solids" ? "S" : "P";
     const newCode = width ? `_${width}` : "";
+    console.log("color:", color, "typeof color:", typeof color);
 
     // Create array starting with main item as first variant
     const RMsData = [
@@ -32,7 +34,7 @@ export const createRMsData = async ({
         WarpRight: null,
         WeftRight: null,
         PrintTypeId: printTypeCode === "S" ? 2 : 3,
-        RMSolidColorText: type === "Solids" ? "S" : "P",
+        RMSolidColorText: color.toString(),
         RMSolidColourId: null,
         RMTags: [],
         RMCodeBuilder: {
@@ -91,7 +93,7 @@ export const createRMsData = async ({
             WarpRight: null,
             WeftRight: null,
             PrintTypeId: variantPrintTypeCode === "S" ? 2 : 3,
-            RMSolidColorText: v.type === "Solids" ? "S" : "", //@FIXME: later
+            RMSolidColorText: v.color,
             // RMImage: variantImageBase64 ? [variantImageBase64] : [],
             RMImage: v.image ? v.image : [],
             RMVariationDetails: [
@@ -124,7 +126,7 @@ export const createRMsData = async ({
       )),
     ];
 
-    // console.log(">>RMsData:", JSON.stringify(RMsData, null, 2));
+    console.log(">>RMsData:", JSON.stringify(RMsData, null, 2));
     return RMsData;
   } catch (error) {
     console.error("Error creating RMsData:", error);

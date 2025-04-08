@@ -54,6 +54,7 @@ function AddRMScreen() {
   const [quantity, setQuantity] = useState("");
   const [constructionOrPrint, setConstructionOrPrint] = useState("");
   const [mainImage, setMainImage] = useState(""); // For storing a URI or base64
+  const [color, setColor] = useState("");
 
   // Variants array
   const [variants, setVariants] = useState([]);
@@ -71,6 +72,7 @@ function AddRMScreen() {
   const descriptionRef = useRef();
   const [variantRefs, setVariantRefs] = useState([]);
   const saveButtonRef = useRef();
+  const colorRef = useRef();
 
   // Use the network status hook
   const { isOnline } = useNetworkStatus();
@@ -89,6 +91,7 @@ function AddRMScreen() {
         type: "Solids", // or "Prints"
         width: "", // or anything else needed
         image: "",
+        color: "", // Add color field
       },
     ]);
     setVariantRefs((prev) => [
@@ -99,6 +102,7 @@ function AddRMScreen() {
         priceRef: createRef(),
         quantityRef: createRef(),
         widthRef: createRef(),
+        colorRef: createRef(), // Add colorRef
       },
     ]);
   };
@@ -231,6 +235,7 @@ function AddRMScreen() {
         variants,
         userData,
         warehouseId, // Use the warehouseId from context
+        color,
       });
 
       // 3) Create the payload using the helper function
@@ -245,6 +250,7 @@ function AddRMScreen() {
         RMsData,
         quantity,
         warehouseId,
+        color,
       });
 
       const temporaryItem = {
@@ -331,8 +337,22 @@ function AddRMScreen() {
               mode="outlined"
               value={name}
               returnKeyType="next"
-              onSubmitEditing={() => gsmRef.current && gsmRef.current.focus()}
+              onSubmitEditing={() =>
+                colorRef.current && colorRef.current.focus()
+              }
               onChangeText={setName}
+            />
+
+            {/* Color Rayyan */}
+            <TextInput
+              style={rmStyles.input}
+              label="Color"
+              mode="outlined"
+              value={color}
+              ref={colorRef}
+              returnKeyType="next"
+              onSubmitEditing={() => gsmRef.current && gsmRef.current.focus()}
+              onChangeText={setColor}
             />
 
             {/* GSM & Width */}
@@ -428,7 +448,7 @@ function AddRMScreen() {
               key={`descriptionSendButtonChange-${variants.length}`}
               style={rmStyles.input}
               ref={descriptionRef}
-              label="Count / Construction / Print"
+              label="Description"
               mode="outlined"
               value={constructionOrPrint}
               returnKeyType={variants.length > 0 ? "send" : "done"}
@@ -461,10 +481,25 @@ function AddRMScreen() {
                   value={variant.name}
                   returnKeyType="next"
                   onSubmitEditing={() =>
-                    variantRefs[index]?.descriptionRef.current?.focus()
+                    variantRefs[index]?.colorRef.current?.focus()
                   }
                   onChangeText={(text) =>
                     handleVariantChange(index, "name", text)
+                  }
+                />
+
+                <TextInput
+                  ref={variantRefs[index]?.colorRef}
+                  style={rmStyles.input}
+                  label="Variant Color"
+                  mode="outlined"
+                  value={variant.color}
+                  returnKeyType="next"
+                  onSubmitEditing={() =>
+                    variantRefs[index]?.descriptionRef.current?.focus()
+                  }
+                  onChangeText={(text) =>
+                    handleVariantChange(index, "color", text)
                   }
                 />
 

@@ -65,12 +65,6 @@ function ViewRMScreen() {
           </View>
         </View>
 
-        {/* Type */}
-        <Text style={rmStyles.label}>Type:</Text>
-        <Text style={rmStyles.input}>
-          {material.rmVariations[0]?.type || "N/A"}
-        </Text>
-
         {/* Description */}
         <Text style={rmStyles.label}>Description:</Text>
         <Text style={rmStyles.input}>
@@ -100,10 +94,13 @@ function ViewRMScreen() {
               {variation.availableQuantity || "N/A"}
             </Text>
 
-            <Text style={rmStyles.label}>Variant Code:</Text>
+            <Text style={rmStyles.label}>Variant Color:</Text>
             <Text style={rmStyles.input}>
-              {variation.newCode || "N/A"}
+              {variation.rmSolidColorText || "N/A"}
             </Text>
+
+            <Text style={rmStyles.label}>Variant Code:</Text>
+            <Text style={rmStyles.input}>{variation.newCode || "N/A"}</Text>
 
             {variation.rmImage && (
               <Image
